@@ -2,12 +2,18 @@
 
 import { useEffect, useRef, useState } from "react";
 import { RenderedPage } from "./RenderedPage";
-import type { Dimensions, GeneratedPage, ThemeDefinition } from "@/lib/types";
+import type {
+  Dimensions,
+  GeneratedPage,
+  ThemeDefinition,
+  ThemeSyntaxOverrides,
+} from "@/lib/types";
 
 type PreviewPanelProps = {
   pages: GeneratedPage[];
   selectedPageIndex: number;
   theme: ThemeDefinition;
+  syntaxOverrides?: ThemeSyntaxOverrides;
   dimensions: Dimensions;
   onPageChange: (index: number) => void;
   registerPageRef: (index: number, node: HTMLDivElement | null) => void;
@@ -17,6 +23,7 @@ export function PreviewPanel({
   pages,
   selectedPageIndex,
   theme,
+  syntaxOverrides,
   dimensions,
   onPageChange,
   registerPageRef,
@@ -80,6 +87,7 @@ export function PreviewPanel({
             <RenderedPage
               page={page}
               theme={theme}
+              syntaxOverrides={syntaxOverrides}
               dimensions={dimensions}
               scale={scale}
             />
@@ -94,7 +102,12 @@ export function PreviewPanel({
             ref={(node) => registerPageRef(index, node)}
             className="export-page-node"
           >
-            <RenderedPage page={page} theme={theme} dimensions={dimensions} />
+            <RenderedPage
+              page={page}
+              theme={theme}
+              syntaxOverrides={syntaxOverrides}
+              dimensions={dimensions}
+            />
           </div>
         ))}
       </div>

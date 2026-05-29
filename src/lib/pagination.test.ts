@@ -7,8 +7,8 @@ describe("paginateSegments", () => {
   it("keeps manual groups separated", () => {
     const pages = paginateSegments(
       [
-        [{ type: "heading", depth: 1, text: "A" }],
-        [{ type: "heading", depth: 1, text: "B" }],
+        [{ type: "heading", depth: 1, text: "A", inline: [{ type: "text", text: "A" }] }],
+        [{ type: "heading", depth: 1, text: "B", inline: [{ type: "text", text: "B" }] }],
       ],
       { width: 1080, height: 1440 },
       getThemeById("punk"),
@@ -23,6 +23,7 @@ describe("paginateSegments", () => {
     const blocks: MarkdownBlock[] = Array.from({ length: 30 }, (_, index) => ({
       type: "paragraph",
       text: `Paragraph ${index} `.repeat(20),
+      inline: [{ type: "text", text: `Paragraph ${index} `.repeat(20) }],
     }));
 
     const pages = paginateSegments(
@@ -33,5 +34,26 @@ describe("paginateSegments", () => {
     );
 
     expect(pages.length).toBeGreaterThan(1);
+  });
+
+  it("preserves inline Markdown nodes when text does not need splitting", () => {
+    const pages = paginateSegments(
+      [
+        [
+          {
+            type: "paragraph",
+            text: "Bold",
+            inline: [{ type: "strong", children: [{ type: "text", text: "Bold" }] }],
+          },
+        ],
+      ],
+      { width: 1080, height: 1440 },
+      getThemeById("punk"),
+      true,
+    );
+
+    expect(pages[0].blocks[0]).toMatchObject({
+      inline: [{ type: "strong", children: [{ type: "text", text: "Bold" }] }],
+    });
   });
 });

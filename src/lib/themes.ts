@@ -1,4 +1,29 @@
-import type { ThemeDefinition } from "./types";
+import type { ThemeDefinition, ThemeSyntaxOverrides, ThemeSyntaxStyles } from "./types";
+
+function syntax(colors: {
+  foreground: string;
+  accent: string;
+  secondary: string;
+  muted: string;
+  border: string;
+  panel: string;
+}, imageRadius = 18): ThemeSyntaxStyles {
+  return {
+    headingColor: colors.foreground,
+    headingBackground: colors.secondary,
+    strongColor: colors.accent,
+    emphasisColor: colors.foreground,
+    deleteColor: colors.border,
+    highlightBackground: colors.secondary,
+    highlightColor: colors.foreground,
+    codeBackground: colors.muted,
+    codeColor: colors.foreground,
+    quoteBackground: colors.panel,
+    listMarkerColor: colors.accent,
+    imageBorderColor: colors.border,
+    imageRadius,
+  };
+}
 
 export const themes: ThemeDefinition[] = [
   {
@@ -21,6 +46,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 34,
     radius: 0,
     borderWidth: 8,
+    syntax: syntax({
+      foreground: "#111111",
+      accent: "#ff4fb3",
+      secondary: "#00b7ff",
+      muted: "#fff6b8",
+      border: "#111111",
+      panel: "#ffffff",
+    }, 0),
     motif: "burst",
   },
   {
@@ -43,6 +76,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 34,
     radius: 4,
     borderWidth: 7,
+    syntax: syntax({
+      foreground: "#101010",
+      accent: "#ff1744",
+      secondary: "#2979ff",
+      muted: "#ffffff",
+      border: "#101010",
+      panel: "#fffef4",
+    }, 4),
     motif: "dots",
   },
   {
@@ -65,6 +106,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 32,
     radius: 18,
     borderWidth: 6,
+    syntax: syntax({
+      foreground: "#1a1a1a",
+      accent: "#ff6b6b",
+      secondary: "#4ecdc4",
+      muted: "#ffe66d",
+      border: "#1a1a1a",
+      panel: "#ffffff",
+    }, 20),
     motif: "memphis",
   },
   {
@@ -87,6 +136,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 30,
     radius: 32,
     borderWidth: 0,
+    syntax: syntax({
+      foreground: "#252525",
+      accent: "#d4a017",
+      secondary: "#f7d65a",
+      muted: "#fff9d8",
+      border: "#e7cd64",
+      panel: "#fffbe4",
+    }, 24),
     motif: "notes",
   },
   {
@@ -109,6 +166,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 30,
     radius: 2,
     borderWidth: 2,
+    syntax: syntax({
+      foreground: "#27221c",
+      accent: "#b63d32",
+      secondary: "#ded2bd",
+      muted: "#eee3d1",
+      border: "#27221c",
+      panel: "#fffaf1",
+    }, 2),
     motif: "none",
   },
   {
@@ -131,6 +196,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 32,
     radius: 10,
     borderWidth: 2,
+    syntax: syntax({
+      foreground: "#172033",
+      accent: "#2454ff",
+      secondary: "#dbe5ff",
+      muted: "#e9eef7",
+      border: "#172033",
+      panel: "#ffffff",
+    }, 14),
     motif: "grid",
   },
   {
@@ -153,6 +226,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 32,
     radius: 24,
     borderWidth: 3,
+    syntax: syntax({
+      foreground: "#2e2430",
+      accent: "#e84a7f",
+      secondary: "#8bd3dd",
+      muted: "#fff6f8",
+      border: "#2e2430",
+      panel: "#fffdfb",
+    }, 24),
     motif: "dots",
   },
   {
@@ -175,6 +256,14 @@ export const themes: ThemeDefinition[] = [
     blockGap: 34,
     radius: 0,
     borderWidth: 5,
+    syntax: syntax({
+      foreground: "#ffffff",
+      accent: "#ffdf00",
+      secondary: "#ff4f5e",
+      muted: "#2a2a2a",
+      border: "#ffffff",
+      panel: "#181818",
+    }, 0),
     motif: "grid",
   },
 ];
@@ -183,4 +272,11 @@ export const defaultTheme = themes[0];
 
 export function getThemeById(id: string): ThemeDefinition {
   return themes.find((theme) => theme.id === id) ?? defaultTheme;
+}
+
+export function resolveThemeSyntax(
+  theme: ThemeDefinition,
+  overrides: ThemeSyntaxOverrides = {},
+): ThemeSyntaxStyles {
+  return { ...theme.syntax, ...overrides };
 }

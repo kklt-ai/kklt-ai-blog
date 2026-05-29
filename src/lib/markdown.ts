@@ -2,9 +2,10 @@ import type { Blockquote, Code, Heading, Image, List, Paragraph, Root } from "md
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
-import type { MarkdownBlock } from "./types";
+import type { MarkdownBlock, MarkdownInline, MarkdownListItem } from "./types";
 
 type TextLikeNode = {
+  type?: string;
   value?: string;
   alt?: string | null;
   url?: string;
@@ -19,15 +20,79 @@ export function splitManualSegments(markdown: string): string[] {
 }
 
 function textFromChildren(children: readonly TextLikeNode[] = []): string {
-  return children
-    .map((child) => {
-      if (typeof child.value === "string") return child.value;
-      if (typeof child.alt === "string" && child.alt.length > 0) return child.alt;
-      if (Array.isArray(child.children)) return textFromChildren(child.children);
-      return "";
+  return inlineText(inlineFromChildren(children)).trim();
+}
+
+function inlineText(inline: readonly MarkdownInline[]): string {
+  return inline
+    .map((node) => {
+      if (node.type === "text") return node.text;
+      if (node.type === "inlineCode") return node.code;
+      return inlineText(node.children);
     })
-    .join("")
-    .trim();
+    .join("");
+}
+
+function highlightFromText(text: string): MarkdownInline[] {
+  const inline: MarkdownInline[] = [];
+  const pattern = /==([^=]+)==/g;
+  let cursor = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > cursor) {
+      inline.push({ type: "text", text: text.slice(cursor, match.index) });
+    }
+    inline.push({ type: "mark", children: [{ type: "text", text: match[1] }] });
+    cursor = match.index + match[0].length;
+  }
+
+  if (cursor < text.length) {
+    inline.push({ type: "text", text: text.slice(cursor) });
+  }
+
+  return inline;
+}
+
+function inlineFromNode(node: TextLikeNode): MarkdownInline[] {
+  if (node.type === "text" && typeof node.value === "string") {
+    return highlightFromText(node.value);
+  }
+
+  if (node.type === "inlineCode" && typeof node.value === "string") {
+    return [{ type: "inlineCode", code: node.value }];
+  }
+
+  if (node.type === "break") {
+    return [{ type: "text", text: "\n" }];
+  }
+
+  if (
+    (node.type === "strong" ||
+      node.type === "emphasis" ||
+      node.type === "delete") &&
+    Array.isArray(node.children)
+  ) {
+    return [{ type: node.type, children: inlineFromChildren(node.children) }];
+  }
+
+  if (typeof node.alt === "string" && node.alt.length > 0) {
+    return [{ type: "text", text: node.alt }];
+  }
+
+  if (Array.isArray(node.children)) {
+    return inlineFromChildren(node.children);
+  }
+
+  if (typeof node.value === "string") {
+    return highlightFromText(node.value);
+  }
+
+  return [];
+}
+
+function inlineFromChildren(children: readonly TextLikeNode[] = []): MarkdownInline[] {
+  return children.flatMap(inlineFromNode);
 }
 
 function isImageOnlyParagraph(paragraph: Paragraph): Image | null {
@@ -43,10 +108,12 @@ export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
   for (const node of tree.children) {
     if (node.type === "heading") {
       const heading = node as Heading;
+      const inline = inlineFromChildren(heading.children as TextLikeNode[]);
       blocks.push({
         type: "heading",
         depth: Math.min(3, heading.depth) as 1 | 2 | 3,
-        text: textFromChildren(heading.children as TextLikeNode[]),
+        text: inlineText(inline).trim(),
+        inline,
       });
       continue;
     }
@@ -57,9 +124,11 @@ export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
       if (image) {
         blocks.push({ type: "image", alt: image.alt ?? "", url: image.url });
       } else {
+        const inline = inlineFromChildren(paragraph.children as TextLikeNode[]);
         blocks.push({
           type: "paragraph",
-          text: textFromChildren(paragraph.children as TextLikeNode[]),
+          text: inlineText(inline).trim(),
+          inline,
         });
       }
       continue;
@@ -71,17 +140,22 @@ export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
         type: "list",
         ordered: Boolean(list.ordered),
         items: list.children
-          .map((item) => textFromChildren(item.children as TextLikeNode[]))
-          .filter(Boolean),
+          .map((item): MarkdownListItem => {
+            const inline = inlineFromChildren(item.children as TextLikeNode[]);
+            return { text: inlineText(inline).trim(), inline };
+          })
+          .filter((item) => item.text.length > 0),
       });
       continue;
     }
 
     if (node.type === "blockquote") {
       const blockquote = node as Blockquote;
+      const inline = inlineFromChildren(blockquote.children as TextLikeNode[]);
       blocks.push({
         type: "quote",
-        text: textFromChildren(blockquote.children as TextLikeNode[]),
+        text: inlineText(inline).trim(),
+        inline,
       });
       continue;
     }

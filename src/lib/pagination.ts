@@ -21,7 +21,7 @@ function estimateBlockHeight(
   if (block.type === "list") {
     const lines = block.items.reduce(
       (total, item) =>
-        total + Math.max(1, Math.ceil(item.length / Math.max(8, charsPerLine - 4))),
+        total + Math.max(1, Math.ceil(item.text.length / Math.max(8, charsPerLine - 4))),
       0,
     );
     return lines * theme.baseFontSize * theme.lineHeight + theme.blockGap;
@@ -46,6 +46,10 @@ function splitOversizedTextBlock(
   }
 
   const sourceText = block.type === "code" ? block.code : block.text;
+  if (estimateBlockHeight(block, theme, contentWidth) <= maxHeight) {
+    return [block];
+  }
+
   const pieces = block.type === "code" ? sourceText.split("\n") : Array.from(sourceText);
   const joiner = block.type === "code" ? "\n" : "";
   const chunks: MarkdownBlock[] = [];
@@ -54,10 +58,16 @@ function splitOversizedTextBlock(
   for (const piece of pieces) {
     const next = current ? `${current}${joiner}${piece}` : piece;
     const nextBlock =
-      block.type === "code" ? { ...block, code: next } : { ...block, text: next };
+      block.type === "code"
+        ? { ...block, code: next }
+        : { ...block, text: next, inline: [{ type: "text" as const, text: next }] };
 
     if (current && estimateBlockHeight(nextBlock, theme, contentWidth) > maxHeight) {
-      chunks.push(block.type === "code" ? { ...block, code: current } : { ...block, text: current });
+      chunks.push(
+        block.type === "code"
+          ? { ...block, code: current }
+          : { ...block, text: current, inline: [{ type: "text", text: current }] },
+      );
       current = piece;
     } else {
       current = next;
@@ -65,7 +75,11 @@ function splitOversizedTextBlock(
   }
 
   if (current) {
-    chunks.push(block.type === "code" ? { ...block, code: current } : { ...block, text: current });
+    chunks.push(
+      block.type === "code"
+        ? { ...block, code: current }
+        : { ...block, text: current, inline: [{ type: "text", text: current }] },
+    );
   }
 
   return chunks;

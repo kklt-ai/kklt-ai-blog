@@ -1,16 +1,21 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { getThemeById } from "@/lib/themes";
 import { SettingsPanel } from "./SettingsPanel";
 
 describe("SettingsPanel", () => {
   const baseProps = {
     selectedThemeId: "punk",
+    activeTheme: getThemeById("punk"),
     dimensions: { width: 1080, height: 1440 },
     autoPaginate: true,
     isExporting: false,
+    syntaxOverrides: {},
     onThemeChange: vi.fn(),
     onDimensionsChange: vi.fn(),
     onAutoPaginateChange: vi.fn(),
+    onSyntaxOverrideChange: vi.fn(),
+    onResetSyntaxOverrides: vi.fn(),
     onExportCurrent: vi.fn(),
     onExportAll: vi.fn(),
   };
@@ -32,6 +37,27 @@ describe("SettingsPanel", () => {
 
     expect(onThemeChange).toHaveBeenCalledWith("pop-art");
     expect(onDimensionsChange).toHaveBeenCalledWith({ width: 1200, height: 1440 });
+  });
+
+  it("updates Markdown syntax style controls", () => {
+    const onSyntaxOverrideChange = vi.fn();
+
+    render(
+      <SettingsPanel
+        {...baseProps}
+        onSyntaxOverrideChange={onSyntaxOverrideChange}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("高亮背景色"), {
+      target: { value: "#ffee66" },
+    });
+    fireEvent.change(screen.getByLabelText("图片圆角"), {
+      target: { value: "28" },
+    });
+
+    expect(onSyntaxOverrideChange).toHaveBeenCalledWith("highlightBackground", "#ffee66");
+    expect(onSyntaxOverrideChange).toHaveBeenCalledWith("imageRadius", 28);
   });
 
   it("disables export buttons while exporting", () => {

@@ -1,25 +1,58 @@
 import type { CSSProperties } from "react";
-import type { Dimensions, GeneratedPage, MarkdownBlock, ThemeDefinition } from "@/lib/types";
+import { resolveThemeSyntax } from "@/lib/themes";
+import type {
+  Dimensions,
+  GeneratedPage,
+  MarkdownBlock,
+  MarkdownInline,
+  ThemeDefinition,
+  ThemeSyntaxOverrides,
+} from "@/lib/types";
 
 type RenderedPageProps = {
   page: GeneratedPage;
   theme: ThemeDefinition;
+  syntaxOverrides?: ThemeSyntaxOverrides;
   dimensions: Dimensions;
   scale?: number;
 };
 
+function renderInline(inline: MarkdownInline[] | undefined, fallback: string, prefix: string) {
+  const nodes = inline?.length ? inline : [{ type: "text" as const, text: fallback }];
+
+  return nodes.map((node, index) => {
+    const key = `${prefix}-${index}`;
+    if (node.type === "text") return <span key={key}>{node.text}</span>;
+    if (node.type === "inlineCode") {
+      return (
+        <code key={key} className="xhs-inline-code">
+          {node.code}
+        </code>
+      );
+    }
+    if (node.type === "strong") return <strong key={key}>{renderInline(node.children, "", key)}</strong>;
+    if (node.type === "emphasis") return <em key={key}>{renderInline(node.children, "", key)}</em>;
+    if (node.type === "delete") return <del key={key}>{renderInline(node.children, "", key)}</del>;
+    return <mark key={key}>{renderInline(node.children, "", key)}</mark>;
+  });
+}
+
 function renderBlock(block: MarkdownBlock, index: number) {
   if (block.type === "heading") {
     const Tag = block.depth === 1 ? "h1" : block.depth === 2 ? "h2" : "h3";
-    return <Tag key={index}>{block.text}</Tag>;
+    return <Tag key={index}>{renderInline(block.inline, block.text, `heading-${index}`)}</Tag>;
   }
 
   if (block.type === "paragraph") {
-    return <p key={index}>{block.text}</p>;
+    return <p key={index}>{renderInline(block.inline, block.text, `paragraph-${index}`)}</p>;
   }
 
   if (block.type === "quote") {
-    return <blockquote key={index}>{block.text}</blockquote>;
+    return (
+      <blockquote key={index}>
+        {renderInline(block.inline, block.text, `quote-${index}`)}
+      </blockquote>
+    );
   }
 
   if (block.type === "list") {
@@ -27,7 +60,9 @@ function renderBlock(block: MarkdownBlock, index: number) {
     return (
       <ListTag key={index}>
         {block.items.map((item, itemIndex) => (
-          <li key={`${item}-${itemIndex}`}>{item}</li>
+          <li key={`${item.text}-${itemIndex}`}>
+            {renderInline(item.inline, item.text, `list-${index}-${itemIndex}`)}
+          </li>
         ))}
       </ListTag>
     );
@@ -50,7 +85,14 @@ function renderBlock(block: MarkdownBlock, index: number) {
   );
 }
 
-export function RenderedPage({ page, theme, dimensions, scale = 1 }: RenderedPageProps) {
+export function RenderedPage({
+  page,
+  theme,
+  syntaxOverrides,
+  dimensions,
+  scale = 1,
+}: RenderedPageProps) {
+  const syntax = resolveThemeSyntax(theme, syntaxOverrides);
   const style = {
     "--page-bg": theme.colors.background,
     "--page-ink": theme.colors.foreground,
@@ -66,6 +108,19 @@ export function RenderedPage({ page, theme, dimensions, scale = 1 }: RenderedPag
     "--page-gap": `${theme.blockGap}px`,
     "--page-radius": `${theme.radius}px`,
     "--page-border-width": `${theme.borderWidth}px`,
+    "--syntax-heading-color": syntax.headingColor,
+    "--syntax-heading-bg": syntax.headingBackground,
+    "--syntax-strong": syntax.strongColor,
+    "--syntax-emphasis": syntax.emphasisColor,
+    "--syntax-delete": syntax.deleteColor,
+    "--syntax-highlight-bg": syntax.highlightBackground,
+    "--syntax-highlight": syntax.highlightColor,
+    "--syntax-code-bg": syntax.codeBackground,
+    "--syntax-code": syntax.codeColor,
+    "--syntax-quote-bg": syntax.quoteBackground,
+    "--syntax-list-marker": syntax.listMarkerColor,
+    "--syntax-image-border": syntax.imageBorderColor,
+    "--syntax-image-radius": `${syntax.imageRadius}px`,
     width: dimensions.width,
     height: dimensions.height,
     transform: `scale(${scale})`,

@@ -10,7 +10,7 @@ import { parseMarkdown } from "@/lib/markdown";
 import { paginateSegments } from "@/lib/pagination";
 import { DEFAULT_DIMENSIONS, SAMPLE_MARKDOWN } from "@/lib/sample";
 import { getThemeById } from "@/lib/themes";
-import type { Dimensions } from "@/lib/types";
+import type { Dimensions, ThemeSyntaxOverrides, ThemeSyntaxStyles } from "@/lib/types";
 
 const STORAGE_KEY = "xhs-md-image-tool";
 
@@ -19,6 +19,7 @@ type StoredState = {
   themeId?: string;
   dimensions?: Dimensions;
   autoPaginate?: boolean;
+  syntaxOverridesByThemeId?: Record<string, ThemeSyntaxOverrides>;
 };
 
 export default function Home() {
@@ -26,6 +27,9 @@ export default function Home() {
   const [themeId, setThemeId] = useState("punk");
   const [dimensions, setDimensions] = useState(DEFAULT_DIMENSIONS);
   const [autoPaginate, setAutoPaginate] = useState(true);
+  const [syntaxOverridesByThemeId, setSyntaxOverridesByThemeId] = useState<
+    Record<string, ThemeSyntaxOverrides>
+  >({});
   const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -41,6 +45,9 @@ export default function Home() {
       if (typeof parsed.themeId === "string") setThemeId(parsed.themeId);
       if (parsed.dimensions) setDimensions(clampDimensions(parsed.dimensions));
       if (typeof parsed.autoPaginate === "boolean") setAutoPaginate(parsed.autoPaginate);
+      if (parsed.syntaxOverridesByThemeId) {
+        setSyntaxOverridesByThemeId(parsed.syntaxOverridesByThemeId);
+      }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     }
@@ -49,11 +56,18 @@ export default function Home() {
   useEffect(() => {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ markdown, themeId, dimensions, autoPaginate }),
+      JSON.stringify({
+        markdown,
+        themeId,
+        dimensions,
+        autoPaginate,
+        syntaxOverridesByThemeId,
+      }),
     );
-  }, [autoPaginate, dimensions, markdown, themeId]);
+  }, [autoPaginate, dimensions, markdown, syntaxOverridesByThemeId, themeId]);
 
   const theme = useMemo(() => getThemeById(themeId), [themeId]);
+  const syntaxOverrides = syntaxOverridesByThemeId[themeId] ?? {};
   const markdownForPreview = markdown.trim() ? markdown : SAMPLE_MARKDOWN;
   const segments = useMemo(() => parseMarkdown(markdownForPreview), [markdownForPreview]);
   const pages = useMemo(
@@ -115,7 +129,13 @@ export default function Home() {
         event.preventDefault();
         window.localStorage.setItem(
           STORAGE_KEY,
-          JSON.stringify({ markdown, themeId, dimensions, autoPaginate }),
+          JSON.stringify({
+            markdown,
+            themeId,
+            dimensions,
+            autoPaginate,
+            syntaxOverridesByThemeId,
+          }),
         );
         setMessage("草稿已保存在本机浏览器");
       }
@@ -128,7 +148,34 @@ export default function Home() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [autoPaginate, dimensions, exportCurrent, markdown, themeId]);
+  }, [
+    autoPaginate,
+    dimensions,
+    exportCurrent,
+    markdown,
+    syntaxOverridesByThemeId,
+    themeId,
+  ]);
+
+  const updateSyntaxOverride = <Key extends keyof ThemeSyntaxStyles>(
+    key: Key,
+    value: ThemeSyntaxStyles[Key],
+  ) => {
+    setSyntaxOverridesByThemeId((current) => ({
+      ...current,
+      [themeId]: {
+        ...(current[themeId] ?? {}),
+        [key]: value,
+      },
+    }));
+  };
+
+  const resetSyntaxOverrides = () => {
+    setSyntaxOverridesByThemeId((current) => {
+      const { [themeId]: _removed, ...rest } = current;
+      return rest;
+    });
+  };
 
   return (
     <main className="app-shell">
@@ -150,6 +197,7 @@ export default function Home() {
         pages={pages}
         selectedPageIndex={selectedPageIndex}
         theme={theme}
+        syntaxOverrides={syntaxOverrides}
         dimensions={dimensions}
         onPageChange={setSelectedPageIndex}
         registerPageRef={registerPageRef}
@@ -157,12 +205,16 @@ export default function Home() {
 
       <SettingsPanel
         selectedThemeId={themeId}
+        activeTheme={theme}
         dimensions={dimensions}
         autoPaginate={autoPaginate}
         isExporting={isExporting}
+        syntaxOverrides={syntaxOverrides}
         onThemeChange={setThemeId}
         onDimensionsChange={(next) => setDimensions(clampDimensions(next))}
         onAutoPaginateChange={setAutoPaginate}
+        onSyntaxOverrideChange={updateSyntaxOverride}
+        onResetSyntaxOverrides={resetSyntaxOverrides}
         onExportCurrent={exportCurrent}
         onExportAll={exportAll}
       />
