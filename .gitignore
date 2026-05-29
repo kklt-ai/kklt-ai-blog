@@ -4,3 +4,9 @@ _site/
 .jekyll-cache/
 .sass-cache/
 .superpowers/
+node_modules/
+.next/
+out/
+dist/
+.env*
+!.env.example
