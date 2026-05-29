@@ -185,34 +185,7 @@ button:focus-visible {
   padding: 8px;
 }
 
-.preview-stage {
-  flex: 1;
-  min-height: 360px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  overflow: hidden;
-}
-
-.preview-frame {
-  position: relative;
-  flex: 0 0 auto;
-  box-shadow: 10px 10px 0 var(--electric-blue);
-}
-
-.nav-button {
-  width: 44px;
-  height: 44px;
-  border: 3px solid var(--ink);
-  background: #fff;
-  display: grid;
-  place-items: center;
-  box-shadow: 4px 4px 0 var(--ink);
-}
-
-.page-meta,
-.page-strip {
+.page-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
@@ -220,20 +193,34 @@ button:focus-visible {
   font-weight: 900;
 }
 
-.page-strip {
-  justify-content: center;
+.preview-scroll {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0;
 }
 
-.page-strip button {
-  width: 36px;
-  height: 30px;
-  border: 2px solid var(--ink);
-  background: #fff;
-  font-weight: 900;
+.preview-item {
+  position: relative;
+  flex: 0 0 auto;
+  overflow: hidden;
+  box-shadow: 10px 10px 0 var(--electric-blue);
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.15s;
 }
 
-.page-strip button.is-active {
-  background: var(--hot-pink);
+.preview-item.is-active {
+  border-color: var(--hot-pink);
+}
+
+.preview-item:focus-visible {
+  outline: 3px solid var(--hot-pink);
+  outline-offset: 2px;
 }
 
 .setting-group {
@@ -544,10 +531,6 @@ button:focus-visible {
   .preview-panel {
     min-height: auto;
   }
-
-  .preview-stage {
-    min-height: 420px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -573,9 +556,5 @@ button:focus-visible {
   .dimension-row,
   .theme-grid {
     grid-template-columns: 1fr;
-  }
-
-  .nav-button {
-    display: none;
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { RenderedPage } from "./RenderedPage";
 import type { Dimensions, GeneratedPage, ThemeDefinition } from "@/lib/types";
 
@@ -21,10 +21,25 @@ export function PreviewPanel({
   onPageChange,
   registerPageRef,
 }: PreviewPanelProps) {
-  const selectedPage = pages[selectedPageIndex] ?? pages[0];
-  const previewScale = Math.min(0.42, 420 / dimensions.height, 320 / dimensions.width);
-  const previewWidth = dimensions.width * previewScale;
-  const previewHeight = dimensions.height * previewScale;
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(0.4);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    const update = () => {
+      const w = el.clientWidth;
+      const s = Math.min(1, (w - 8) / dimensions.width);
+      setScale(s);
+    };
+
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [dimensions.width]);
 
   return (
     <section className="preview-panel" aria-label="图片预览">
@@ -43,42 +58,32 @@ export function PreviewPanel({
         </div>
       </div>
 
-      <div className="preview-stage">
-        <button
-          className="nav-button"
-          type="button"
-          disabled={selectedPageIndex === 0}
-          onClick={() => onPageChange(selectedPageIndex - 1)}
-          title="上一页"
-        >
-          <ChevronLeft aria-hidden="true" />
-        </button>
-
-        <div className="preview-frame" style={{ width: previewWidth, height: previewHeight }}>
-          <RenderedPage page={selectedPage} theme={theme} dimensions={dimensions} scale={previewScale} />
-        </div>
-
-        <button
-          className="nav-button"
-          type="button"
-          disabled={selectedPageIndex >= pages.length - 1}
-          onClick={() => onPageChange(selectedPageIndex + 1)}
-          title="下一页"
-        >
-          <ChevronRight aria-hidden="true" />
-        </button>
-      </div>
-
-      <div className="page-strip" aria-label="页面列表">
+      <div ref={scrollRef} className="preview-scroll">
         {pages.map((page, index) => (
-          <button
+          <div
             key={page.id}
-            type="button"
-            className={index === selectedPageIndex ? "is-active" : ""}
+            className={`preview-item ${index === selectedPageIndex ? "is-active" : ""}`}
+            style={{
+              width: dimensions.width * scale,
+              height: dimensions.height * scale,
+            }}
             onClick={() => onPageChange(index)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onPageChange(index);
+              }
+            }}
           >
-            {index + 1}
-          </button>
+            <RenderedPage
+              page={page}
+              theme={theme}
+              dimensions={dimensions}
+              scale={scale}
+            />
+          </div>
         ))}
       </div>
 
