@@ -1,132 +1,118 @@
 # AGENTS.md
 
-本文件给参与本仓库维护的 AI agent 和协作者使用。修改前请先读完本文件，并以当前项目结构和发布方式为准。
+Guidance for coding agents working in this repository.
 
-## 项目概览
+## Working Rules
 
-这是「卡卡罗特AI」的 GitHub Pages + Jekyll 博客，面向中文用户发布 AI 工具教程、ChatGPT/Codex 使用技巧、AI 编程实践和自动化工作流内容。
+Follow the project-specific guidance in `CLAUDE.md`. In short:
 
-- 站点标题：`卡卡罗特AI`
-- 站点地址：`https://kklt-ai.github.io/kklt-ai-blog/`
-- 语言与时区：`zh-CN`、`Asia/Shanghai`
-- 主题：`mmistakes/so-simple-theme@3.2.0`
-- 部署：推送到 `main` 后由 GitHub Actions 构建并部署到 GitHub Pages
+- Think before changing code. State assumptions when the request is ambiguous.
+- Prefer the smallest implementation that fully solves the requested task.
+- Make surgical changes. Do not refactor, reformat, or clean up unrelated code.
+- Match the existing style, naming, and component boundaries.
+- Verify work with the narrowest meaningful tests, and broaden verification when the change touches shared behavior.
+- Do not overwrite or revert user changes. Check `git status --short` before editing when unsure.
 
-## 技术栈与命令
+## Project Summary
 
-本项目使用 Ruby/Jekyll，不使用 Node/Vite/Next 等前端构建工具。
+This is a Next.js App Router web tool for turning Markdown into paginated PNG images suitable for Xiaohongshu posts. The app is a browser-first single page experience rooted at `src/app/page.tsx`.
 
-常用命令：
+Key capabilities:
 
-```sh
-bundle install
-bundle exec jekyll serve --livereload
-bundle exec jekyll build
-```
+- Markdown editing and `.md` upload.
+- Markdown toolbar actions for headings, emphasis, lists, quotes, code, highlights, dividers, undo, and images.
+- Manual page splitting with markdown dividers made of three or more dashes.
+- Automatic pagination based on estimated rendered height.
+- Theme, typography, and dimension controls.
+- Local image upload stored in browser IndexedDB as `local-image://...` references.
+- PNG export through hidden full-size render nodes and `html-to-image`.
 
-本地预览默认地址通常是 `http://127.0.0.1:4000/kklt-ai-blog/`。如果只验证构建，运行 `bundle exec jekyll build` 即可。
+## Commands
 
-## 目录结构
+- `npm run dev` - start the Next.js dev server.
+- `npm run build` - production build.
+- `npm run lint` - run Next.js ESLint.
+- `npm test` - run the Vitest suite once.
+- `npm run test:watch` - run Vitest in watch mode.
+- `npx vitest run path/to/file.test.ts` - run one test file.
 
-- `_config.yml`：站点核心配置、主题、分页、permalink、作者信息、插件和排除项。
-- `_posts/`：博客文章。文件名必须使用 `YYYY-MM-DD-slug.md` 格式。
-- `_layouts/home.html`：首页布局，自定义头像、标题、摘要列表和分页。
-- `_layouts/post.html`：文章页布局，自定义作者卡片、正文区域和右侧/移动端文章大纲。
-- `_includes/head-custom.html`：注入自定义 CSS 和 JS。
-- `_data/navigation.yml`：顶部导航。
-- `_data/text.yml`：So Simple 主题中文文案。
-- `assets/css/home.css`：首页、文章页、归档、分类、标签页的主要自定义样式。
-- `assets/js/taxonomy-filter.js`：分类和标签页的客户端筛选交互。
-- `assets/images/`：站点头像、公众号二维码和文章图片。
-- `.github/workflows/pages.yml`：GitHub Pages 自动部署流程。
-- `_site/`：Jekyll 生成目录，已被忽略，不要手动编辑或提交。
+Use `npm test` for most logic or component changes. Use `npm run build` when touching Next.js app wiring, API routes, exports, config, or anything that may affect production compilation.
 
-## 内容规范
+## Tech Stack
 
-文章以中文为主，风格可以口语化，但应保持清楚、直接、可复现。新增文章放在 `_posts/`，并至少包含这些 front matter：
+- Next.js 14.2, React 18, TypeScript.
+- Tailwind CSS with global styles in `src/app/globals.css`.
+- Vitest, jsdom, and `@testing-library/react`.
+- `unified`, `remark-parse`, and `remark-gfm` for Markdown parsing.
+- `html-to-image` for PNG export.
+- `lucide-react` for UI icons.
 
-```yaml
----
-title: "文章标题"
-description: "一句话说明文章内容，兼顾搜索摘要。"
-date: 2026-06-28 00:00:00 +0800
-categories:
-  - AI工具教程
-tags:
-  - ChatGPT
-  - Codex
-image:
-  path: "/assets/images/yyyy-mm-dd-slug/01.png"
-  thumbnail: "/assets/images/yyyy-mm-dd-slug/01.png"
-share: true
----
-```
+## Repository Map
 
-文章正文如需显示大纲，保留：
+- `src/app/page.tsx` - client-side root page and global state orchestration.
+- `src/app/layout.tsx` - app metadata and layout shell.
+- `src/app/globals.css` - application, preview, and rendered-page styling.
+- `src/app/api/image/route.ts` - image proxy/loader for remote and local filesystem image sources.
+- `src/components/EditorPanel.tsx` - Markdown editor, formatting toolbar, `.md` upload, image upload, undo support.
+- `src/components/PreviewPanel.tsx` - scaled previews, selected page state, export controls, hidden export DOM nodes, auto-height measurement.
+- `src/components/RenderedPage.tsx` - theme-aware rendering of parsed Markdown blocks into the final page surface.
+- `src/components/SettingsPanel.tsx` - image dimensions, fixed-size mode, auto-pagination, typography, and theme controls.
+- `src/lib/markdown.ts` - Markdown parsing and conversion to the custom block/inline AST.
+- `src/lib/pagination.ts` - page packing and oversized text/code splitting heuristics.
+- `src/lib/dimensions.ts` - dimension clamping and page size resolution.
+- `src/lib/themes.ts` - static theme definitions and syntax-style resolution.
+- `src/lib/typography.ts` - font options, font-size presets, and typography resolution.
+- `src/lib/images.ts` - image source resolution for rendered pages.
+- `src/lib/localImages.ts` - IndexedDB-backed local image storage and cleanup helpers.
+- `src/lib/export.ts` - PNG download generation.
+- `src/lib/sample.ts` - default sample content and dimensions.
+- `src/lib/types.ts` - shared domain types.
+- `src/test/setup.ts` - Vitest DOM matcher setup.
+- `docs/superpowers/` - planning/spec artifacts; do not edit unless the request is about project planning docs.
 
-```liquid
-{% include toc %}
-```
+Tests are colocated beside source files with `.test.ts` or `.test.tsx` suffixes.
 
-标题层级从 `##` 开始组织正文。`_layouts/post.html` 会自动读取 `h2`、`h3` 生成文章大纲；没有显式 toc 时，也会用页面标题自动生成大纲链接。
+## Data Flow
 
-## 图片规范
+The root page owns the app state:
 
-每篇文章的图片建议放在独立目录：
+1. Raw Markdown is parsed by `parseMarkdown()` into `MarkdownBlock[][]`.
+2. Manual segments are split by a line containing three or more dashes.
+3. Segments, dimensions, theme, fixed-size mode, and auto-pagination settings feed `paginateSegments()`.
+4. `PreviewPanel` renders each page twice: scaled for preview and full-size in hidden export nodes.
+5. Export actions call `downloadNodeAsPng()` on the hidden full-size node.
 
-```text
-assets/images/yyyy-mm-dd-slug/
-```
+Persistent browser state is stored under `localStorage` key `xhs-md-image-tool`. Dimension values are clamped to the supported range in `clampDimensions()`.
 
-Markdown 中引用图片时使用 `relative_url`，以兼容 `baseurl: /kklt-ai-blog`：
+## Local Images
+
+Uploaded images are saved in IndexedDB by `src/lib/localImages.ts`. The editor inserts short references like:
 
 ```md
-![]({{ '/assets/images/yyyy-mm-dd-slug/01.png' | relative_url }})
+![cover](local-image://cover-...)
 ```
 
-不要在正文里使用站点根路径以外的裸相对路径引用图片。新增封面图时同步更新 front matter 的 `image.path` 和 `image.thumbnail`。
+The actual `data:image/...` payload stays in the browser. Preview and export resolve those references through `loadLocalImageSources()` and `resolveImageSrc()`.
 
-## 样式与交互约定
+Do not replace this with inline base64 Markdown unless explicitly requested; that would make drafts much larger and bypass the current cleanup flow.
 
-当前视觉风格是黑色页面背景、白色内容区域、强对比文字、Georgia/中文宋体风格标题，以及紧凑的文章阅读布局。修改样式时优先延续 `assets/css/home.css` 的现有选择器组织方式。
+## Implementation Notes
 
-- 首页、文章页、文章归档、分类、标签页分别依赖 `body.layout--home`、`body.layout--post`、`body.layout--posts`、`body.layout--categories`、`body.layout--tags`。
-- 不要随意恢复 So Simple 默认 masthead；当前项目有自定义导航外观。
-- 保持移动端 `@media (max-width: 760px)` 的阅读顺序：作者信息、文章大纲、正文。
-- 修改分类/标签交互时，注意 `assets/js/taxonomy-filter.js` 依赖 `.taxonomy-index`、`.taxonomy-section`、`layout--categories` 和 `layout--tags`。
+- Keep `src/app/page.tsx` as the orchestration layer. Put parsing, pagination, dimensions, images, export, themes, and typography logic in `src/lib`.
+- Keep UI panels focused: editor behavior in `EditorPanel`, preview/export behavior in `PreviewPanel`, final page rendering in `RenderedPage`, settings in `SettingsPanel`.
+- When adding Markdown syntax, update parsing, rendering, pagination estimates, and tests together.
+- When changing pagination or dimensions, cover both fixed-size and auto-height behavior where relevant.
+- When changing image handling, account for remote URLs, local filesystem paths, standalone image lines, Markdown image syntax, and `local-image://` sources.
+- Use `lucide-react` icons for controls when an icon is needed.
+- Avoid speculative abstractions and global rewrites.
 
-## 配置与导航
+## Testing Expectations
 
-新增页面后，如需出现在顶部导航，修改 `_data/navigation.yml`。修改全站标题、描述、作者、分页、链接结构时，优先改 `_config.yml`。
+- Parser changes: add or update tests in `src/lib/markdown.test.ts`.
+- Pagination changes: add or update tests in `src/lib/pagination.test.ts`.
+- Theme or typography changes: update relevant `src/lib/*test.ts` files.
+- Local image changes: update `src/lib/localImages.test.ts` and component tests if editor or rendering behavior changes.
+- Component behavior changes: update the matching `src/components/*.test.tsx` file.
+- API route changes: update `src/app/api/image/route.test.ts`.
 
-站点使用 `permalink: /:title/`，改文章 slug 会改变线上 URL；除非明确需要，否则不要重命名已发布文章文件。
-
-## 部署与验证
-
-提交前至少执行：
-
-```sh
-bundle exec jekyll build
-```
-
-涉及布局、CSS、JS、导航或图片时，建议再本地预览：
-
-```sh
-bundle exec jekyll serve --livereload
-```
-
-重点检查：
-
-- 首页是否显示头像、站点标题、tagline 和最新文章。
-- 文章页作者卡片、文章大纲、正文图片是否正常。
-- `/posts/`、`/categories/`、`/tags/` 是否可打开。
-- 图片路径在 `baseurl` 下是否正确。
-- 移动端布局是否没有文字或图片溢出。
-
-## 协作注意事项
-
-- 不要编辑 `_site/` 中的生成文件。
-- 不要提交 `.bundle/`、`vendor/`、`.jekyll-cache/`、`.sass-cache/`。
-- 不要无关重排 `Gemfile.lock` 或大范围改动主题覆盖样式。
-- 修改已有文章时保留原有语气，除非任务明确要求重写。
-- 涉及第三方服务价格、政策、可用性或日期的信息，发布前应重新核验，因为这些内容变化很快。
+Before reporting completion, run the most relevant verification command and state what passed. If you cannot run a command, explain why.
