@@ -47,6 +47,7 @@ export default function Home() {
   const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [undoStack, setUndoStack] = useState<string[]>([]);
   const pageRefs = useRef<Array<HTMLDivElement | null>>([]);
 
   useEffect(() => {
@@ -139,6 +140,26 @@ export default function Home() {
     pageRefs.current[index] = node;
   }, []);
 
+  const updateMarkdown = useCallback(
+    (value: string) => {
+      if (value === markdown) return;
+      setUndoStack((stack) => [...stack.slice(-99), markdown]);
+      setMarkdown(value);
+      setMessage(null);
+    },
+    [markdown],
+  );
+
+  const undoMarkdown = useCallback(() => {
+    setUndoStack((stack) => {
+      const previous = stack.at(-1);
+      if (previous === undefined) return stack;
+      setMarkdown(previous);
+      setMessage("已撤销");
+      return stack.slice(0, -1);
+    });
+  }, []);
+
   const exportPage = useCallback(
     async (index: number) => {
       const node = pageRefs.current[index];
@@ -199,7 +220,7 @@ export default function Home() {
         setMessage("草稿已保存在本机浏览器");
       }
 
-      if (event.key === "Enter") {
+      if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         void exportCurrent();
       }
@@ -224,15 +245,14 @@ export default function Home() {
       <EditorPanel
         markdown={markdown}
         error={message}
-        onMarkdownChange={(value) => {
-          setMarkdown(value);
-          setMessage(null);
-        }}
+        onMarkdownChange={updateMarkdown}
         onUploadError={setMessage}
         onReset={() => {
-          setMarkdown(SAMPLE_MARKDOWN);
+          updateMarkdown(SAMPLE_MARKDOWN);
           setMessage("示例内容已恢复");
         }}
+        onUndo={undoMarkdown}
+        canUndo={undoStack.length > 0}
       />
 
       <PreviewPanel

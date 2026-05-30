@@ -14,7 +14,7 @@ type TextLikeNode = {
 
 export function splitManualSegments(markdown: string): string[] {
   return markdown
-    .split(/\n\s*-------\s*\n/g)
+    .split(/\n\s*-{3,}\s*\n/g)
     .map((segment) => segment.trim())
     .filter(Boolean);
 }
@@ -101,6 +101,12 @@ function isImageOnlyParagraph(paragraph: Paragraph): Image | null {
   return child.type === "image" ? (child as Image) : null;
 }
 
+function isStandaloneImageSource(text: string) {
+  return /^(?:https?:\/\/|file:\/\/|\.{1,2}\/|\/|[A-Za-z]:\\|[^\s()[\]<>]+\/)?[^\s()[\]<>]+\.(?:avif|gif|jpe?g|png|svg|webp)(?:[?#][^\s()[\]<>]*)?$/i.test(
+    text,
+  );
+}
+
 export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
   const tree = unified().use(remarkParse).use(remarkGfm).parse(markdown) as Root;
   const blocks: MarkdownBlock[] = [];
@@ -125,9 +131,14 @@ export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
         blocks.push({ type: "image", alt: image.alt ?? "", url: image.url });
       } else {
         const inline = inlineFromChildren(paragraph.children as TextLikeNode[]);
+        const text = inlineText(inline).trim();
+        if (isStandaloneImageSource(text)) {
+          blocks.push({ type: "image", alt: "", url: text });
+          continue;
+        }
         blocks.push({
           type: "paragraph",
-          text: inlineText(inline).trim(),
+          text,
           inline,
         });
       }

@@ -15,6 +15,8 @@ import {
   Strikethrough,
   FileUp,
   RotateCcw,
+  ScissorsLineDashed,
+  Undo2,
 } from "lucide-react";
 
 type EditorPanelProps = {
@@ -23,6 +25,8 @@ type EditorPanelProps = {
   onMarkdownChange: (value: string) => void;
   onUploadError: (message: string | null) => void;
   onReset: () => void;
+  onUndo: () => void;
+  canUndo: boolean;
 };
 
 export function EditorPanel({
@@ -31,14 +35,27 @@ export function EditorPanel({
   onMarkdownChange,
   onUploadError,
   onReset,
+  onUndo,
+  canUndo,
 }: EditorPanelProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const lastSelectionRef = useRef({ start: markdown.length, end: markdown.length });
+
+  const rememberSelection = () => {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    lastSelectionRef.current = {
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    };
+  };
 
   const replaceSelection = (
     nextValue: string,
     selectionStart: number,
     selectionEnd: number,
   ) => {
+    lastSelectionRef.current = { start: selectionStart, end: selectionEnd };
     onMarkdownChange(nextValue);
     requestAnimationFrame(() => {
       const textarea = textareaRef.current;
@@ -78,8 +95,11 @@ export function EditorPanel({
 
   const insertSnippet = (snippet: string, selectStartOffset = 0, selectLength = 0) => {
     const textarea = textareaRef.current;
-    const start = textarea?.selectionStart ?? markdown.length;
-    const end = textarea?.selectionEnd ?? markdown.length;
+    const selection = textarea
+      ? { start: textarea.selectionStart, end: textarea.selectionEnd }
+      : lastSelectionRef.current;
+    const start = selection.start;
+    const end = selection.end;
     const nextValue = `${markdown.slice(0, start)}${snippet}${markdown.slice(end)}`;
     replaceSelection(
       nextValue,
@@ -88,12 +108,41 @@ export function EditorPanel({
     );
   };
 
+  const insertImageDivider = () => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? markdown.length;
+    const end = textarea?.selectionEnd ?? markdown.length;
+    const before = markdown.slice(0, start);
+    const after = markdown.slice(end);
+    const prefix = before.endsWith("\n\n") || before.length === 0 ? "" : before.endsWith("\n") ? "\n" : "\n\n";
+    const suffix = after.startsWith("\n\n") ? "" : after.startsWith("\n") ? "\n" : "\n\n";
+    const snippet = `${prefix}---${suffix}`;
+    const nextValue = `${before}${snippet}${after}`;
+    const cursor = before.length + snippet.length;
+    replaceSelection(nextValue, cursor, cursor);
+  };
+
+  const insertImageDataUrl = (file: File, dataUrl: string) => {
+    const alt = file.name.replace(/\.[^.]+$/, "") || "本地图片";
+    const { start, end } = lastSelectionRef.current;
+    const snippet = `![${alt}](${dataUrl})`;
+    const nextValue = `${markdown.slice(0, start)}${snippet}${markdown.slice(end)}`;
+    const cursor = start + snippet.length;
+    replaceSelection(nextValue, cursor, cursor);
+  };
+
   const handleShortcut = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const command = event.metaKey || event.ctrlKey;
     if (!command) return;
 
     const key = event.key.toLowerCase();
-    if (key === "b") {
+    if (key === "z" && !event.shiftKey) {
+      event.preventDefault();
+      onUndo();
+    } else if (event.shiftKey && event.key === "Enter") {
+      event.preventDefault();
+      insertImageDivider();
+    } else if (key === "b") {
       event.preventDefault();
       wrapSelection("**", "**", "粗体文字");
     } else if (key === "i") {
@@ -139,6 +188,34 @@ export function EditorPanel({
       onUploadError("文件读取失败，请重试");
     };
     reader.readAsText(file);
+    event.target.value = "";
+  };
+
+  const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      onUploadError("请上传图片文件");
+      event.target.value = "";
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = String(reader.result ?? "");
+      if (!result.startsWith("data:image/")) {
+        onUploadError("图片读取失败，请重试");
+        return;
+      }
+
+      onUploadError(null);
+      insertImageDataUrl(file, result);
+    };
+    reader.onerror = () => {
+      onUploadError("图片读取失败，请重试");
+    };
+    reader.readAsDataURL(file);
     event.target.value = "";
   };
 
@@ -205,9 +282,15 @@ export function EditorPanel({
     },
     {
       label: "图片",
-      title: "图片",
+      title: "图片（上传本地图片）",
       icon: <Image aria-hidden="true" size={17} />,
-      action: () => insertSnippet("![图片描述](https://example.com/image.png)", 2, 4),
+      upload: true,
+    },
+    {
+      label: "切分图片",
+      title: "切分图片 (Cmd/Ctrl+Shift+Enter)",
+      icon: <ScissorsLineDashed aria-hidden="true" size={17} />,
+      action: insertImageDivider,
     },
   ];
 
@@ -219,6 +302,16 @@ export function EditorPanel({
           <h1>Markdown</h1>
         </div>
         <div className="toolbar">
+          <button
+            className="icon-button icon-button--compact"
+            type="button"
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="撤销 (Cmd/Ctrl+Z)"
+          >
+            <Undo2 aria-hidden="true" size={18} />
+            <span className="sr-only">撤销</span>
+          </button>
           <label className="icon-button" title="上传 Markdown 文件">
             <FileUp aria-hidden="true" size={18} />
             <span className="sr-only">上传 Markdown 文件</span>
@@ -230,9 +323,14 @@ export function EditorPanel({
               onChange={handleFileChange}
             />
           </label>
-          <button className="icon-button" type="button" onClick={onReset} title="恢复示例">
+          <button
+            className="icon-button icon-button--compact"
+            type="button"
+            onClick={onReset}
+            title="恢复示例"
+          >
             <RotateCcw aria-hidden="true" size={18} />
-            <span>恢复示例</span>
+            <span className="sr-only">恢复示例</span>
           </button>
         </div>
       </div>
@@ -240,18 +338,36 @@ export function EditorPanel({
       {error ? <p className="inline-error">{error}</p> : null}
 
       <div className="markdown-format-toolbar" aria-label="Markdown 格式工具栏">
-        {formatButtons.map((button) => (
-          <button
-            key={button.label}
-            className="format-button"
-            type="button"
-            onClick={button.action}
-            title={button.title}
-            aria-label={button.label}
-          >
-            {button.icon}
-          </button>
-        ))}
+        {formatButtons.map((button) =>
+          "upload" in button ? (
+            <label
+              key={button.label}
+              className="format-button"
+              title={button.title}
+              aria-label={button.label}
+            >
+              {button.icon}
+              <input
+                aria-label="上传本地图片"
+                className="sr-only"
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileChange}
+              />
+            </label>
+          ) : (
+            <button
+              key={button.label}
+              className="format-button"
+              type="button"
+              onClick={button.action}
+              title={button.title}
+              aria-label={button.label}
+            >
+              {button.icon}
+            </button>
+          ),
+        )}
       </div>
 
       <label className="sr-only" htmlFor="markdown-editor">
@@ -264,8 +380,14 @@ export function EditorPanel({
         className="markdown-input"
         value={markdown}
         spellCheck={false}
-        onChange={(event) => onMarkdownChange(event.target.value)}
+        onChange={(event) => {
+          rememberSelection();
+          onMarkdownChange(event.target.value);
+        }}
         onKeyDown={handleShortcut}
+        onClick={rememberSelection}
+        onKeyUp={rememberSelection}
+        onSelect={rememberSelection}
       />
 
     </section>

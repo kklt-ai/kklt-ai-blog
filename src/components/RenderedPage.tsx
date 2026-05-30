@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { resolveThemeSyntax } from "@/lib/themes";
+import { resolveImageSrc } from "@/lib/images";
 import type {
   Dimensions,
   GeneratedPage,
@@ -79,7 +80,7 @@ function renderBlock(block: MarkdownBlock, index: number) {
   return (
     <figure key={index}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img alt={block.alt} src={block.url} />
+      <img alt={block.alt} src={resolveImageSrc(block.url)} />
       <figcaption>{block.alt || "Markdown 图片"}</figcaption>
     </figure>
   );

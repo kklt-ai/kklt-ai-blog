@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { parseMarkdownSegment, splitManualSegments } from "./markdown";
 
 describe("splitManualSegments", () => {
-  it("splits only on standalone seven-dash dividers", () => {
+  it("splits only on standalone Markdown dividers", () => {
+    expect(splitManualSegments("A\n\n---\n\nB")).toEqual(["A", "B"]);
     expect(splitManualSegments("A\n\n-------\n\nB")).toEqual(["A", "B"]);
     expect(splitManualSegments("A ------- B")).toEqual(["A ------- B"]);
   });
@@ -67,5 +68,23 @@ const x = 1;
         { type: "inlineCode", code: "code" },
       ],
     });
+  });
+
+  it("treats standalone image URLs and paths as image blocks", () => {
+    expect(
+      parseMarkdownSegment(
+        "https://cdn.nlark.com/yuque/0/2026/png/12544572/1780106214842-787a9e0c-4529-46f7-9c41-804e0406e210.png",
+      ),
+    ).toEqual([
+      {
+        type: "image",
+        alt: "",
+        url: "https://cdn.nlark.com/yuque/0/2026/png/12544572/1780106214842-787a9e0c-4529-46f7-9c41-804e0406e210.png",
+      },
+    ]);
+
+    expect(parseMarkdownSegment("./images/photo.webp")).toEqual([
+      { type: "image", alt: "", url: "./images/photo.webp" },
+    ]);
   });
 });

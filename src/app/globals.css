@@ -151,6 +151,14 @@ p {
   box-shadow: 4px 4px 0 var(--ink);
 }
 
+.icon-button--compact {
+  width: 34px;
+  min-height: 32px;
+  padding: 5px;
+  border-width: 2px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
 .markdown-format-toolbar {
   display: flex;
   flex-wrap: wrap;

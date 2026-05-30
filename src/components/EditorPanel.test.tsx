@@ -14,6 +14,8 @@ describe("EditorPanel", () => {
         onMarkdownChange={onMarkdownChange}
         onUploadError={vi.fn()}
         onReset={onReset}
+        onUndo={vi.fn()}
+        canUndo={false}
       />,
     );
 
@@ -36,6 +38,8 @@ describe("EditorPanel", () => {
         onMarkdownChange={onMarkdownChange}
         onUploadError={vi.fn()}
         onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
       />,
     );
 
@@ -58,6 +62,8 @@ describe("EditorPanel", () => {
         onMarkdownChange={onMarkdownChange}
         onUploadError={vi.fn()}
         onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
       />,
     );
 
@@ -68,6 +74,117 @@ describe("EditorPanel", () => {
     fireEvent.keyDown(editor, { key: "h", metaKey: true, shiftKey: true });
 
     expect(onMarkdownChange).toHaveBeenCalledWith("==mark== me");
+  });
+
+  it("inserts Markdown dividers for image splitting from the keyboard", () => {
+    const onMarkdownChange = vi.fn();
+
+    render(
+      <EditorPanel
+        markdown="A"
+        error={null}
+        onMarkdownChange={onMarkdownChange}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
+      />,
+    );
+
+    const editor = screen.getByLabelText("Markdown 内容") as HTMLTextAreaElement;
+    editor.focus();
+    editor.setSelectionRange(1, 1);
+
+    fireEvent.keyDown(editor, { key: "Enter", metaKey: true, shiftKey: true });
+
+    expect(onMarkdownChange).toHaveBeenCalledWith("A\n\n---\n\n");
+  });
+
+  it("calls undo from the toolbar and keyboard", () => {
+    const onUndo = vi.fn();
+
+    render(
+      <EditorPanel
+        markdown="A"
+        error={null}
+        onMarkdownChange={vi.fn()}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={onUndo}
+        canUndo
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "撤销" }));
+    fireEvent.keyDown(screen.getByLabelText("Markdown 内容"), { key: "z", metaKey: true });
+
+    expect(onUndo).toHaveBeenCalledTimes(2);
+  });
+
+  it("uses compact icon buttons for undo and reset actions", () => {
+    render(
+      <EditorPanel
+        markdown="A"
+        error={null}
+        onMarkdownChange={vi.fn()}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "撤销" })).toHaveClass(
+      "icon-button--compact",
+    );
+    expect(screen.getByRole("button", { name: "恢复示例" })).toHaveClass(
+      "icon-button--compact",
+    );
+  });
+
+  it("keeps local image upload in the Markdown format toolbar only", () => {
+    render(
+      <EditorPanel
+        markdown="A"
+        error={null}
+        onMarkdownChange={vi.fn()}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
+      />,
+    );
+
+    const formatToolbar = screen.getByLabelText("Markdown 格式工具栏");
+    expect(screen.queryByTitle("上传本地图片")).toBeNull();
+    expect(formatToolbar).toContainElement(screen.getByLabelText("上传本地图片"));
+  });
+
+  it("uploads local images as Markdown image data URLs", async () => {
+    const onMarkdownChange = vi.fn();
+
+    render(
+      <EditorPanel
+        markdown="Intro"
+        error={null}
+        onMarkdownChange={onMarkdownChange}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
+      />,
+    );
+
+    const file = new File(["image-bytes"], "cover photo.png", { type: "image/png" });
+    fireEvent.change(screen.getByLabelText("上传本地图片"), {
+      target: { files: [file] },
+    });
+
+    await vi.waitFor(() => {
+      expect(onMarkdownChange).toHaveBeenCalledWith(
+        expect.stringMatching(/^Intro!\[cover photo\]\(data:image\/png;base64,/),
+      );
+    });
   });
 
   it("rejects non Markdown uploads without changing content", () => {
@@ -81,6 +198,8 @@ describe("EditorPanel", () => {
         onMarkdownChange={onMarkdownChange}
         onUploadError={onUploadError}
         onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
       />,
     );
 
