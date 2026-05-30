@@ -1,4 +1,13 @@
 import type { CSSProperties } from "react";
+import {
+  ChevronLeft,
+  CircleEllipsis,
+  ListChecks,
+  Paperclip,
+  PenLine,
+  PenTool,
+  Share,
+} from "lucide-react";
 import { resolveThemeSyntax } from "@/lib/themes";
 import { resolveImageSrc } from "@/lib/images";
 import type {
@@ -86,6 +95,29 @@ function renderBlock(block: MarkdownBlock, index: number) {
   );
 }
 
+function IPhoneNotesChrome() {
+  return (
+    <>
+      <div className="iphone-notes-topbar" aria-hidden="true">
+        <span className="iphone-notes-back">
+          <ChevronLeft />
+          备忘录
+        </span>
+        <span className="iphone-notes-actions">
+          <Share />
+          <CircleEllipsis />
+        </span>
+      </div>
+      <div className="iphone-notes-bottombar" aria-hidden="true">
+        <ListChecks />
+        <Paperclip />
+        <PenTool />
+        <PenLine />
+      </div>
+    </>
+  );
+}
+
 export function RenderedPage({
   page,
   theme,
@@ -128,8 +160,11 @@ export function RenderedPage({
     transformOrigin: "top left",
   } as CSSProperties;
 
+  const isIPhoneNotes = theme.id === "iphone-notes";
+
   return (
-    <article className={`xhs-page motif-${theme.motif}`} style={style}>
+    <article className={`xhs-page theme-${theme.id} motif-${theme.motif}`} style={style}>
+      {isIPhoneNotes ? <IPhoneNotesChrome /> : null}
       <div className="xhs-page-inner">
         {page.blocks.length ? (
           page.blocks.map(renderBlock)

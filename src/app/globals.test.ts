@@ -22,4 +22,10 @@ describe("global layout styles", () => {
     expect(settingsRule).toContain("overflow: hidden");
     expect(settingsRule).not.toMatch(/(^|\n)\s*height:/);
   });
+
+  it("restores native iPhone Notes list markers", () => {
+    expect(css).toContain(".theme-iphone-notes ul {\n  list-style-type: disc;");
+    expect(css).toContain(".theme-iphone-notes ol {\n  list-style-type: decimal;");
+    expect(getRule(".theme-iphone-notes li::marker")).toContain("font-weight: 400");
+  });
 });
