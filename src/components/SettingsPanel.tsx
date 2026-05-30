@@ -14,11 +14,13 @@ type SettingsPanelProps = {
   selectedThemeId: string;
   activeTheme: ThemeDefinition;
   dimensions: Dimensions;
+  fixedSizeEnabled: boolean;
   autoPaginate: boolean;
   isExporting: boolean;
   syntaxOverrides: ThemeSyntaxOverrides;
   onThemeChange: (themeId: string) => void;
   onDimensionsChange: (dimensions: Dimensions) => void;
+  onFixedSizeEnabledChange: (enabled: boolean) => void;
   onAutoPaginateChange: (enabled: boolean) => void;
   onSyntaxOverrideChange: <Key extends keyof ThemeSyntaxStyles>(
     key: Key,
@@ -46,11 +48,13 @@ export function SettingsPanel({
   selectedThemeId,
   activeTheme,
   dimensions,
+  fixedSizeEnabled,
   autoPaginate,
   isExporting,
   syntaxOverrides,
   onThemeChange,
   onDimensionsChange,
+  onFixedSizeEnabledChange,
   onAutoPaginateChange,
   onSyntaxOverrideChange,
   onResetSyntaxOverrides,
@@ -73,6 +77,67 @@ export function SettingsPanel({
         </div>
         <PanelTopOpen aria-hidden="true" size={22} />
       </div>
+
+      <section className="setting-group">
+        <h3>图片尺寸</h3>
+        <p className="setting-note">默认生成一整张长图，高度会随内容自动增长。</p>
+        <label className="switch-row">
+          <input
+            aria-label="指定图片宽高"
+            type="checkbox"
+            checked={fixedSizeEnabled}
+            onChange={(event) => onFixedSizeEnabledChange(event.target.checked)}
+          />
+          <span>指定图片宽高</span>
+        </label>
+        {fixedSizeEnabled ? (
+          <div className="fixed-size-options">
+            <div className="dimension-row">
+              <label>
+                图片宽度
+                <input
+                  aria-label="图片宽度"
+                  inputMode="numeric"
+                  min={600}
+                  max={2400}
+                  type="number"
+                  value={dimensions.width}
+                  onChange={(event) => updateDimension("width", event.target.value)}
+                />
+              </label>
+              <label>
+                图片高度
+                <input
+                  aria-label="图片高度"
+                  inputMode="numeric"
+                  min={600}
+                  max={2400}
+                  type="number"
+                  value={dimensions.height}
+                  onChange={(event) => updateDimension("height", event.target.value)}
+                />
+              </label>
+            </div>
+            <button
+              className="preset-button"
+              type="button"
+              onClick={() => onDimensionsChange({ width: 1080, height: 1440 })}
+            >
+              小红书默认 1080 x 1440
+            </button>
+            <label className="switch-row">
+              <input
+                aria-label="内容超出时自动切分"
+                type="checkbox"
+                checked={autoPaginate}
+                onChange={(event) => onAutoPaginateChange(event.target.checked)}
+              />
+              <span>内容超出时自动切分</span>
+            </label>
+          </div>
+        ) : null}
+        <p className="setting-note">单独一行输入 ------- 可以强制切成下一张图。</p>
+      </section>
 
       <section className="setting-group">
         <h3>主题风格</h3>
@@ -145,56 +210,6 @@ export function SettingsPanel({
             <b>{syntax.imageRadius}px</b>
           </label>
         </div>
-      </section>
-
-      <section className="setting-group">
-        <h3>图片尺寸</h3>
-        <div className="dimension-row">
-          <label>
-            图片宽度
-            <input
-              aria-label="图片宽度"
-              inputMode="numeric"
-              min={600}
-              max={2400}
-              type="number"
-              value={dimensions.width}
-              onChange={(event) => updateDimension("width", event.target.value)}
-            />
-          </label>
-          <label>
-            图片高度
-            <input
-              aria-label="图片高度"
-              inputMode="numeric"
-              min={600}
-              max={2400}
-              type="number"
-              value={dimensions.height}
-              onChange={(event) => updateDimension("height", event.target.value)}
-            />
-          </label>
-        </div>
-        <button
-          className="preset-button"
-          type="button"
-          onClick={() => onDimensionsChange({ width: 1080, height: 1440 })}
-        >
-          小红书默认 1080 x 1440
-        </button>
-      </section>
-
-      <section className="setting-group">
-        <h3>分页</h3>
-        <label className="switch-row">
-          <input
-            type="checkbox"
-            checked={autoPaginate}
-            onChange={(event) => onAutoPaginateChange(event.target.checked)}
-          />
-          <span>自动分割长内容</span>
-        </label>
-        <p className="setting-note">单独一行输入 ------- 可以强制切成下一张图。</p>
       </section>
 
       <section className="export-actions" aria-label="导出">

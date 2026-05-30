@@ -365,6 +365,11 @@ button:focus-visible {
   gap: 10px;
 }
 
+.fixed-size-options {
+  display: grid;
+  gap: 10px;
+}
+
 .dimension-row label {
   display: grid;
   gap: 5px;

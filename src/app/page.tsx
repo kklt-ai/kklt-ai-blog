@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorPanel } from "@/components/EditorPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
-import { clampDimensions } from "@/lib/dimensions";
+import { clampDimensions, resolvePageDimensions } from "@/lib/dimensions";
 import { downloadNodeAsPng } from "@/lib/export";
 import { parseMarkdown } from "@/lib/markdown";
 import { paginateSegments } from "@/lib/pagination";
@@ -18,6 +18,7 @@ type StoredState = {
   markdown?: string;
   themeId?: string;
   dimensions?: Dimensions;
+  fixedSizeEnabled?: boolean;
   autoPaginate?: boolean;
   syntaxOverridesByThemeId?: Record<string, ThemeSyntaxOverrides>;
 };
@@ -26,6 +27,7 @@ export default function Home() {
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
   const [themeId, setThemeId] = useState("punk");
   const [dimensions, setDimensions] = useState(DEFAULT_DIMENSIONS);
+  const [fixedSizeEnabled, setFixedSizeEnabled] = useState(false);
   const [autoPaginate, setAutoPaginate] = useState(true);
   const [syntaxOverridesByThemeId, setSyntaxOverridesByThemeId] = useState<
     Record<string, ThemeSyntaxOverrides>
@@ -44,6 +46,9 @@ export default function Home() {
       if (typeof parsed.markdown === "string") setMarkdown(parsed.markdown);
       if (typeof parsed.themeId === "string") setThemeId(parsed.themeId);
       if (parsed.dimensions) setDimensions(clampDimensions(parsed.dimensions));
+      if (typeof parsed.fixedSizeEnabled === "boolean") {
+        setFixedSizeEnabled(parsed.fixedSizeEnabled);
+      }
       if (typeof parsed.autoPaginate === "boolean") setAutoPaginate(parsed.autoPaginate);
       if (parsed.syntaxOverridesByThemeId) {
         setSyntaxOverridesByThemeId(parsed.syntaxOverridesByThemeId);
@@ -60,19 +65,34 @@ export default function Home() {
         markdown,
         themeId,
         dimensions,
+        fixedSizeEnabled,
         autoPaginate,
         syntaxOverridesByThemeId,
       }),
     );
-  }, [autoPaginate, dimensions, markdown, syntaxOverridesByThemeId, themeId]);
+  }, [
+    autoPaginate,
+    dimensions,
+    fixedSizeEnabled,
+    markdown,
+    syntaxOverridesByThemeId,
+    themeId,
+  ]);
 
   const theme = useMemo(() => getThemeById(themeId), [themeId]);
   const syntaxOverrides = syntaxOverridesByThemeId[themeId] ?? {};
   const markdownForPreview = markdown.trim() ? markdown : SAMPLE_MARKDOWN;
   const segments = useMemo(() => parseMarkdown(markdownForPreview), [markdownForPreview]);
   const pages = useMemo(
-    () => paginateSegments(segments, dimensions, theme, autoPaginate),
-    [autoPaginate, dimensions, segments, theme],
+    () => paginateSegments(segments, dimensions, theme, fixedSizeEnabled && autoPaginate),
+    [autoPaginate, dimensions, fixedSizeEnabled, segments, theme],
+  );
+  const pageDimensions = useMemo(
+    () =>
+      pages.map((page) =>
+        resolvePageDimensions(page, dimensions, theme, fixedSizeEnabled),
+      ),
+    [dimensions, fixedSizeEnabled, pages, theme],
   );
 
   useEffect(() => {
@@ -133,6 +153,7 @@ export default function Home() {
             markdown,
             themeId,
             dimensions,
+            fixedSizeEnabled,
             autoPaginate,
             syntaxOverridesByThemeId,
           }),
@@ -152,6 +173,7 @@ export default function Home() {
     autoPaginate,
     dimensions,
     exportCurrent,
+    fixedSizeEnabled,
     markdown,
     syntaxOverridesByThemeId,
     themeId,
@@ -199,6 +221,8 @@ export default function Home() {
         theme={theme}
         syntaxOverrides={syntaxOverrides}
         dimensions={dimensions}
+        pageDimensions={pageDimensions}
+        autoHeightEnabled={!fixedSizeEnabled}
         onPageChange={setSelectedPageIndex}
         registerPageRef={registerPageRef}
       />
@@ -207,11 +231,13 @@ export default function Home() {
         selectedThemeId={themeId}
         activeTheme={theme}
         dimensions={dimensions}
+        fixedSizeEnabled={fixedSizeEnabled}
         autoPaginate={autoPaginate}
         isExporting={isExporting}
         syntaxOverrides={syntaxOverrides}
         onThemeChange={setThemeId}
         onDimensionsChange={(next) => setDimensions(clampDimensions(next))}
+        onFixedSizeEnabledChange={setFixedSizeEnabled}
         onAutoPaginateChange={setAutoPaginate}
         onSyntaxOverrideChange={updateSyntaxOverride}
         onResetSyntaxOverrides={resetSyntaxOverrides}
