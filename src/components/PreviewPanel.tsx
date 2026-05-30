@@ -1,24 +1,26 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { Download, Images } from "lucide-react";
 import { RenderedPage } from "./RenderedPage";
 import type {
   Dimensions,
   GeneratedPage,
   ThemeDefinition,
-  ThemeSyntaxOverrides,
 } from "@/lib/types";
 
 type PreviewPanelProps = {
   pages: GeneratedPage[];
   selectedPageIndex: number;
   theme: ThemeDefinition;
-  syntaxOverrides?: ThemeSyntaxOverrides;
   dimensions: Dimensions;
   pageDimensions: Dimensions[];
   autoHeightEnabled: boolean;
+  isExporting: boolean;
   onPageChange: (index: number) => void;
   registerPageRef: (index: number, node: HTMLDivElement | null) => void;
+  onExportCurrent: () => void;
+  onExportAll: () => void;
 };
 
 function measureRenderedPageHeight(node: HTMLDivElement, fallbackHeight: number) {
@@ -59,12 +61,14 @@ export function PreviewPanel({
   pages,
   selectedPageIndex,
   theme,
-  syntaxOverrides,
   dimensions,
   pageDimensions,
   autoHeightEnabled,
+  isExporting,
   onPageChange,
   registerPageRef,
+  onExportCurrent,
+  onExportAll,
 }: PreviewPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const exportPageRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -126,18 +130,17 @@ export function PreviewPanel({
 
   return (
     <section className="preview-panel" aria-label="图片预览">
-      <div className="preview-topbar">
-        <div>
-          <p className="eyebrow">Preview</p>
-          <h2>小红书图片预览</h2>
-        </div>
-        <div className="page-meta">
-          <span>
-            {selectedPageIndex + 1} / {pages.length}
-          </span>
-          <span>
-            {selectedDimensions.width} x {selectedDimensions.height}
-          </span>
+      <div className="preview-export-bar">
+        <span className="page-count">共 {pages.length} 张</span>
+        <div className="preview-export-actions" aria-label="导出">
+          <button type="button" disabled={isExporting} onClick={onExportCurrent}>
+            <Download aria-hidden="true" size={15} />
+            导出当前页
+          </button>
+          <button type="button" disabled={isExporting} onClick={onExportAll}>
+            <Images aria-hidden="true" size={15} />
+            导出全部 PNG
+          </button>
         </div>
       </div>
 
@@ -166,7 +169,6 @@ export function PreviewPanel({
               <RenderedPage
                 page={page}
                 theme={theme}
-                syntaxOverrides={syntaxOverrides}
                 dimensions={pageSize}
                 scale={scale}
               />
@@ -191,7 +193,6 @@ export function PreviewPanel({
               <RenderedPage
                 page={page}
                 theme={theme}
-                syntaxOverrides={syntaxOverrides}
                 dimensions={pageSize}
               />
             </div>

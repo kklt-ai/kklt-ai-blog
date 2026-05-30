@@ -1,68 +1,31 @@
 "use client";
 
-import { Download, Images, PanelTopOpen, RotateCcw } from "lucide-react";
+import { PanelTopOpen } from "lucide-react";
 import { clampDimensions } from "@/lib/dimensions";
-import { resolveThemeSyntax, themes } from "@/lib/themes";
-import type {
-  Dimensions,
-  ThemeDefinition,
-  ThemeSyntaxOverrides,
-  ThemeSyntaxStyles,
-} from "@/lib/types";
+import { themes } from "@/lib/themes";
+import type { Dimensions } from "@/lib/types";
 
 type SettingsPanelProps = {
   selectedThemeId: string;
-  activeTheme: ThemeDefinition;
   dimensions: Dimensions;
   fixedSizeEnabled: boolean;
   autoPaginate: boolean;
-  isExporting: boolean;
-  syntaxOverrides: ThemeSyntaxOverrides;
   onThemeChange: (themeId: string) => void;
   onDimensionsChange: (dimensions: Dimensions) => void;
   onFixedSizeEnabledChange: (enabled: boolean) => void;
   onAutoPaginateChange: (enabled: boolean) => void;
-  onSyntaxOverrideChange: <Key extends keyof ThemeSyntaxStyles>(
-    key: Key,
-    value: ThemeSyntaxStyles[Key],
-  ) => void;
-  onResetSyntaxOverrides: () => void;
-  onExportCurrent: () => void;
-  onExportAll: () => void;
 };
-
-type ColorSyntaxKey = {
-  [Key in keyof ThemeSyntaxStyles]: ThemeSyntaxStyles[Key] extends string ? Key : never;
-}[keyof ThemeSyntaxStyles];
-
-const colorControls: Array<{ key: ColorSyntaxKey; label: string }> = [
-  { key: "headingColor", label: "标题文字色" },
-  { key: "strongColor", label: "粗体强调色" },
-  { key: "highlightBackground", label: "高亮背景色" },
-  { key: "codeBackground", label: "代码背景色" },
-  { key: "listMarkerColor", label: "列表符号色" },
-  { key: "imageBorderColor", label: "图片边框色" },
-];
 
 export function SettingsPanel({
   selectedThemeId,
-  activeTheme,
   dimensions,
   fixedSizeEnabled,
   autoPaginate,
-  isExporting,
-  syntaxOverrides,
   onThemeChange,
   onDimensionsChange,
   onFixedSizeEnabledChange,
   onAutoPaginateChange,
-  onSyntaxOverrideChange,
-  onResetSyntaxOverrides,
-  onExportCurrent,
-  onExportAll,
 }: SettingsPanelProps) {
-  const syntax = resolveThemeSyntax(activeTheme, syntaxOverrides);
-
   const updateDimension = (key: keyof Dimensions, value: string) => {
     const next = clampDimensions({ ...dimensions, [key]: Number(value) });
     onDimensionsChange(next);
@@ -166,61 +129,6 @@ export function SettingsPanel({
             </button>
           ))}
         </div>
-      </section>
-
-      <section className="setting-group">
-        <div className="setting-title-row">
-          <h3>Markdown 样式</h3>
-          <button
-            className="mini-icon-button"
-            type="button"
-            onClick={onResetSyntaxOverrides}
-            title="恢复当前主题的 Markdown 样式"
-            aria-label="恢复 Markdown 样式"
-          >
-            <RotateCcw aria-hidden="true" size={14} />
-          </button>
-        </div>
-        <div className="syntax-control-grid">
-          {colorControls.map((control) => (
-            <label key={control.key} className="color-control">
-              <span>{control.label}</span>
-              <input
-                aria-label={control.label}
-                type="color"
-                value={String(syntax[control.key])}
-                onChange={(event) =>
-                  onSyntaxOverrideChange(control.key, event.target.value)
-                }
-              />
-            </label>
-          ))}
-          <label className="range-control">
-            <span>图片圆角</span>
-            <input
-              aria-label="图片圆角"
-              min={0}
-              max={48}
-              type="range"
-              value={syntax.imageRadius}
-              onChange={(event) =>
-                onSyntaxOverrideChange("imageRadius", Number(event.target.value))
-              }
-            />
-            <b>{syntax.imageRadius}px</b>
-          </label>
-        </div>
-      </section>
-
-      <section className="export-actions" aria-label="导出">
-        <button type="button" disabled={isExporting} onClick={onExportCurrent}>
-          <Download aria-hidden="true" size={18} />
-          导出当前页
-        </button>
-        <button type="button" disabled={isExporting} onClick={onExportAll}>
-          <Images aria-hidden="true" size={18} />
-          导出全部 PNG
-        </button>
       </section>
     </aside>
   );

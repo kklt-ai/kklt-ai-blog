@@ -6,13 +6,11 @@ import type {
   MarkdownBlock,
   MarkdownInline,
   ThemeDefinition,
-  ThemeSyntaxOverrides,
 } from "@/lib/types";
 
 type RenderedPageProps = {
   page: GeneratedPage;
   theme: ThemeDefinition;
-  syntaxOverrides?: ThemeSyntaxOverrides;
   dimensions: Dimensions;
   scale?: number;
 };
@@ -88,11 +86,10 @@ function renderBlock(block: MarkdownBlock, index: number) {
 export function RenderedPage({
   page,
   theme,
-  syntaxOverrides,
   dimensions,
   scale = 1,
 }: RenderedPageProps) {
-  const syntax = resolveThemeSyntax(theme, syntaxOverrides);
+  const syntax = resolveThemeSyntax(theme);
   const style = {
     "--page-bg": theme.colors.background,
     "--page-ink": theme.colors.foreground,
