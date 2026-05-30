@@ -73,6 +73,14 @@ button:disabled {
   min-height: calc(100vh - 36px);
 }
 
+.settings-panel {
+  align-self: start;
+  position: sticky;
+  top: 18px;
+  min-height: 0;
+  overflow: hidden;
+}
+
 .preview-panel {
   display: flex;
   flex-direction: column;
@@ -602,6 +610,11 @@ button:focus-visible {
 
   .workspace-panel,
   .preview-panel {
+    min-height: auto;
+  }
+
+  .settings-panel {
+    position: static;
     min-height: auto;
   }
 }
