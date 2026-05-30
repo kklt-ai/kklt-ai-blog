@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+import { defaultTypography } from "@/lib/typography";
 import { SettingsPanel } from "./SettingsPanel";
 
 describe("SettingsPanel", () => {
@@ -8,7 +9,7 @@ describe("SettingsPanel", () => {
     dimensions: { width: 1080, height: 1440 },
     fixedSizeEnabled: false,
     autoPaginate: true,
-    fontId: "system-sans",
+    fontId: "apple-system",
     fontSizePreset: "medium" as const,
     customFontSize: 44,
     onThemeChange: vi.fn(),
@@ -119,6 +120,18 @@ describe("SettingsPanel", () => {
 
     expect(onFontChange).toHaveBeenCalledWith("like-jianjian");
     expect(onFontSizePresetChange).toHaveBeenCalledWith("large");
+  });
+
+  it("uses Apple font as the default option and omits the sans-serif option", () => {
+    render(<SettingsPanel {...baseProps} fontId={defaultTypography.fontId} />);
+
+    const fontSelect = screen.getByLabelText("字体");
+
+    expect(fontSelect).toHaveDisplayValue("苹果字体");
+    expect(screen.getByRole("option", { name: "苹果字体" })).toBeInTheDocument();
+    expect(
+      screen.queryByRole("option", { name: "默认中文无衬线" }),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a slider when custom font size is selected", () => {

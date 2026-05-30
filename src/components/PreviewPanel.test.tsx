@@ -13,6 +13,10 @@ describe("PreviewPanel", () => {
   let scrollHeightSpy: ReturnType<typeof vi.spyOn>;
   let clientHeightSpy: ReturnType<typeof vi.spyOn>;
   let offsetHeightSpy: ReturnType<typeof vi.spyOn>;
+  let boundingRectSpy: ReturnType<typeof vi.spyOn>;
+  let measuredInnerScrollHeight = 1800;
+  let measuredPageScrollHeight = 900;
+  let measuredContentBottom = 0;
 
   beforeEach(() => {
     global.ResizeObserver = vi.fn().mockImplementation((callback: ResizeObserverCallback) => ({
@@ -45,11 +49,15 @@ describe("PreviewPanel", () => {
       return originalGetComputedStyle(element);
     });
 
+    measuredInnerScrollHeight = 1800;
+    measuredPageScrollHeight = 900;
+    measuredContentBottom = 0;
+
     scrollHeightSpy = vi
       .spyOn(HTMLElement.prototype, "scrollHeight", "get")
       .mockImplementation(function getScrollHeight() {
-        if (this.classList.contains("xhs-page-inner")) return 1800;
-        if (this.classList.contains("xhs-page")) return 900;
+        if (this.classList.contains("xhs-page-inner")) return measuredInnerScrollHeight;
+        if (this.classList.contains("xhs-page")) return measuredPageScrollHeight;
         return 0;
       });
     clientHeightSpy = vi
@@ -66,6 +74,31 @@ describe("PreviewPanel", () => {
         if (this.classList.contains("xhs-page")) return 708;
         return 0;
       });
+    boundingRectSpy = vi
+      .spyOn(HTMLElement.prototype, "getBoundingClientRect")
+      .mockImplementation(function getBoundingClientRect() {
+        const rect = {
+          x: 0,
+          y: 0,
+          width: 1080,
+          height: 0,
+          top: 0,
+          right: 1080,
+          bottom: 0,
+          left: 0,
+          toJSON: () => ({}),
+        } as DOMRect;
+
+        if (this.classList.contains("xhs-page-inner")) return rect;
+        if (measuredContentBottom > 0 && this.closest(".xhs-page-inner")) {
+          return {
+            ...rect,
+            height: measuredContentBottom,
+            bottom: measuredContentBottom,
+          } as DOMRect;
+        }
+        return rect;
+      });
   });
 
   afterEach(() => {
@@ -74,6 +107,7 @@ describe("PreviewPanel", () => {
     scrollHeightSpy.mockRestore();
     clientHeightSpy.mockRestore();
     offsetHeightSpy.mockRestore();
+    boundingRectSpy.mockRestore();
     vi.restoreAllMocks();
   });
 
@@ -146,6 +180,46 @@ describe("PreviewPanel", () => {
 
     await waitFor(() => {
       expect(screen.getByText("共 1 张")).toBeInTheDocument();
+    });
+  });
+
+  it("shrinks auto-height pages to short rendered content", async () => {
+    measuredInnerScrollHeight = 1440;
+    measuredPageScrollHeight = 1440;
+    measuredContentBottom = 520;
+
+    render(
+      <PreviewPanel
+        pages={[
+          {
+            id: "page-1",
+            manualGroupIndex: 0,
+            estimatedHeight: 700,
+            blocks: [
+              {
+                type: "image",
+                alt: "",
+                url: "https://example.com/image.png",
+              },
+            ],
+          },
+        ]}
+        selectedPageIndex={0}
+        theme={getThemeById("punk")}
+        typography={typography}
+        dimensions={{ width: 1080, height: 1440 }}
+        pageDimensions={[{ width: 1080, height: 1440 }]}
+        autoHeightEnabled
+        isExporting={false}
+        onPageChange={vi.fn()}
+        registerPageRef={vi.fn()}
+        onExportCurrent={vi.fn()}
+        onExportAll={vi.fn()}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByRole("article")[0]).toHaveStyle({ height: "620px" });
     });
   });
 

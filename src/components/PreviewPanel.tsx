@@ -10,6 +10,8 @@ import type {
 } from "@/lib/types";
 import type { ResolvedTypography } from "@/lib/typography";
 
+const MIN_AUTO_PAGE_HEIGHT = 320;
+
 type PreviewPanelProps = {
   pages: GeneratedPage[];
   selectedPageIndex: number;
@@ -34,11 +36,30 @@ function measureRenderedPageHeight(node: HTMLDivElement, fallbackHeight: number)
   const borderHeight =
     Number.parseFloat(style.borderTopWidth || "0") +
     Number.parseFloat(style.borderBottomWidth || "0");
-  const measuredHeight = Math.max(
-    fallbackHeight,
-    page.scrollHeight + borderHeight,
-    inner ? inner.scrollHeight + borderHeight : 0,
+  const innerChildren = inner ? Array.from(inner.children) : [];
+  const contentBottom = inner
+    ? innerChildren.reduce((bottom, child) => {
+        const innerTop = inner.getBoundingClientRect().top;
+        const childBottom = child.getBoundingClientRect().bottom - innerTop;
+        return Math.max(bottom, childBottom);
+      }, 0)
+    : 0;
+  const innerStyle = inner ? window.getComputedStyle(inner) : null;
+  const pagePadding = Number.parseFloat(
+    page.style.getPropertyValue("--page-padding") || "0",
   );
+  const paddingBottom =
+    Number.parseFloat(innerStyle?.paddingBottom || "") || pagePadding || 0;
+  const contentMeasuredHeight = contentBottom
+    ? contentBottom + paddingBottom + borderHeight
+    : 0;
+  const measuredHeight = contentMeasuredHeight
+    ? Math.max(MIN_AUTO_PAGE_HEIGHT, contentMeasuredHeight)
+    : Math.max(
+        fallbackHeight,
+        page.scrollHeight + borderHeight,
+        inner ? inner.scrollHeight + borderHeight : 0,
+      );
 
   return Math.ceil(measuredHeight);
 }
@@ -76,6 +97,7 @@ export function PreviewPanel({
   const scrollRef = useRef<HTMLDivElement>(null);
   const exportPageRefs = useRef<Array<HTMLDivElement | null>>([]);
   const [scale, setScale] = useState(0.4);
+  const [measurementVersion, setMeasurementVersion] = useState(0);
   const [measuredPageDimensions, setMeasuredPageDimensions] = useState<
     Record<string, Dimensions>
   >({});
@@ -101,7 +123,7 @@ export function PreviewPanel({
       if (!node) return;
 
       const measuredHeight = measureRenderedPageHeight(node, baseDimensions.height);
-      if (measuredHeight > baseDimensions.height) {
+      if (measuredHeight !== baseDimensions.height) {
         nextDimensions[page.id] = {
           ...baseDimensions,
           height: measuredHeight,
@@ -112,7 +134,29 @@ export function PreviewPanel({
     setMeasuredPageDimensions((current) =>
       areDimensionsEqual(current, nextDimensions) ? current : nextDimensions,
     );
-  }, [autoHeightEnabled, dimensions, pageDimensions, pages]);
+  }, [autoHeightEnabled, dimensions, measurementVersion, pageDimensions, pages]);
+
+  useEffect(() => {
+    if (!autoHeightEnabled) return;
+
+    const images = exportPageRefs.current.flatMap((node) =>
+      node ? Array.from(node.querySelectorAll("img")) : [],
+    );
+    const update = () => setMeasurementVersion((version) => version + 1);
+
+    images.forEach((image) => {
+      if (image.complete) return;
+      image.addEventListener("load", update);
+      image.addEventListener("error", update);
+    });
+
+    return () => {
+      images.forEach((image) => {
+        image.removeEventListener("load", update);
+        image.removeEventListener("error", update);
+      });
+    };
+  }, [autoHeightEnabled, pages]);
 
   useEffect(() => {
     const el = scrollRef.current;

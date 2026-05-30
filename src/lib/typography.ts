@@ -33,9 +33,10 @@ export const fontSizeOptions: Array<{
 
 export const fontOptions: FontOption[] = [
   {
-    id: "system-sans",
-    name: "默认中文无衬线",
-    family: '-apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif',
+    id: "apple-system",
+    name: "苹果字体",
+    family:
+      '-apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", sans-serif',
   },
   {
     id: "system-serif",
@@ -80,7 +81,7 @@ export const fontOptions: FontOption[] = [
 ];
 
 export const defaultTypography: TypographySettings = {
-  fontId: "system-sans",
+  fontId: "apple-system",
   fontSizePreset: "medium",
   customFontSize: 44,
 };
