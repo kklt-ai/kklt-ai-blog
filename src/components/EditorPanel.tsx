@@ -268,12 +268,6 @@ export function EditorPanel({
         onKeyDown={handleShortcut}
       />
 
-      <div className="shortcut-grid" aria-label="快捷键">
-        <span>Cmd/Ctrl + S 保存草稿</span>
-        <span>Cmd/Ctrl + Enter 导出当前页</span>
-        <span>Cmd/Ctrl + B/I 粗体/斜体</span>
-        <span>Cmd/Ctrl + Shift + H 高亮</span>
-      </div>
     </section>
   );
 }

@@ -53,16 +53,11 @@ export function SettingsPanel({
   return (
     <aside className="workspace-panel settings-panel" aria-label="设置面板">
       <div className="panel-heading">
-        <div>
-          <p className="eyebrow">Style</p>
-          <h2>设置</h2>
-        </div>
         <PanelTopOpen aria-hidden="true" size={22} />
       </div>
 
       <section className="setting-group">
         <h3>图片尺寸</h3>
-        <p className="setting-note">默认生成一整张长图，高度会随内容自动增长。</p>
         <label className="switch-row">
           <input
             aria-label="指定图片宽高"
@@ -100,13 +95,6 @@ export function SettingsPanel({
                 />
               </label>
             </div>
-            <button
-              className="preset-button"
-              type="button"
-              onClick={() => onDimensionsChange({ width: 1080, height: 1440 })}
-            >
-              小红书默认 1080 x 1440
-            </button>
             <label className="switch-row">
               <input
                 aria-label="内容超出时自动切分"
@@ -118,7 +106,6 @@ export function SettingsPanel({
             </label>
           </div>
         ) : null}
-        <p className="setting-note">单独一行输入 ------- 可以强制切成下一张图。</p>
       </section>
 
       <section className="setting-group">
@@ -168,7 +155,6 @@ export function SettingsPanel({
             />
           </label>
         ) : null}
-        <p className="setting-note">字体只能从内置列表选择，暂不支持上传自定义字体。</p>
       </section>
 
       <section className="setting-group">
