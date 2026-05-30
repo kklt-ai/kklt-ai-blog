@@ -213,6 +213,11 @@ export function PreviewPanel({
                 }
               }}
             >
+              {index === selectedPageIndex ? (
+                <span className="preview-item-label" aria-hidden="true">
+                  当前页
+                </span>
+              ) : null}
               <RenderedPage
                 page={page}
                 theme={theme}

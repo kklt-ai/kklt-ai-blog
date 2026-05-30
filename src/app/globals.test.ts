@@ -28,4 +28,23 @@ describe("global layout styles", () => {
     expect(css).toContain(".theme-iphone-notes ol {\n  list-style-type: decimal;");
     expect(getRule(".theme-iphone-notes li::marker")).toContain("font-weight: 400");
   });
+
+  it("restores markdown list markers for every page theme", () => {
+    expect(css).toContain(".xhs-page ul {\n  list-style-type: disc;");
+    expect(css).toContain(".xhs-page ol {\n  list-style-type: decimal;");
+  });
+
+  it("keeps preview selection chrome outside the exported page edge", () => {
+    const previewItemRule = getRule(".preview-item");
+    const activePreviewItemRule = getRule(".preview-item.is-active");
+
+    expect(previewItemRule).not.toContain("border:");
+    expect(activePreviewItemRule).not.toContain("border-color:");
+    expect(activePreviewItemRule).toContain("outline:");
+    expect(activePreviewItemRule).toContain("outline-offset:");
+  });
+
+  it("centers Markdown image captions", () => {
+    expect(getRule(".xhs-page figcaption")).toContain("text-align: center");
+  });
 });

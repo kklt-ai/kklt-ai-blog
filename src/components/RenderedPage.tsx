@@ -86,11 +86,13 @@ function renderBlock(block: MarkdownBlock, index: number) {
     );
   }
 
+  const caption = block.alt.trim();
+
   return (
     <figure key={index}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img alt={block.alt} src={resolveImageSrc(block.url)} />
-      <figcaption>{block.alt || "Markdown 图片"}</figcaption>
+      {caption ? <figcaption>{caption}</figcaption> : null}
     </figure>
   );
 }

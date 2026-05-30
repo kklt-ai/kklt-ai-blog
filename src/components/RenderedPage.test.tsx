@@ -81,4 +81,33 @@ describe("RenderedPage", () => {
     expect(screen.getByText("维港的风").closest("h1")).not.toBeNull();
     expect(screen.getByText("一点船鸣").closest("li")).not.toBeNull();
   });
+
+  it("shows image captions only when Markdown provides a description", () => {
+    render(
+      <RenderedPage
+        page={{
+          id: "page-1",
+          manualGroupIndex: 0,
+          estimatedHeight: 0,
+          blocks: [
+            {
+              type: "image",
+              alt: "夕阳下的胡同",
+              url: "https://example.com/hutong.jpg",
+            },
+            {
+              type: "image",
+              alt: "",
+              url: "https://example.com/no-caption.jpg",
+            },
+          ],
+        }}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+      />,
+    );
+
+    expect(screen.getByText("夕阳下的胡同").closest("figcaption")).not.toBeNull();
+    expect(screen.queryByText("Markdown 图片")).toBeNull();
+  });
 });

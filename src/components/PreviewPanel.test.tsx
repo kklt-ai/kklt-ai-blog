@@ -277,4 +277,41 @@ describe("PreviewPanel", () => {
     expect(onExportCurrent).not.toHaveBeenCalled();
     expect(onExportAll).not.toHaveBeenCalled();
   });
+
+  it("labels the selected preview page as editor chrome", () => {
+    render(
+      <PreviewPanel
+        pages={[
+          {
+            id: "page-1",
+            manualGroupIndex: 0,
+            estimatedHeight: 700,
+            blocks: [],
+          },
+          {
+            id: "page-2",
+            manualGroupIndex: 1,
+            estimatedHeight: 700,
+            blocks: [],
+          },
+        ]}
+        selectedPageIndex={1}
+        theme={getThemeById("punk")}
+        typography={typography}
+        dimensions={{ width: 1080, height: 1440 }}
+        pageDimensions={[
+          { width: 1080, height: 1440 },
+          { width: 1080, height: 1440 },
+        ]}
+        autoHeightEnabled={false}
+        isExporting={false}
+        onPageChange={vi.fn()}
+        registerPageRef={vi.fn()}
+        onExportCurrent={vi.fn()}
+        onExportAll={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByText("当前页")).toBeInTheDocument();
+  });
 });

@@ -267,29 +267,51 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 36px;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 0;
+  padding: 38px 0 30px;
 }
 
 .preview-item {
   position: relative;
   flex: 0 0 auto;
-  overflow: hidden;
-  box-shadow: 10px 10px 0 var(--electric-blue);
-  border: 3px solid transparent;
+  overflow: visible;
+  box-shadow: 0 16px 36px rgba(17, 17, 17, 0.16);
   cursor: pointer;
-  transition: border-color 0.15s;
+  transition:
+    box-shadow 0.15s,
+    outline-color 0.15s,
+    transform 0.15s;
 }
 
 .preview-item.is-active {
-  border-color: var(--hot-pink);
+  outline: 2px dashed rgba(17, 17, 17, 0.42);
+  outline-offset: 8px;
+  box-shadow: 0 18px 42px rgba(17, 17, 17, 0.2);
 }
 
 .preview-item:focus-visible {
   outline: 3px solid var(--hot-pink);
-  outline-offset: 2px;
+  outline-offset: 10px;
+}
+
+.preview-item-label {
+  position: absolute;
+  top: -32px;
+  left: 12px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  border: 2px solid rgba(17, 17, 17, 0.55);
+  background: var(--panel);
+  color: var(--ink);
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 900;
+  line-height: 1;
+  box-shadow: 3px 3px 0 rgba(17, 17, 17, 0.14);
 }
 
 .setting-group {
@@ -516,6 +538,14 @@ button:focus-visible {
   padding-left: calc(var(--page-base) * 1.2);
 }
 
+.xhs-page ul {
+  list-style-type: disc;
+}
+
+.xhs-page ol {
+  list-style-type: decimal;
+}
+
 .xhs-page li::marker {
   color: var(--syntax-list-marker);
   font-weight: 900;
@@ -581,6 +611,7 @@ button:focus-visible {
 .xhs-page figcaption {
   margin-top: 10px;
   font-size: calc(var(--page-base) * 0.62);
+  text-align: center;
 }
 
 .theme-iphone-notes {
