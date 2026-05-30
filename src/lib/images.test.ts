@@ -21,4 +21,12 @@ describe("resolveImageSrc", () => {
     expect(resolveImageSrc("data:image/png;base64,abc")).toBe("data:image/png;base64,abc");
     expect(resolveImageSrc("blob:http://localhost/abc")).toBe("blob:http://localhost/abc");
   });
+
+  it("resolves local image references from the loaded image library", () => {
+    expect(
+      resolveImageSrc("local-image://cover-1", {
+        "local-image://cover-1": "data:image/png;base64,abc",
+      }),
+    ).toBe("data:image/png;base64,abc");
+  });
 });

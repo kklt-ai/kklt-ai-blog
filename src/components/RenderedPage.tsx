@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { resolveThemeSyntax } from "@/lib/themes";
 import { resolveImageSrc } from "@/lib/images";
+import type { LocalImageSources } from "@/lib/localImages";
 import type {
   Dimensions,
   GeneratedPage,
@@ -24,6 +25,7 @@ type RenderedPageProps = {
   theme: ThemeDefinition;
   dimensions: Dimensions;
   typography?: ResolvedTypography;
+  localImageSources?: LocalImageSources;
   scale?: number;
 };
 
@@ -47,7 +49,11 @@ function renderInline(inline: MarkdownInline[] | undefined, fallback: string, pr
   });
 }
 
-function renderBlock(block: MarkdownBlock, index: number) {
+function renderBlock(
+  block: MarkdownBlock,
+  index: number,
+  localImageSources: LocalImageSources,
+) {
   if (block.type === "heading") {
     const Tag = block.depth === 1 ? "h1" : block.depth === 2 ? "h2" : "h3";
     return <Tag key={index}>{renderInline(block.inline, block.text, `heading-${index}`)}</Tag>;
@@ -91,7 +97,7 @@ function renderBlock(block: MarkdownBlock, index: number) {
   return (
     <figure key={index}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img alt={block.alt} src={resolveImageSrc(block.url)} />
+      <img alt={block.alt} src={resolveImageSrc(block.url, localImageSources)} />
       {caption ? <figcaption>{caption}</figcaption> : null}
     </figure>
   );
@@ -125,6 +131,7 @@ export function RenderedPage({
   theme,
   dimensions,
   typography,
+  localImageSources = {},
   scale = 1,
 }: RenderedPageProps) {
   const syntax = resolveThemeSyntax(theme);
@@ -169,7 +176,7 @@ export function RenderedPage({
       {isIPhoneNotes ? <IPhoneNotesChrome /> : null}
       <div className="xhs-page-inner">
         {page.blocks.length ? (
-          page.blocks.map(renderBlock)
+          page.blocks.map((block, index) => renderBlock(block, index, localImageSources))
         ) : (
           <p>开始写 Markdown，预览会实时出现在这里。</p>
         )}

@@ -8,6 +8,7 @@ import type {
   GeneratedPage,
   ThemeDefinition,
 } from "@/lib/types";
+import type { LocalImageSources } from "@/lib/localImages";
 import type { ResolvedTypography } from "@/lib/typography";
 
 const MIN_AUTO_PAGE_HEIGHT = 320;
@@ -19,6 +20,7 @@ type PreviewPanelProps = {
   typography: ResolvedTypography;
   dimensions: Dimensions;
   pageDimensions: Dimensions[];
+  localImageSources?: LocalImageSources;
   autoHeightEnabled: boolean;
   isExporting: boolean;
   onPageChange: (index: number) => void;
@@ -87,6 +89,7 @@ export function PreviewPanel({
   typography,
   dimensions,
   pageDimensions,
+  localImageSources = {},
   autoHeightEnabled,
   isExporting,
   onPageChange,
@@ -223,6 +226,7 @@ export function PreviewPanel({
                 theme={theme}
                 typography={typography}
                 dimensions={pageSize}
+                localImageSources={localImageSources}
                 scale={scale}
               />
             </div>
@@ -248,6 +252,7 @@ export function PreviewPanel({
                 theme={theme}
                 typography={typography}
                 dimensions={pageSize}
+                localImageSources={localImageSources}
               />
             </div>
           );

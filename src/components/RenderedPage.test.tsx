@@ -110,4 +110,33 @@ describe("RenderedPage", () => {
     expect(screen.getByText("夕阳下的胡同").closest("figcaption")).not.toBeNull();
     expect(screen.queryByText("Markdown 图片")).toBeNull();
   });
+
+  it("renders local image references through loaded image sources", () => {
+    render(
+      <RenderedPage
+        page={{
+          id: "page-1",
+          manualGroupIndex: 0,
+          estimatedHeight: 0,
+          blocks: [
+            {
+              type: "image",
+              alt: "本地图",
+              url: "local-image://cover-1",
+            },
+          ],
+        }}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+        localImageSources={{
+          "local-image://cover-1": "data:image/png;base64,abc",
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("img", { name: "本地图" })).toHaveAttribute(
+      "src",
+      "data:image/png;base64,abc",
+    );
+  });
 });

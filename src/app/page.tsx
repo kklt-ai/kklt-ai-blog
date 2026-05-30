@@ -6,6 +6,12 @@ import { PreviewPanel } from "@/components/PreviewPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { clampDimensions, resolvePageDimensions } from "@/lib/dimensions";
 import { downloadNodeAsPng } from "@/lib/export";
+import {
+  deleteUnusedLocalImages,
+  loadLocalImageSources,
+  saveLocalImage,
+  type LocalImageSources,
+} from "@/lib/localImages";
 import { parseMarkdown } from "@/lib/markdown";
 import { paginateSegments } from "@/lib/pagination";
 import { DEFAULT_DIMENSIONS, SAMPLE_MARKDOWN } from "@/lib/sample";
@@ -48,11 +54,17 @@ export default function Home() {
   const [message, setMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [undoStack, setUndoStack] = useState<string[]>([]);
+  const [hasRestoredDraft, setHasRestoredDraft] = useState(false);
+  const [localImageSources, setLocalImageSources] = useState<LocalImageSources>({});
   const pageRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const hasCleanedLocalImages = useRef(false);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (!stored) return;
+    if (!stored) {
+      setHasRestoredDraft(true);
+      return;
+    }
 
     try {
       const parsed = JSON.parse(stored) as StoredState;
@@ -77,6 +89,8 @@ export default function Home() {
       }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
+    } finally {
+      setHasRestoredDraft(true);
     }
   }, []);
 
@@ -119,6 +133,29 @@ export default function Home() {
     [theme, typography],
   );
   const markdownForPreview = markdown.trim() ? markdown : SAMPLE_MARKDOWN;
+
+  useEffect(() => {
+    let isCurrent = true;
+
+    loadLocalImageSources(markdownForPreview)
+      .then((sources) => {
+        if (isCurrent) setLocalImageSources(sources);
+      })
+      .catch(() => {
+        if (isCurrent) setLocalImageSources({});
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [markdownForPreview]);
+
+  useEffect(() => {
+    if (!hasRestoredDraft || hasCleanedLocalImages.current) return;
+    hasCleanedLocalImages.current = true;
+    void deleteUnusedLocalImages(markdownForPreview);
+  }, [hasRestoredDraft, markdownForPreview]);
+
   const segments = useMemo(() => parseMarkdown(markdownForPreview), [markdownForPreview]);
   const pages = useMemo(
     () => paginateSegments(segments, dimensions, renderTheme, fixedSizeEnabled && autoPaginate),
@@ -158,6 +195,15 @@ export default function Home() {
       setMessage("已撤销");
       return stack.slice(0, -1);
     });
+  }, []);
+
+  const storeUploadedImage = useCallback(async (file: File, dataUrl: string) => {
+    const record = await saveLocalImage(file, dataUrl);
+    setLocalImageSources((sources) => ({
+      ...sources,
+      [record.ref]: record.dataUrl,
+    }));
+    return record.ref;
   }, []);
 
   const exportPage = useCallback(
@@ -246,6 +292,7 @@ export default function Home() {
         markdown={markdown}
         error={message}
         onMarkdownChange={updateMarkdown}
+        onImageUpload={storeUploadedImage}
         onUploadError={setMessage}
         onReset={() => {
           updateMarkdown(SAMPLE_MARKDOWN);
@@ -262,6 +309,7 @@ export default function Home() {
         typography={typography}
         dimensions={dimensions}
         pageDimensions={pageDimensions}
+        localImageSources={localImageSources}
         autoHeightEnabled={!fixedSizeEnabled}
         isExporting={isExporting}
         onPageChange={setSelectedPageIndex}

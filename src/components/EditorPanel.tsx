@@ -23,6 +23,7 @@ type EditorPanelProps = {
   markdown: string;
   error: string | null;
   onMarkdownChange: (value: string) => void;
+  onImageUpload?: (file: File, dataUrl: string) => Promise<string>;
   onUploadError: (message: string | null) => void;
   onReset: () => void;
   onUndo: () => void;
@@ -33,6 +34,7 @@ export function EditorPanel({
   markdown,
   error,
   onMarkdownChange,
+  onImageUpload,
   onUploadError,
   onReset,
   onUndo,
@@ -122,12 +124,26 @@ export function EditorPanel({
     replaceSelection(nextValue, cursor, cursor);
   };
 
-  const insertImageDataUrl = (file: File, dataUrl: string) => {
+  const insertImageSource = (file: File, src: string) => {
     const alt = file.name.replace(/\.[^.]+$/, "") || "本地图片";
     const { start, end } = lastSelectionRef.current;
-    const snippet = `![${alt}](${dataUrl})`;
-    const nextValue = `${markdown.slice(0, start)}${snippet}${markdown.slice(end)}`;
-    const cursor = start + snippet.length;
+    const before = markdown.slice(0, start);
+    const after = markdown.slice(end);
+    const prefix =
+      before.endsWith("\n\n") || before.length === 0
+        ? ""
+        : before.endsWith("\n")
+          ? "\n"
+          : "\n\n";
+    const suffix =
+      after.startsWith("\n\n") || after.length === 0
+        ? ""
+        : after.startsWith("\n")
+          ? "\n"
+          : "\n\n";
+    const snippet = `${prefix}![${alt}](${src})${suffix}`;
+    const nextValue = `${before}${snippet}${after}`;
+    const cursor = before.length + snippet.length;
     replaceSelection(nextValue, cursor, cursor);
   };
 
@@ -202,15 +218,20 @@ export function EditorPanel({
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
+    reader.onload = async () => {
       const result = String(reader.result ?? "");
       if (!result.startsWith("data:image/")) {
         onUploadError("图片读取失败，请重试");
         return;
       }
 
-      onUploadError(null);
-      insertImageDataUrl(file, result);
+      try {
+        const imageSrc = onImageUpload ? await onImageUpload(file, result) : result;
+        onUploadError(null);
+        insertImageSource(file, imageSrc);
+      } catch {
+        onUploadError("图片保存失败，请重试");
+      }
     };
     reader.onerror = () => {
       onUploadError("图片读取失败，请重试");

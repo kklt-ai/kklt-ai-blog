@@ -160,14 +160,49 @@ describe("EditorPanel", () => {
     expect(formatToolbar).toContainElement(screen.getByLabelText("上传本地图片"));
   });
 
-  it("uploads local images as Markdown image data URLs", async () => {
+  it("uploads local images as local image references", async () => {
     const onMarkdownChange = vi.fn();
+    const onImageUpload = vi.fn().mockResolvedValue("local-image://cover-photo-1");
 
     render(
       <EditorPanel
         markdown="Intro"
         error={null}
         onMarkdownChange={onMarkdownChange}
+        onImageUpload={onImageUpload}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
+      />,
+    );
+
+    const file = new File(["image-bytes"], "cover photo.png", { type: "image/png" });
+    fireEvent.change(screen.getByLabelText("上传本地图片"), {
+      target: { files: [file] },
+    });
+
+    await vi.waitFor(() => {
+      expect(onImageUpload).toHaveBeenCalledWith(
+        file,
+        expect.stringMatching(/^data:image\/png;base64,/),
+      );
+      expect(onMarkdownChange).toHaveBeenCalledWith(
+        "Intro\n\n![cover photo](local-image://cover-photo-1)",
+      );
+    });
+  });
+
+  it("inserts uploaded images as standalone Markdown image blocks", async () => {
+    const onMarkdownChange = vi.fn();
+    const onImageUpload = vi.fn().mockResolvedValue("local-image://cover-photo-1");
+
+    render(
+      <EditorPanel
+        markdown="Intro"
+        error={null}
+        onMarkdownChange={onMarkdownChange}
+        onImageUpload={onImageUpload}
         onUploadError={vi.fn()}
         onReset={vi.fn()}
         onUndo={vi.fn()}
@@ -182,7 +217,7 @@ describe("EditorPanel", () => {
 
     await vi.waitFor(() => {
       expect(onMarkdownChange).toHaveBeenCalledWith(
-        expect.stringMatching(/^Intro!\[cover photo\]\(data:image\/png;base64,/),
+        "Intro\n\n![cover photo](local-image://cover-photo-1)",
       );
     });
   });
