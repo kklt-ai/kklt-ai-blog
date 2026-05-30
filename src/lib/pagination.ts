@@ -1,27 +1,48 @@
 import type { Dimensions, GeneratedPage, MarkdownBlock, ThemeDefinition } from "./types";
 
+const CJK_OR_FULL_WIDTH_PATTERN =
+  /[\u1100-\u115f\u2329\u232a\u2e80-\u303e\u3040-\ua4cf\uac00-\ud7a3\uf900-\ufaff\ufe10-\ufe6f\uff00-\uff60\uffe0-\uffe6]/;
+
+function estimateTextUnits(text: string) {
+  return Array.from(text).reduce((total, char) => {
+    if (char === "\n") return total;
+    if (/\s/.test(char)) return total + 0.32;
+    if (CJK_OR_FULL_WIDTH_PATTERN.test(char)) return total + 1;
+    return total + 0.56;
+  }, 0);
+}
+
+function estimateTextLines(text: string, fontSize: number, contentWidth: number) {
+  const unitsPerLine = Math.max(1, contentWidth / fontSize);
+  const lines = text.split("\n");
+
+  return lines.reduce(
+    (total, line) => total + Math.max(1, Math.ceil(estimateTextUnits(line) / unitsPerLine)),
+    0,
+  );
+}
+
 function estimateBlockHeight(
   block: MarkdownBlock,
   theme: ThemeDefinition,
   contentWidth: number,
 ) {
-  const charsPerLine = Math.max(12, Math.floor(contentWidth / (theme.baseFontSize * 0.58)));
-
   if (block.type === "heading") {
     const scale = block.depth === 1 ? 1.9 : block.depth === 2 ? 1.45 : 1.2;
-    const lines = Math.max(1, Math.ceil(block.text.length / charsPerLine));
+    const lines = estimateTextLines(block.text, theme.baseFontSize * scale, contentWidth);
     return lines * theme.baseFontSize * theme.lineHeight * scale + theme.blockGap;
   }
 
   if (block.type === "paragraph" || block.type === "quote") {
-    const lines = Math.max(1, Math.ceil(block.text.length / charsPerLine));
+    const lines = estimateTextLines(block.text, theme.baseFontSize, contentWidth);
     return lines * theme.baseFontSize * theme.lineHeight + theme.blockGap;
   }
 
   if (block.type === "list") {
+    const listContentWidth = contentWidth - theme.baseFontSize * 1.6;
     const lines = block.items.reduce(
       (total, item) =>
-        total + Math.max(1, Math.ceil(item.text.length / Math.max(8, charsPerLine - 4))),
+        total + estimateTextLines(item.text, theme.baseFontSize, listContentWidth),
       0,
     );
     return lines * theme.baseFontSize * theme.lineHeight + theme.blockGap;
@@ -92,7 +113,7 @@ export function paginateSegments(
   autoPaginate: boolean,
 ): GeneratedPage[] {
   const contentWidth = dimensions.width - theme.padding * 2;
-  const contentHeight = dimensions.height - theme.padding * 2;
+  const contentHeight = dimensions.height - theme.padding * 2 - theme.borderWidth * 2;
   const pages: GeneratedPage[] = [];
 
   segments.forEach((segment, manualGroupIndex) => {

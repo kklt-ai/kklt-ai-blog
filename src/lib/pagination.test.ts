@@ -56,4 +56,34 @@ describe("paginateSegments", () => {
       inline: [{ type: "strong", children: [{ type: "text", text: "Bold" }] }],
     });
   });
+
+  it("splits long Chinese paragraphs before they overflow a fixed-height page", () => {
+    const text =
+      "消费购物听到限时优惠最后一天限量发售明明不需要的东西也怕不买就吃亏了。".repeat(
+        16,
+      );
+
+    const pages = paginateSegments(
+      [
+        [
+          {
+            type: "paragraph",
+            text,
+            inline: [{ type: "text", text }],
+          },
+        ],
+      ],
+      { width: 1080, height: 1440 },
+      getThemeById("punk"),
+      true,
+    );
+
+    expect(pages.length).toBeGreaterThan(1);
+    expect(
+      pages
+        .flatMap((page) => page.blocks)
+        .map((block) => (block.type === "paragraph" ? block.text : ""))
+        .join(""),
+    ).toBe(text);
+  });
 });
