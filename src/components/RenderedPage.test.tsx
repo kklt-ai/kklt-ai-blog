@@ -27,11 +27,19 @@ describe("RenderedPage", () => {
         }}
         theme={getThemeById("punk")}
         dimensions={{ width: 1080, height: 1440 }}
+        typography={{
+          fontFamily: '"LikeJianJianTi", "PingFang SC", sans-serif',
+          fontSize: 52,
+        }}
       />,
     );
 
     expect(screen.getByText("Bold").closest("strong")).not.toBeNull();
     expect(screen.getByText("marked").closest("mark")).not.toBeNull();
     expect(screen.getByText("code").closest("code")).not.toBeNull();
+    expect(screen.getByRole("article")).toHaveStyle({
+      "--page-font": '"LikeJianJianTi", "PingFang SC", sans-serif',
+      "--page-base": "52px",
+    });
   });
 });

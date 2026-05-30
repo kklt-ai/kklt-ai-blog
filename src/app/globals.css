@@ -1,3 +1,10 @@
+@import url("https://fontsapi.zeoseven.com/490/main/result.css");
+@import url("https://fontsapi.zeoseven.com/282/main/result.css");
+@import url("https://fontsapi.zeoseven.com/192/main/result.css");
+@import url("https://fontsapi.zeoseven.com/61/main/result.css");
+@import url("https://fontsapi.zeoseven.com/495/main/result.css");
+@import url("https://fontsapi.zeoseven.com/942/main/result.css");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -347,23 +354,43 @@ button:focus-visible {
   gap: 10px;
 }
 
+.typography-controls {
+  display: grid;
+  gap: 10px;
+}
+
 .fixed-size-options {
   display: grid;
   gap: 10px;
 }
 
-.dimension-row label {
+.dimension-row label,
+.typography-controls label,
+.font-size-slider {
   display: grid;
   gap: 5px;
   font-size: 12px;
   font-weight: 900;
 }
 
-.dimension-row input {
+.dimension-row input,
+.typography-controls select {
   min-width: 0;
   border: 3px solid var(--ink);
   padding: 8px;
   font-weight: 900;
+  background: #fff;
+}
+
+.font-size-slider {
+  border: 2px solid var(--ink);
+  background: #fff;
+  padding: 10px;
+}
+
+.font-size-slider input {
+  width: 100%;
+  accent-color: var(--hot-pink);
 }
 
 .preset-button {

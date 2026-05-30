@@ -4,6 +4,10 @@ import { getThemeById } from "@/lib/themes";
 import { PreviewPanel } from "./PreviewPanel";
 
 describe("PreviewPanel", () => {
+  const typography = {
+    fontFamily: '-apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif',
+    fontSize: 44,
+  };
   const originalResizeObserver = global.ResizeObserver;
   const originalGetComputedStyle = window.getComputedStyle;
   let scrollHeightSpy: ReturnType<typeof vi.spyOn>;
@@ -92,6 +96,7 @@ describe("PreviewPanel", () => {
         ]}
         selectedPageIndex={0}
         theme={getThemeById("punk")}
+        typography={typography}
         dimensions={{ width: 1080, height: 1440 }}
         pageDimensions={[{ width: 1080, height: 760 }]}
         autoHeightEnabled
@@ -127,6 +132,7 @@ describe("PreviewPanel", () => {
         ]}
         selectedPageIndex={0}
         theme={getThemeById("punk")}
+        typography={typography}
         dimensions={{ width: 1080, height: 1440 }}
         pageDimensions={[{ width: 1080, height: 1440 }]}
         autoHeightEnabled={false}
@@ -165,6 +171,7 @@ describe("PreviewPanel", () => {
         ]}
         selectedPageIndex={0}
         theme={getThemeById("punk")}
+        typography={typography}
         dimensions={{ width: 1080, height: 1440 }}
         pageDimensions={[
           { width: 1080, height: 1440 },

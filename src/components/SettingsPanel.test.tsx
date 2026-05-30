@@ -8,10 +8,16 @@ describe("SettingsPanel", () => {
     dimensions: { width: 1080, height: 1440 },
     fixedSizeEnabled: false,
     autoPaginate: true,
+    fontId: "system-sans",
+    fontSizePreset: "medium" as const,
+    customFontSize: 44,
     onThemeChange: vi.fn(),
     onDimensionsChange: vi.fn(),
     onFixedSizeEnabledChange: vi.fn(),
     onAutoPaginateChange: vi.fn(),
+    onFontChange: vi.fn(),
+    onFontSizePresetChange: vi.fn(),
+    onCustomFontSizeChange: vi.fn(),
   };
 
   it("changes theme and dimensions", () => {
@@ -90,5 +96,48 @@ describe("SettingsPanel", () => {
     expect(screen.queryByLabelText("图片圆角")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "导出当前页" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "导出全部 PNG" })).not.toBeInTheDocument();
+  });
+
+  it("changes typography font and preset size from dropdowns", () => {
+    const onFontChange = vi.fn();
+    const onFontSizePresetChange = vi.fn();
+
+    render(
+      <SettingsPanel
+        {...baseProps}
+        onFontChange={onFontChange}
+        onFontSizePresetChange={onFontSizePresetChange}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText("字体"), {
+      target: { value: "like-jianjian" },
+    });
+    fireEvent.change(screen.getByLabelText("字体大小"), {
+      target: { value: "large" },
+    });
+
+    expect(onFontChange).toHaveBeenCalledWith("like-jianjian");
+    expect(onFontSizePresetChange).toHaveBeenCalledWith("large");
+  });
+
+  it("shows a slider when custom font size is selected", () => {
+    const onCustomFontSizeChange = vi.fn();
+
+    render(
+      <SettingsPanel
+        {...baseProps}
+        fontSizePreset="custom"
+        customFontSize={48}
+        onCustomFontSizeChange={onCustomFontSizeChange}
+      />,
+    );
+
+    const slider = screen.getByLabelText("自定义字体大小");
+    expect(slider).toHaveValue("48");
+
+    fireEvent.change(slider, { target: { value: "56" } });
+
+    expect(onCustomFontSizeChange).toHaveBeenCalledWith(56);
   });
 });

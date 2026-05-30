@@ -10,6 +10,14 @@ import { parseMarkdown } from "@/lib/markdown";
 import { paginateSegments } from "@/lib/pagination";
 import { DEFAULT_DIMENSIONS, SAMPLE_MARKDOWN } from "@/lib/sample";
 import { getThemeById } from "@/lib/themes";
+import {
+  clampFontSize,
+  defaultTypography,
+  isFontId,
+  isFontSizePreset,
+  resolveTypography,
+  type FontSizePreset,
+} from "@/lib/typography";
 import type { Dimensions } from "@/lib/types";
 
 const STORAGE_KEY = "xhs-md-image-tool";
@@ -20,6 +28,9 @@ type StoredState = {
   dimensions?: Dimensions;
   fixedSizeEnabled?: boolean;
   autoPaginate?: boolean;
+  fontId?: string;
+  fontSizePreset?: FontSizePreset;
+  customFontSize?: number;
 };
 
 export default function Home() {
@@ -28,6 +39,11 @@ export default function Home() {
   const [dimensions, setDimensions] = useState(DEFAULT_DIMENSIONS);
   const [fixedSizeEnabled, setFixedSizeEnabled] = useState(false);
   const [autoPaginate, setAutoPaginate] = useState(true);
+  const [fontId, setFontId] = useState(defaultTypography.fontId);
+  const [fontSizePreset, setFontSizePreset] = useState<FontSizePreset>(
+    defaultTypography.fontSizePreset,
+  );
+  const [customFontSize, setCustomFontSize] = useState(defaultTypography.customFontSize);
   const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -46,6 +62,18 @@ export default function Home() {
         setFixedSizeEnabled(parsed.fixedSizeEnabled);
       }
       if (typeof parsed.autoPaginate === "boolean") setAutoPaginate(parsed.autoPaginate);
+      if (typeof parsed.fontId === "string" && isFontId(parsed.fontId)) {
+        setFontId(parsed.fontId);
+      }
+      if (
+        typeof parsed.fontSizePreset === "string" &&
+        isFontSizePreset(parsed.fontSizePreset)
+      ) {
+        setFontSizePreset(parsed.fontSizePreset);
+      }
+      if (typeof parsed.customFontSize === "number") {
+        setCustomFontSize(clampFontSize(parsed.customFontSize));
+      }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     }
@@ -60,23 +88,47 @@ export default function Home() {
         dimensions,
         fixedSizeEnabled,
         autoPaginate,
+        fontId,
+        fontSizePreset,
+        customFontSize,
       }),
     );
-  }, [autoPaginate, dimensions, fixedSizeEnabled, markdown, themeId]);
+  }, [
+    autoPaginate,
+    customFontSize,
+    dimensions,
+    fixedSizeEnabled,
+    fontId,
+    fontSizePreset,
+    markdown,
+    themeId,
+  ]);
 
   const theme = useMemo(() => getThemeById(themeId), [themeId]);
+  const typography = useMemo(
+    () => resolveTypography({ fontId, fontSizePreset, customFontSize }),
+    [customFontSize, fontId, fontSizePreset],
+  );
+  const renderTheme = useMemo(
+    () => ({
+      ...theme,
+      fontFamily: typography.fontFamily,
+      baseFontSize: typography.fontSize,
+    }),
+    [theme, typography],
+  );
   const markdownForPreview = markdown.trim() ? markdown : SAMPLE_MARKDOWN;
   const segments = useMemo(() => parseMarkdown(markdownForPreview), [markdownForPreview]);
   const pages = useMemo(
-    () => paginateSegments(segments, dimensions, theme, fixedSizeEnabled && autoPaginate),
-    [autoPaginate, dimensions, fixedSizeEnabled, segments, theme],
+    () => paginateSegments(segments, dimensions, renderTheme, fixedSizeEnabled && autoPaginate),
+    [autoPaginate, dimensions, fixedSizeEnabled, renderTheme, segments],
   );
   const pageDimensions = useMemo(
     () =>
       pages.map((page) =>
-        resolvePageDimensions(page, dimensions, theme, fixedSizeEnabled),
+        resolvePageDimensions(page, dimensions, renderTheme, fixedSizeEnabled),
       ),
-    [dimensions, fixedSizeEnabled, pages, theme],
+    [dimensions, fixedSizeEnabled, pages, renderTheme],
   );
 
   useEffect(() => {
@@ -139,6 +191,9 @@ export default function Home() {
             dimensions,
             fixedSizeEnabled,
             autoPaginate,
+            fontId,
+            fontSizePreset,
+            customFontSize,
           }),
         );
         setMessage("草稿已保存在本机浏览器");
@@ -154,9 +209,12 @@ export default function Home() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [
     autoPaginate,
+    customFontSize,
     dimensions,
     exportCurrent,
     fixedSizeEnabled,
+    fontId,
+    fontSizePreset,
     markdown,
     themeId,
   ]);
@@ -180,7 +238,8 @@ export default function Home() {
       <PreviewPanel
         pages={pages}
         selectedPageIndex={selectedPageIndex}
-        theme={theme}
+        theme={renderTheme}
+        typography={typography}
         dimensions={dimensions}
         pageDimensions={pageDimensions}
         autoHeightEnabled={!fixedSizeEnabled}
@@ -196,10 +255,16 @@ export default function Home() {
         dimensions={dimensions}
         fixedSizeEnabled={fixedSizeEnabled}
         autoPaginate={autoPaginate}
+        fontId={fontId}
+        fontSizePreset={fontSizePreset}
+        customFontSize={customFontSize}
         onThemeChange={setThemeId}
         onDimensionsChange={(next) => setDimensions(clampDimensions(next))}
         onFixedSizeEnabledChange={setFixedSizeEnabled}
         onAutoPaginateChange={setAutoPaginate}
+        onFontChange={setFontId}
+        onFontSizePresetChange={setFontSizePreset}
+        onCustomFontSizeChange={(size) => setCustomFontSize(clampFontSize(size))}
       />
     </main>
   );

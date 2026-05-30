@@ -7,11 +7,13 @@ import type {
   MarkdownInline,
   ThemeDefinition,
 } from "@/lib/types";
+import type { ResolvedTypography } from "@/lib/typography";
 
 type RenderedPageProps = {
   page: GeneratedPage;
   theme: ThemeDefinition;
   dimensions: Dimensions;
+  typography?: ResolvedTypography;
   scale?: number;
 };
 
@@ -87,6 +89,7 @@ export function RenderedPage({
   page,
   theme,
   dimensions,
+  typography,
   scale = 1,
 }: RenderedPageProps) {
   const syntax = resolveThemeSyntax(theme);
@@ -98,9 +101,9 @@ export function RenderedPage({
     "--page-muted": theme.colors.muted,
     "--page-border": theme.colors.border,
     "--page-panel": theme.colors.panel,
-    "--page-font": theme.fontFamily,
+    "--page-font": typography?.fontFamily ?? theme.fontFamily,
     "--page-padding": `${theme.padding}px`,
-    "--page-base": `${theme.baseFontSize}px`,
+    "--page-base": `${typography?.fontSize ?? theme.baseFontSize}px`,
     "--page-line": theme.lineHeight,
     "--page-gap": `${theme.blockGap}px`,
     "--page-radius": `${theme.radius}px`,

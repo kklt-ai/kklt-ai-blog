@@ -8,11 +8,13 @@ import type {
   GeneratedPage,
   ThemeDefinition,
 } from "@/lib/types";
+import type { ResolvedTypography } from "@/lib/typography";
 
 type PreviewPanelProps = {
   pages: GeneratedPage[];
   selectedPageIndex: number;
   theme: ThemeDefinition;
+  typography: ResolvedTypography;
   dimensions: Dimensions;
   pageDimensions: Dimensions[];
   autoHeightEnabled: boolean;
@@ -61,6 +63,7 @@ export function PreviewPanel({
   pages,
   selectedPageIndex,
   theme,
+  typography,
   dimensions,
   pageDimensions,
   autoHeightEnabled,
@@ -169,6 +172,7 @@ export function PreviewPanel({
               <RenderedPage
                 page={page}
                 theme={theme}
+                typography={typography}
                 dimensions={pageSize}
                 scale={scale}
               />
@@ -193,6 +197,7 @@ export function PreviewPanel({
               <RenderedPage
                 page={page}
                 theme={theme}
+                typography={typography}
                 dimensions={pageSize}
               />
             </div>

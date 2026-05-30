@@ -3,6 +3,13 @@
 import { PanelTopOpen } from "lucide-react";
 import { clampDimensions } from "@/lib/dimensions";
 import { themes } from "@/lib/themes";
+import {
+  FONT_SIZE_MAX,
+  FONT_SIZE_MIN,
+  fontOptions,
+  fontSizeOptions,
+  type FontSizePreset,
+} from "@/lib/typography";
 import type { Dimensions } from "@/lib/types";
 
 type SettingsPanelProps = {
@@ -10,10 +17,16 @@ type SettingsPanelProps = {
   dimensions: Dimensions;
   fixedSizeEnabled: boolean;
   autoPaginate: boolean;
+  fontId: string;
+  fontSizePreset: FontSizePreset;
+  customFontSize: number;
   onThemeChange: (themeId: string) => void;
   onDimensionsChange: (dimensions: Dimensions) => void;
   onFixedSizeEnabledChange: (enabled: boolean) => void;
   onAutoPaginateChange: (enabled: boolean) => void;
+  onFontChange: (fontId: string) => void;
+  onFontSizePresetChange: (preset: FontSizePreset) => void;
+  onCustomFontSizeChange: (size: number) => void;
 };
 
 export function SettingsPanel({
@@ -21,10 +34,16 @@ export function SettingsPanel({
   dimensions,
   fixedSizeEnabled,
   autoPaginate,
+  fontId,
+  fontSizePreset,
+  customFontSize,
   onThemeChange,
   onDimensionsChange,
   onFixedSizeEnabledChange,
   onAutoPaginateChange,
+  onFontChange,
+  onFontSizePresetChange,
+  onCustomFontSizeChange,
 }: SettingsPanelProps) {
   const updateDimension = (key: keyof Dimensions, value: string) => {
     const next = clampDimensions({ ...dimensions, [key]: Number(value) });
@@ -100,6 +119,56 @@ export function SettingsPanel({
           </div>
         ) : null}
         <p className="setting-note">单独一行输入 ------- 可以强制切成下一张图。</p>
+      </section>
+
+      <section className="setting-group">
+        <h3>文字排版</h3>
+        <div className="typography-controls">
+          <label>
+            字体
+            <select
+              aria-label="字体"
+              value={fontId}
+              onChange={(event) => onFontChange(event.target.value)}
+            >
+              {fontOptions.map((font) => (
+                <option key={font.id} value={font.id}>
+                  {font.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            字体大小
+            <select
+              aria-label="字体大小"
+              value={fontSizePreset}
+              onChange={(event) =>
+                onFontSizePresetChange(event.target.value as FontSizePreset)
+              }
+            >
+              {fontSizeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        {fontSizePreset === "custom" ? (
+          <label className="font-size-slider">
+            <span>自定义字体大小 {customFontSize}px</span>
+            <input
+              aria-label="自定义字体大小"
+              type="range"
+              min={FONT_SIZE_MIN}
+              max={FONT_SIZE_MAX}
+              value={customFontSize}
+              onChange={(event) => onCustomFontSizeChange(Number(event.target.value))}
+            />
+          </label>
+        ) : null}
+        <p className="setting-note">字体只能从内置列表选择，暂不支持上传自定义字体。</p>
       </section>
 
       <section className="setting-group">
