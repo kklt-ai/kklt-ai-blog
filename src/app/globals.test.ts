@@ -23,6 +23,17 @@ describe("global layout styles", () => {
     expect(settingsRule).not.toMatch(/(^|\n)\s*height:/);
   });
 
+  it("keeps editor controls visible while the left panel scrolls", () => {
+    const editorControlsRule = getRule(".editor-sticky-controls");
+
+    expect(editorControlsRule).toContain("position: sticky");
+    expect(editorControlsRule).toContain("top: 0");
+    expect(editorControlsRule).toContain("z-index: 5");
+    expect(editorControlsRule).toContain("margin: -18px -18px 0");
+    expect(editorControlsRule).toContain("padding: 18px 18px 2px");
+    expect(editorControlsRule).toContain("background: var(--panel)");
+  });
+
   it("restores native iPhone Notes list markers", () => {
     expect(css).toContain(".theme-iphone-notes ul {\n  list-style-type: disc;");
     expect(css).toContain(".theme-iphone-notes ol {\n  list-style-type: decimal;");

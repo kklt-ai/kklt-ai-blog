@@ -317,78 +317,80 @@ export function EditorPanel({
 
   return (
     <section className="workspace-panel editor-panel" aria-label="Markdown 编辑面板">
-      <div className="panel-heading">
-        <div>
-          <p className="eyebrow">Write</p>
-          <h1>Markdown</h1>
-        </div>
-        <div className="toolbar">
-          <button
-            className="icon-button icon-button--compact"
-            type="button"
-            onClick={onUndo}
-            disabled={!canUndo}
-            title="撤销 (Cmd/Ctrl+Z)"
-          >
-            <Undo2 aria-hidden="true" size={18} />
-            <span className="sr-only">撤销</span>
-          </button>
-          <label className="icon-button" title="上传 Markdown 文件">
-            <FileUp aria-hidden="true" size={18} />
-            <span className="sr-only">上传 Markdown 文件</span>
-            <input
-              aria-label="上传 Markdown 文件"
-              className="sr-only"
-              type="file"
-              accept=".md,text/markdown,text/plain"
-              onChange={handleFileChange}
-            />
-          </label>
-          <button
-            className="icon-button icon-button--compact"
-            type="button"
-            onClick={onReset}
-            title="恢复示例"
-          >
-            <RotateCcw aria-hidden="true" size={18} />
-            <span className="sr-only">恢复示例</span>
-          </button>
-        </div>
-      </div>
-
-      {error ? <p className="inline-error">{error}</p> : null}
-
-      <div className="markdown-format-toolbar" aria-label="Markdown 格式工具栏">
-        {formatButtons.map((button) =>
-          "upload" in button ? (
-            <label
-              key={button.label}
-              className="format-button"
-              title={button.title}
-              aria-label={button.label}
+      <div className="editor-sticky-controls">
+        <div className="panel-heading">
+          <div>
+            <p className="eyebrow">Write</p>
+            <h1>Markdown</h1>
+          </div>
+          <div className="toolbar">
+            <button
+              className="icon-button icon-button--compact"
+              type="button"
+              onClick={onUndo}
+              disabled={!canUndo}
+              title="撤销 (Cmd/Ctrl+Z)"
             >
-              {button.icon}
+              <Undo2 aria-hidden="true" size={18} />
+              <span className="sr-only">撤销</span>
+            </button>
+            <label className="icon-button" title="上传 Markdown 文件">
+              <FileUp aria-hidden="true" size={18} />
+              <span className="sr-only">上传 Markdown 文件</span>
               <input
-                aria-label="上传本地图片"
+                aria-label="上传 Markdown 文件"
                 className="sr-only"
                 type="file"
-                accept="image/*"
-                onChange={handleImageFileChange}
+                accept=".md,text/markdown,text/plain"
+                onChange={handleFileChange}
               />
             </label>
-          ) : (
             <button
-              key={button.label}
-              className="format-button"
+              className="icon-button icon-button--compact"
               type="button"
-              onClick={button.action}
-              title={button.title}
-              aria-label={button.label}
+              onClick={onReset}
+              title="恢复示例"
             >
-              {button.icon}
+              <RotateCcw aria-hidden="true" size={18} />
+              <span className="sr-only">恢复示例</span>
             </button>
-          ),
-        )}
+          </div>
+        </div>
+
+        {error ? <p className="inline-error">{error}</p> : null}
+
+        <div className="markdown-format-toolbar" aria-label="Markdown 格式工具栏">
+          {formatButtons.map((button) =>
+            "upload" in button ? (
+              <label
+                key={button.label}
+                className="format-button"
+                title={button.title}
+                aria-label={button.label}
+              >
+                {button.icon}
+                <input
+                  aria-label="上传本地图片"
+                  className="sr-only"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageFileChange}
+                />
+              </label>
+            ) : (
+              <button
+                key={button.label}
+                className="format-button"
+                type="button"
+                onClick={button.action}
+                title={button.title}
+                aria-label={button.label}
+              >
+                {button.icon}
+              </button>
+            ),
+          )}
+        </div>
       </div>
 
       <label className="sr-only" htmlFor="markdown-editor">

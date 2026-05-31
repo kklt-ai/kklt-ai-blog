@@ -131,6 +131,19 @@ p {
   line-height: 1.05;
 }
 
+.editor-sticky-controls {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin: -18px -18px 0;
+  padding: 18px 18px 2px;
+  background: var(--panel);
+  border-bottom: 3px solid var(--ink);
+}
+
 .toolbar {
   display: flex;
   align-items: center;
@@ -958,6 +971,11 @@ button:focus-visible {
   .preview-export-bar {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .editor-sticky-controls {
+    margin: -12px -12px 0;
+    padding: 12px 12px 2px;
   }
 
   .shortcut-grid,
