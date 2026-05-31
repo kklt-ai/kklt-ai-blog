@@ -69,8 +69,8 @@ describe("global layout styles", () => {
     const watermarkRule = getRule(".xhs-watermark");
     const avatarRule = getRule(".xhs-page .xhs-watermark-avatar");
 
-    expect(watermarkRule).toContain("top: calc(var(--page-padding) * 0.32)");
-    expect(watermarkRule).toContain("right: calc(var(--page-padding) * 0.32)");
+    expect(watermarkRule).toContain("top: calc(var(--page-padding) * 0.12)");
+    expect(watermarkRule).toContain("right: calc(var(--page-padding) * 0.12)");
     expect(watermarkRule).toContain("background: rgba(255, 255, 255, 0.9)");
     expect(watermarkRule).not.toContain("backdrop-filter");
     expect(watermarkRule).toContain("font-size: max(14px, calc(var(--page-base) * 0.34))");

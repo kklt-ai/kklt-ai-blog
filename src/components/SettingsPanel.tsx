@@ -256,66 +256,73 @@ export function SettingsPanel({
 
           <section className="setting-group">
             <h3>作者水印</h3>
-            <label className="switch-row">
-              <input
-                aria-label="显示水印"
-                type="checkbox"
-                checked={watermark.enabled}
-                onChange={(event) => updateWatermark({ enabled: event.target.checked })}
-              />
-              <span>显示水印</span>
-            </label>
-            <label className="watermark-name-field">
-              作者名
-              <input
-                aria-label="作者名"
-                type="text"
-                value={watermark.authorName}
-                onChange={(event) => updateWatermark({ authorName: event.target.value })}
-              />
-            </label>
-            <div className="watermark-avatar-row">
-              {watermark.avatarSrc ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  className="watermark-avatar-preview"
-                  alt="当前作者头像"
-                  src={watermark.avatarSrc}
+            <div className={`watermark-box${watermark.enabled ? "" : " watermark-box--off"}`}>
+              <label className="watermark-toggle">
+                <input
+                  aria-label="显示水印"
+                  type="checkbox"
+                  checked={watermark.enabled}
+                  onChange={(event) => updateWatermark({ enabled: event.target.checked })}
                 />
-              ) : (
-                <span className="watermark-avatar-empty" aria-hidden="true">
-                  无头像
-                </span>
-              )}
-              <div className="watermark-avatar-actions">
-                <button
-                  type="button"
-                  className="watermark-avatar-button"
-                  onClick={() => watermarkAvatarInputRef.current?.click()}
-                >
-                  上传头像
-                </button>
-                {watermark.avatarSrc ? (
-                  <button
-                    type="button"
-                    className="watermark-avatar-button watermark-avatar-button--muted"
-                    onClick={() => updateWatermark({ avatarSrc: null })}
-                  >
-                    移除头像
-                  </button>
-                ) : null}
+                <span>显示水印</span>
+              </label>
+              <div className="watermark-fields">
+                <label className="watermark-name-field">
+                  <input
+                    aria-label="作者名"
+                    type="text"
+                    value={watermark.authorName}
+                    disabled={!watermark.enabled}
+                    onChange={(event) => updateWatermark({ authorName: event.target.value })}
+                  />
+                </label>
+                <div className="watermark-avatar-row">
+                  {watermark.avatarSrc ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="watermark-avatar-preview"
+                      alt="当前作者头像"
+                      src={watermark.avatarSrc}
+                    />
+                  ) : (
+                    <span className="watermark-avatar-empty" aria-hidden="true">
+                      无头像
+                    </span>
+                  )}
+                  <div className="watermark-avatar-actions">
+                    <button
+                      type="button"
+                      className="watermark-avatar-button"
+                      disabled={!watermark.enabled}
+                      onClick={() => watermarkAvatarInputRef.current?.click()}
+                    >
+                      上传头像
+                    </button>
+                    {watermark.avatarSrc ? (
+                      <button
+                        type="button"
+                        className="watermark-avatar-button watermark-avatar-button--muted"
+                        disabled={!watermark.enabled}
+                        onClick={() => updateWatermark({ avatarSrc: null })}
+                      >
+                        移除头像
+                      </button>
+                    ) : null}
+                  </div>
+                  <input
+                    ref={watermarkAvatarInputRef}
+                    aria-label="上传头像"
+                    className="sr-only"
+                    type="file"
+                    accept="image/*"
+                    disabled={!watermark.enabled}
+                    onChange={(event) => {
+                      handleWatermarkAvatarUpload(event.target.files?.[0]);
+                      event.target.value = "";
+                    }}
+                  />
+                </div>
               </div>
-              <input
-                ref={watermarkAvatarInputRef}
-                aria-label="上传头像"
-                className="sr-only"
-                type="file"
-                accept="image/*"
-                onChange={(event) => {
-                  handleWatermarkAvatarUpload(event.target.files?.[0]);
-                  event.target.value = "";
-                }}
-              />
             </div>
           </section>
         </div>

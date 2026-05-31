@@ -460,6 +460,42 @@ button:focus-visible {
 
 .dimension-row label,
 .typography-controls label,
+.watermark-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 2px solid var(--ink);
+  background: #fff;
+  padding: 10px;
+}
+
+.watermark-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.watermark-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--hot-pink);
+  cursor: pointer;
+}
+
+.watermark-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.watermark-box--off .watermark-fields {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
 .watermark-name-field,
 .font-size-slider {
   display: grid;
@@ -482,9 +518,6 @@ button:focus-visible {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 2px solid var(--ink);
-  background: #fff;
-  padding: 10px;
 }
 
 .watermark-avatar-preview,
@@ -609,8 +642,8 @@ button:focus-visible {
 
 .xhs-watermark {
   position: absolute;
-  top: calc(var(--page-padding) * 0.32);
-  right: calc(var(--page-padding) * 0.32);
+  top: calc(var(--page-padding) * 0.12);
+  right: calc(var(--page-padding) * 0.12);
   z-index: 3;
   max-width: 42%;
   display: inline-flex;
