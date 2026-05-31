@@ -20,7 +20,7 @@ This is a Next.js App Router web tool for turning Markdown into paginated PNG im
 Key capabilities:
 
 - Markdown editing and `.md` upload.
-- Markdown toolbar actions for headings, emphasis, lists, quotes, code, highlights, dividers, undo, and images.
+- Markdown toolbar actions for headings, emphasis, lists, quotes, code, highlights, tables, dividers, undo, and images.
 - Manual page splitting with markdown dividers made of three or more dashes.
 - Automatic pagination based on estimated rendered height.
 - Theme, typography, and dimension controls.
@@ -37,6 +37,8 @@ Key capabilities:
 - `npx vitest run path/to/file.test.ts` - run one test file.
 
 Use `npm test` for most logic or component changes. Use `npm run build` when touching Next.js app wiring, API routes, exports, config, or anything that may affect production compilation.
+
+If `npm run lint` opens Next.js' interactive ESLint setup prompt, do not continue through that prompt unless explicitly asked to configure ESLint. Use the relevant Vitest command and `npm run build` as the verification path instead.
 
 ## Tech Stack
 
@@ -60,7 +62,9 @@ Use `npm test` for most logic or component changes. Use `npm run build` when tou
 - `src/lib/markdown.ts` - Markdown parsing and conversion to the custom block/inline AST.
 - `src/lib/pagination.ts` - page packing and oversized text/code splitting heuristics.
 - `src/lib/dimensions.ts` - dimension clamping and page size resolution.
-- `src/lib/themes.ts` - static theme definitions and syntax-style resolution.
+- `src/lib/themes/index.ts` - theme registry, default theme, lookup, and syntax-style resolution.
+- `src/lib/themes/shared.ts` - shared theme helpers such as `syntax()`.
+- `src/lib/themes/*.ts` - one static `ThemeDefinition` per theme.
 - `src/lib/typography.ts` - font options, font-size presets, and typography resolution.
 - `src/lib/images.ts` - image source resolution for rendered pages.
 - `src/lib/localImages.ts` - IndexedDB-backed local image storage and cleanup helpers.
@@ -100,9 +104,12 @@ Do not replace this with inline base64 Markdown unless explicitly requested; tha
 
 - Keep `src/app/page.tsx` as the orchestration layer. Put parsing, pagination, dimensions, images, export, themes, and typography logic in `src/lib`.
 - Keep UI panels focused: editor behavior in `EditorPanel`, preview/export behavior in `PreviewPanel`, final page rendering in `RenderedPage`, settings in `SettingsPanel`.
-- When adding Markdown syntax, update parsing, rendering, pagination estimates, and tests together.
+- When adding Markdown syntax, update parsing, rendering, pagination estimates, rendered-page CSS, toolbar behavior if applicable, and tests together.
+- Tables are parsed from GFM into the custom `MarkdownBlock` AST, rendered by `RenderedPage`, estimated by `pagination.ts`, and styled in `globals.css` with theme syntax variables.
 - When changing pagination or dimensions, cover both fixed-size and auto-height behavior where relevant.
 - When changing image handling, account for remote URLs, local filesystem paths, standalone image lines, Markdown image syntax, and `local-image://` sources.
+- When adding or changing a theme, edit that theme's file in `src/lib/themes/`. Add new themes to `src/lib/themes/index.ts` to preserve the registry order, and update `src/lib/themes.test.ts` when the expected theme set or required syntax tokens changes.
+- Shared theme syntax tokens belong in `src/lib/themes/shared.ts`; avoid duplicating common token derivation in every theme file.
 - Use `lucide-react` icons for controls when an icon is needed.
 - Avoid speculative abstractions and global rewrites.
 
@@ -111,6 +118,7 @@ Do not replace this with inline base64 Markdown unless explicitly requested; tha
 - Parser changes: add or update tests in `src/lib/markdown.test.ts`.
 - Pagination changes: add or update tests in `src/lib/pagination.test.ts`.
 - Theme or typography changes: update relevant `src/lib/*test.ts` files.
+- Rendered Markdown or syntax styling changes: update `src/components/RenderedPage.test.tsx` and `src/app/globals.test.ts` where relevant.
 - Local image changes: update `src/lib/localImages.test.ts` and component tests if editor or rendering behavior changes.
 - Component behavior changes: update the matching `src/components/*.test.tsx` file.
 - API route changes: update `src/app/api/image/route.test.ts`.
