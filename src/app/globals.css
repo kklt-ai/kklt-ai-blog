@@ -565,12 +565,15 @@ button:focus-visible {
   box-shadow: 0 8px 22px rgba(17, 17, 17, 0.08);
 }
 
-.xhs-watermark-avatar {
+.xhs-page .xhs-watermark-avatar {
+  display: block;
   width: 34px;
   height: 34px;
   flex: 0 0 auto;
+  border: 2px solid rgba(255, 255, 255, 0.9);
   border-radius: 999px;
   object-fit: cover;
+  box-shadow: 0 1px 4px rgba(17, 17, 17, 0.14);
 }
 
 .xhs-watermark-name {
@@ -692,7 +695,7 @@ button:focus-visible {
   border-radius: var(--syntax-image-radius);
 }
 
-.xhs-page img {
+.xhs-page figure > img {
   display: block;
   width: 100%;
   max-height: 460px;

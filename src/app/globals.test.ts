@@ -47,4 +47,10 @@ describe("global layout styles", () => {
   it("centers Markdown image captions", () => {
     expect(getRule(".xhs-page figcaption")).toContain("text-align: center");
   });
+
+  it("keeps Markdown image styles from overriding the author watermark avatar", () => {
+    expect(getRule(".xhs-page img")).toBe("");
+    expect(getRule(".xhs-page figure > img")).toContain("width: 100%");
+    expect(getRule(".xhs-page .xhs-watermark-avatar")).toContain("border-radius: 999px");
+  });
 });
