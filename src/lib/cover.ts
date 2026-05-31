@@ -1,0 +1,415 @@
+export type CoverChannelId = "xiaohongshu" | "wechat";
+
+export type CoverChannel = {
+  id: CoverChannelId;
+  name: string;
+  sizeLabel: string;
+  width: number;
+  height: number;
+};
+
+export type BrandIconId =
+  | "codex"
+  | "openai"
+  | "anthropic"
+  | "chatgpt"
+  | "claude"
+  | "gemini";
+
+export type TextAlign = "left" | "center" | "right";
+export type CoverFontFamily = "system" | "serif" | "rounded" | "mono";
+
+export type CoverTextLayer = {
+  id: string;
+  type: "text";
+  text: string;
+  x: number;
+  y: number;
+  width: number;
+  fontSize: number;
+  color: string;
+  fontFamily: CoverFontFamily;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
+  align: TextAlign;
+  letterSpacing?: number;
+};
+
+export type CoverIconLayer = {
+  id: string;
+  type: "icon";
+  iconId: BrandIconId;
+  x: number;
+  y: number;
+  size: number;
+};
+
+export type CoverLayer = CoverTextLayer | CoverIconLayer;
+
+export type CoverTemplate = {
+  id: string;
+  name: string;
+  channel: CoverChannelId;
+  description: string;
+  backgroundClassName: string;
+  layers: CoverLayer[];
+};
+
+export type BrandIcon = {
+  id: BrandIconId;
+  name: string;
+  mark: string;
+  className: string;
+};
+
+let nextLayerId = 1;
+
+function layerId(prefix: string) {
+  nextLayerId += 1;
+  return `${prefix}-${Date.now().toString(36)}-${nextLayerId}`;
+}
+
+export const COVER_CHANNELS: CoverChannel[] = [
+  {
+    id: "xiaohongshu",
+    name: "小红书",
+    sizeLabel: "3:4 竖版",
+    width: 1242,
+    height: 1660,
+  },
+  {
+    id: "wechat",
+    name: "公众号",
+    sizeLabel: "首图横版",
+    width: 1200,
+    height: 628,
+  },
+];
+
+export const BRAND_ICONS: BrandIcon[] = [
+  {
+    id: "codex",
+    name: "Codex",
+    mark: "Cx",
+    className: "bg-zinc-950 text-white",
+  },
+  {
+    id: "openai",
+    name: "OpenAI",
+    mark: "OA",
+    className: "bg-emerald-950 text-emerald-50",
+  },
+  {
+    id: "anthropic",
+    name: "Anthropic",
+    mark: "A",
+    className: "bg-orange-100 text-stone-950",
+  },
+  {
+    id: "chatgpt",
+    name: "ChatGPT",
+    mark: "GPT",
+    className: "bg-teal-500 text-white",
+  },
+  {
+    id: "claude",
+    name: "Claude",
+    mark: "Cl",
+    className: "bg-amber-700 text-amber-50",
+  },
+  {
+    id: "gemini",
+    name: "Gemini",
+    mark: "G",
+    className: "bg-indigo-600 text-white",
+  },
+];
+
+export const COVER_FONT_FAMILIES: Array<{
+  id: CoverFontFamily;
+  name: string;
+  css: string;
+}> = [
+  {
+    id: "system",
+    name: "现代黑体",
+    css: "Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+  },
+  {
+    id: "serif",
+    name: "杂志宋体",
+    css: "Georgia, 'Songti SC', 'SimSun', serif",
+  },
+  {
+    id: "rounded",
+    name: "圆润标题",
+    css: "'Arial Rounded MT Bold', 'PingFang SC', 'Microsoft YaHei', sans-serif",
+  },
+  {
+    id: "mono",
+    name: "科技等宽",
+    css: "'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
+  },
+];
+
+export function fontFamilyCss(fontFamily: CoverFontFamily) {
+  return (
+    COVER_FONT_FAMILIES.find((font) => font.id === fontFamily)?.css ??
+    COVER_FONT_FAMILIES[0].css
+  );
+}
+
+export function createTextLayer(text = "双击改标题"): CoverTextLayer {
+  return {
+    id: layerId("text"),
+    type: "text",
+    text,
+    x: 18,
+    y: 36,
+    width: 64,
+    fontSize: 72,
+    color: "#111111",
+    fontFamily: "system",
+    bold: true,
+    italic: false,
+    underline: false,
+    align: "center",
+  };
+}
+
+export function createIconLayer(iconId: BrandIconId): CoverIconLayer {
+  return {
+    id: layerId("icon"),
+    type: "icon",
+    iconId,
+    x: 72,
+    y: 12,
+    size: 13,
+  };
+}
+
+function templateTextLayer(
+  id: string,
+  text: string,
+  overrides: Partial<CoverTextLayer>,
+): CoverTextLayer {
+  return {
+    ...createTextLayer(text),
+    id,
+    ...overrides,
+  };
+}
+
+function templateIconLayer(
+  id: string,
+  iconId: BrandIconId,
+  overrides: Partial<CoverIconLayer>,
+): CoverIconLayer {
+  return {
+    ...createIconLayer(iconId),
+    id,
+    ...overrides,
+  };
+}
+
+export const COVER_TEMPLATES: CoverTemplate[] = [
+  {
+    id: "xhs-ai-hot",
+    name: "AI 爆款封面",
+    channel: "xiaohongshu",
+    description: "醒目标题、强对比贴纸风，适合教程/观点。",
+    backgroundClassName:
+      "bg-[radial-gradient(circle_at_18%_18%,#ffffff_0_10%,transparent_11%),linear-gradient(135deg,#fff15f_0%,#ff4fb3_48%,#34d5ff_100%)]",
+    layers: [
+      templateTextLayer("xhs-ai-hot-title", "AI 工具\n效率翻倍", {
+        x: 12,
+        y: 28,
+        width: 76,
+        fontSize: 108,
+        color: "#111111",
+        bold: true,
+      }),
+      templateTextLayer("xhs-ai-hot-subtitle", "Codex × OpenAI 实战封面", {
+        x: 16,
+        y: 66,
+        width: 68,
+        fontSize: 42,
+        color: "#ffffff",
+      }),
+      templateIconLayer("xhs-ai-hot-icon", "codex", { x: 72, y: 10, size: 15 }),
+    ],
+  },
+  {
+    id: "xhs-soft-lab",
+    name: "柔光知识卡",
+    channel: "xiaohongshu",
+    description: "干净柔和，适合清单、读书和复盘内容。",
+    backgroundClassName:
+      "bg-[linear-gradient(160deg,#fff7ed_0%,#fef3c7_44%,#dbeafe_100%)]",
+    layers: [
+      templateTextLayer("xhs-soft-lab-title", "新手也能懂的\nAI 工作流", {
+        x: 13,
+        y: 22,
+        width: 74,
+        fontSize: 86,
+        color: "#7c2d12",
+        fontFamily: "serif",
+      }),
+      templateTextLayer("xhs-soft-lab-subtitle", "收藏这一篇就够了", {
+        x: 23,
+        y: 62,
+        width: 54,
+        fontSize: 42,
+        color: "#1e3a8a",
+      }),
+      templateIconLayer("xhs-soft-lab-icon", "openai", { x: 11, y: 11, size: 12 }),
+    ],
+  },
+  {
+    id: "xhs-black-gold",
+    name: "黑金发布会",
+    channel: "xiaohongshu",
+    description: "高级发布会风格，适合新品、课程和重磅观点。",
+    backgroundClassName:
+      "bg-[radial-gradient(circle_at_76%_18%,#fde68a_0_8%,transparent_9%),linear-gradient(145deg,#111827_0%,#312e81_54%,#f59e0b_100%)]",
+    layers: [
+      templateTextLayer("xhs-black-gold-title", "年度 AI\n工具清单", {
+        x: 10,
+        y: 27,
+        width: 78,
+        fontSize: 96,
+        color: "#fef3c7",
+        fontFamily: "serif",
+      }),
+      templateTextLayer("xhs-black-gold-subtitle", "从灵感到交付，一页讲透", {
+        x: 18,
+        y: 64,
+        width: 64,
+        fontSize: 38,
+        color: "#ffffff",
+      }),
+      templateIconLayer("xhs-black-gold-icon", "claude", { x: 73, y: 11, size: 13 }),
+    ],
+  },
+  {
+    id: "wechat-deep-read",
+    name: "公众号深度文章",
+    channel: "wechat",
+    description: "横版首图，适合技术长文和产品观察。",
+    backgroundClassName:
+      "bg-[linear-gradient(120deg,#0f172a_0%,#1e293b_52%,#38bdf8_100%)]",
+    layers: [
+      templateTextLayer("wechat-deep-read-title", "大模型时代的\n产品判断", {
+        x: 8,
+        y: 24,
+        width: 56,
+        fontSize: 68,
+        color: "#ffffff",
+        align: "left",
+      }),
+      templateTextLayer("wechat-deep-read-subtitle", "从 Codex 到 Agent 工作流", {
+        x: 9,
+        y: 66,
+        width: 52,
+        fontSize: 28,
+        color: "#bae6fd",
+        align: "left",
+      }),
+      templateIconLayer("wechat-deep-read-icon", "anthropic", {
+        x: 78,
+        y: 31,
+        size: 12,
+      }),
+    ],
+  },
+  {
+    id: "wechat-newsroom",
+    name: "科技通讯社",
+    channel: "wechat",
+    description: "明亮杂志感，适合资讯合集和周报。",
+    backgroundClassName:
+      "bg-[linear-gradient(90deg,#f8fafc_0%,#fef08a_48%,#fb7185_100%)]",
+    layers: [
+      templateTextLayer("wechat-newsroom-title", "本周 AI 产品\n值得关注的 7 件事", {
+        x: 8,
+        y: 18,
+        width: 60,
+        fontSize: 60,
+        color: "#111827",
+        align: "left",
+      }),
+      templateTextLayer("wechat-newsroom-subtitle", "OpenAI / Claude / Gemini", {
+        x: 9,
+        y: 70,
+        width: 50,
+        fontSize: 26,
+        color: "#881337",
+        align: "left",
+      }),
+      templateIconLayer("wechat-newsroom-icon", "gemini", {
+        x: 78,
+        y: 30,
+        size: 12,
+      }),
+    ],
+  },
+  {
+    id: "wechat-clean-opinion",
+    name: "极简观点首图",
+    channel: "wechat",
+    description: "留白充足，适合观点输出、播客和访谈。",
+    backgroundClassName:
+      "bg-[linear-gradient(90deg,#f4f4f5_0%,#ffffff_54%,#c7d2fe_100%)]",
+    layers: [
+      templateTextLayer("wechat-clean-opinion-title", "为什么说\nAgent 是新入口", {
+        x: 8,
+        y: 20,
+        width: 52,
+        fontSize: 62,
+        color: "#18181b",
+        align: "left",
+        fontFamily: "serif",
+      }),
+      templateTextLayer("wechat-clean-opinion-subtitle", "产品经理需要重新理解工作流", {
+        x: 9,
+        y: 70,
+        width: 48,
+        fontSize: 25,
+        color: "#4f46e5",
+        align: "left",
+      }),
+      templateIconLayer("wechat-clean-opinion-icon", "codex", {
+        x: 80,
+        y: 28,
+        size: 11,
+      }),
+    ],
+  },
+];
+
+export function getChannel(channelId: CoverChannelId) {
+  return COVER_CHANNELS.find((channel) => channel.id === channelId) ?? COVER_CHANNELS[0];
+}
+
+export function getTemplatesByChannel(channelId: CoverChannelId) {
+  return COVER_TEMPLATES.filter((template) => template.channel === channelId);
+}
+
+export function cloneTemplateLayers(template: CoverTemplate): CoverLayer[] {
+  return template.layers.map((layer) => ({ ...layer }));
+}
+
+export function updateLayer<T extends CoverLayer>(
+  layers: CoverLayer[],
+  layerIdToUpdate: string,
+  patch: Partial<T>,
+) {
+  return layers.map((layer) =>
+    layer.id === layerIdToUpdate ? ({ ...layer, ...patch } as CoverLayer) : layer,
+  );
+}
+
+export function findBrandIcon(iconId: BrandIconId) {
+  return BRAND_ICONS.find((icon) => icon.id === iconId) ?? BRAND_ICONS[0];
+}

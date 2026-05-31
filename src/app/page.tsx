@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { EditorPanel } from "@/components/EditorPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
@@ -314,6 +315,13 @@ export default function Home() {
 
   return (
     <main className="app-shell">
+      <Link
+        href="/cover"
+        className="fixed bottom-5 right-5 z-50 rounded-full border-4 border-black bg-[#fef15a] px-5 py-3 text-sm font-black text-black shadow-[5px_5px_0_#111] transition hover:-translate-y-0.5"
+      >
+        制作封面
+      </Link>
+
       <EditorPanel
         markdown={markdown}
         error={message}
