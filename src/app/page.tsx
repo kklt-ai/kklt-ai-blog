@@ -24,7 +24,11 @@ import {
   resolveTypography,
   type FontSizePreset,
 } from "@/lib/typography";
-import type { Dimensions } from "@/lib/types";
+import type { Dimensions, WatermarkSettings } from "@/lib/types";
+import {
+  DEFAULT_WATERMARK_SETTINGS,
+  normalizeWatermarkSettings,
+} from "@/lib/watermark";
 
 const STORAGE_KEY = "xhs-md-image-tool";
 
@@ -37,6 +41,7 @@ type StoredState = {
   fontId?: string;
   fontSizePreset?: FontSizePreset;
   customFontSize?: number;
+  watermark?: WatermarkSettings;
 };
 
 export default function Home() {
@@ -50,6 +55,7 @@ export default function Home() {
     defaultTypography.fontSizePreset,
   );
   const [customFontSize, setCustomFontSize] = useState(defaultTypography.customFontSize);
+  const [watermark, setWatermark] = useState(DEFAULT_WATERMARK_SETTINGS);
   const [selectedPageIndex, setSelectedPageIndex] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -87,6 +93,9 @@ export default function Home() {
       if (typeof parsed.customFontSize === "number") {
         setCustomFontSize(clampFontSize(parsed.customFontSize));
       }
+      if (parsed.watermark) {
+        setWatermark(normalizeWatermarkSettings(parsed.watermark));
+      }
     } catch {
       window.localStorage.removeItem(STORAGE_KEY);
     } finally {
@@ -106,6 +115,7 @@ export default function Home() {
         fontId,
         fontSizePreset,
         customFontSize,
+        watermark,
       }),
     );
   }, [
@@ -117,6 +127,7 @@ export default function Home() {
     fontSizePreset,
     markdown,
     themeId,
+    watermark,
   ]);
 
   const theme = useMemo(() => getThemeById(themeId), [themeId]);
@@ -261,6 +272,7 @@ export default function Home() {
             fontId,
             fontSizePreset,
             customFontSize,
+            watermark,
           }),
         );
         setMessage("草稿已保存在本机浏览器");
@@ -284,6 +296,7 @@ export default function Home() {
     fontSizePreset,
     markdown,
     themeId,
+    watermark,
   ]);
 
   return (
@@ -310,6 +323,7 @@ export default function Home() {
         dimensions={dimensions}
         pageDimensions={pageDimensions}
         localImageSources={localImageSources}
+        watermark={watermark}
         autoHeightEnabled={!fixedSizeEnabled}
         isExporting={isExporting}
         onPageChange={setSelectedPageIndex}
@@ -326,6 +340,7 @@ export default function Home() {
         fontId={fontId}
         fontSizePreset={fontSizePreset}
         customFontSize={customFontSize}
+        watermark={watermark}
         onThemeChange={setThemeId}
         onDimensionsChange={(next) => setDimensions(clampDimensions(next))}
         onFixedSizeEnabledChange={setFixedSizeEnabled}
@@ -333,6 +348,8 @@ export default function Home() {
         onFontChange={setFontId}
         onFontSizePresetChange={setFontSizePreset}
         onCustomFontSizeChange={(size) => setCustomFontSize(clampFontSize(size))}
+        onWatermarkChange={setWatermark}
+        onWatermarkUploadError={setMessage}
       />
     </main>
   );

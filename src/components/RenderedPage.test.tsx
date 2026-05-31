@@ -4,6 +4,19 @@ import { getThemeById } from "@/lib/themes";
 import { RenderedPage } from "./RenderedPage";
 
 describe("RenderedPage", () => {
+  const basePage = {
+    id: "page-1",
+    manualGroupIndex: 0,
+    estimatedHeight: 0,
+    blocks: [
+      {
+        type: "paragraph" as const,
+        text: "正文内容",
+        inline: [{ type: "text" as const, text: "正文内容" }],
+      },
+    ],
+  };
+
   it("renders inline Markdown nodes with semantic elements", () => {
     render(
       <RenderedPage
@@ -138,5 +151,63 @@ describe("RenderedPage", () => {
       "src",
       "data:image/png;base64,abc",
     );
+  });
+
+  it("renders the author watermark with avatar and author name", () => {
+    const { container } = render(
+      <RenderedPage
+        page={basePage}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+        watermark={{
+          enabled: true,
+          authorName: "卡卡罗特AI",
+          avatarSrc: "/watermark-avatar.jpg",
+        }}
+      />,
+    );
+
+    expect(screen.getByText("卡卡罗特AI").closest(".xhs-watermark")).not.toBeNull();
+    expect(screen.getByRole("img", { name: "作者头像" })).toHaveAttribute(
+      "src",
+      "/watermark-avatar.jpg",
+    );
+    expect(container.querySelector(".xhs-watermark")).not.toBeNull();
+  });
+
+  it("renders the author watermark without an avatar", () => {
+    render(
+      <RenderedPage
+        page={basePage}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+        watermark={{
+          enabled: true,
+          authorName: "卡卡罗特AI",
+          avatarSrc: null,
+        }}
+      />,
+    );
+
+    expect(screen.getByText("卡卡罗特AI").closest(".xhs-watermark")).not.toBeNull();
+    expect(screen.queryByRole("img", { name: "作者头像" })).not.toBeInTheDocument();
+  });
+
+  it("omits the author watermark when disabled", () => {
+    const { container } = render(
+      <RenderedPage
+        page={basePage}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+        watermark={{
+          enabled: false,
+          authorName: "卡卡罗特AI",
+          avatarSrc: "/watermark-avatar.jpg",
+        }}
+      />,
+    );
+
+    expect(container.querySelector(".xhs-watermark")).toBeNull();
+    expect(screen.queryByText("卡卡罗特AI")).not.toBeInTheDocument();
   });
 });

@@ -396,6 +396,7 @@ button:focus-visible {
 
 .dimension-row label,
 .typography-controls label,
+.watermark-name-field,
 .font-size-slider {
   display: grid;
   gap: 5px;
@@ -404,11 +405,65 @@ button:focus-visible {
 }
 
 .dimension-row input,
-.typography-controls select {
+.typography-controls select,
+.watermark-name-field input {
   min-width: 0;
   border: 3px solid var(--ink);
   padding: 8px;
   font-weight: 900;
+  background: #fff;
+}
+
+.watermark-avatar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 2px solid var(--ink);
+  background: #fff;
+  padding: 10px;
+}
+
+.watermark-avatar-preview,
+.watermark-avatar-empty {
+  flex: 0 0 auto;
+  width: 44px;
+  height: 44px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+}
+
+.watermark-avatar-preview {
+  display: block;
+  object-fit: cover;
+}
+
+.watermark-avatar-empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f4f7fb;
+  font-size: 11px;
+  font-weight: 900;
+}
+
+.watermark-avatar-actions {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.watermark-avatar-button {
+  min-height: 32px;
+  border: 2px solid var(--ink);
+  background: var(--electric-blue);
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 900;
+  box-shadow: 3px 3px 0 rgba(17, 17, 17, 0.16);
+}
+
+.watermark-avatar-button--muted {
   background: #fff;
 }
 
@@ -486,6 +541,43 @@ button:focus-visible {
   display: flex;
   flex-direction: column;
   gap: var(--page-gap);
+}
+
+.xhs-watermark {
+  position: absolute;
+  top: calc(var(--page-padding) * 0.55);
+  right: calc(var(--page-padding) * 0.55);
+  z-index: 3;
+  max-width: 34%;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(17, 17, 17, 0.72);
+  padding: 5px 9px 5px 5px;
+  font-family: var(--page-font);
+  font-size: max(12px, calc(var(--page-base) * 0.28));
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.08);
+}
+
+.xhs-watermark-avatar {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  object-fit: cover;
+}
+
+.xhs-watermark-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .xhs-page h1,

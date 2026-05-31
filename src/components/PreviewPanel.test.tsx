@@ -8,6 +8,11 @@ describe("PreviewPanel", () => {
     fontFamily: '-apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif',
     fontSize: 44,
   };
+  const watermark = {
+    enabled: true,
+    authorName: "卡卡罗特AI",
+    avatarSrc: "/watermark-avatar.jpg",
+  };
   const originalResizeObserver = global.ResizeObserver;
   const originalGetComputedStyle = window.getComputedStyle;
   let scrollHeightSpy: ReturnType<typeof vi.spyOn>;
@@ -133,6 +138,7 @@ describe("PreviewPanel", () => {
         typography={typography}
         dimensions={{ width: 1080, height: 1440 }}
         pageDimensions={[{ width: 1080, height: 760 }]}
+        watermark={watermark}
         autoHeightEnabled
         isExporting={false}
         onPageChange={vi.fn()}
@@ -169,6 +175,7 @@ describe("PreviewPanel", () => {
         typography={typography}
         dimensions={{ width: 1080, height: 1440 }}
         pageDimensions={[{ width: 1080, height: 1440 }]}
+        watermark={watermark}
         autoHeightEnabled={false}
         isExporting={false}
         onPageChange={vi.fn()}
@@ -209,6 +216,7 @@ describe("PreviewPanel", () => {
         typography={typography}
         dimensions={{ width: 1080, height: 1440 }}
         pageDimensions={[{ width: 1080, height: 1440 }]}
+        watermark={watermark}
         autoHeightEnabled
         isExporting={false}
         onPageChange={vi.fn()}
@@ -251,6 +259,7 @@ describe("PreviewPanel", () => {
           { width: 1080, height: 1440 },
           { width: 1080, height: 1440 },
         ]}
+        watermark={watermark}
         autoHeightEnabled={false}
         isExporting
         onPageChange={vi.fn()}
@@ -303,6 +312,7 @@ describe("PreviewPanel", () => {
           { width: 1080, height: 1440 },
           { width: 1080, height: 1440 },
         ]}
+        watermark={watermark}
         autoHeightEnabled={false}
         isExporting={false}
         onPageChange={vi.fn()}

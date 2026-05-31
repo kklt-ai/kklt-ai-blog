@@ -7,6 +7,7 @@ import type {
   Dimensions,
   GeneratedPage,
   ThemeDefinition,
+  WatermarkSettings,
 } from "@/lib/types";
 import type { LocalImageSources } from "@/lib/localImages";
 import type { ResolvedTypography } from "@/lib/typography";
@@ -21,6 +22,7 @@ type PreviewPanelProps = {
   dimensions: Dimensions;
   pageDimensions: Dimensions[];
   localImageSources?: LocalImageSources;
+  watermark: WatermarkSettings;
   autoHeightEnabled: boolean;
   isExporting: boolean;
   onPageChange: (index: number) => void;
@@ -90,6 +92,7 @@ export function PreviewPanel({
   dimensions,
   pageDimensions,
   localImageSources = {},
+  watermark,
   autoHeightEnabled,
   isExporting,
   onPageChange,
@@ -227,6 +230,7 @@ export function PreviewPanel({
                 typography={typography}
                 dimensions={pageSize}
                 localImageSources={localImageSources}
+                watermark={watermark}
                 scale={scale}
               />
             </div>
@@ -253,6 +257,7 @@ export function PreviewPanel({
                 typography={typography}
                 dimensions={pageSize}
                 localImageSources={localImageSources}
+                watermark={watermark}
               />
             </div>
           );

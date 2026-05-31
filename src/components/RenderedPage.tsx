@@ -17,6 +17,7 @@ import type {
   MarkdownBlock,
   MarkdownInline,
   ThemeDefinition,
+  WatermarkSettings,
 } from "@/lib/types";
 import type { ResolvedTypography } from "@/lib/typography";
 
@@ -26,6 +27,7 @@ type RenderedPageProps = {
   dimensions: Dimensions;
   typography?: ResolvedTypography;
   localImageSources?: LocalImageSources;
+  watermark?: WatermarkSettings;
   scale?: number;
 };
 
@@ -132,6 +134,7 @@ export function RenderedPage({
   dimensions,
   typography,
   localImageSources = {},
+  watermark,
   scale = 1,
 }: RenderedPageProps) {
   const syntax = resolveThemeSyntax(theme);
@@ -170,10 +173,28 @@ export function RenderedPage({
   } as CSSProperties;
 
   const isIPhoneNotes = theme.id === "iphone-notes";
+  const trimmedAuthorName = watermark?.authorName.trim() ?? "";
+  const shouldRenderWatermark =
+    Boolean(watermark?.enabled) && Boolean(trimmedAuthorName || watermark?.avatarSrc);
 
   return (
     <article className={`xhs-page theme-${theme.id} motif-${theme.motif}`} style={style}>
       {isIPhoneNotes ? <IPhoneNotesChrome /> : null}
+      {shouldRenderWatermark ? (
+        <div className="xhs-watermark" aria-label="作者水印">
+          {watermark?.avatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              className="xhs-watermark-avatar"
+              alt="作者头像"
+              src={watermark.avatarSrc}
+            />
+          ) : null}
+          {trimmedAuthorName ? (
+            <span className="xhs-watermark-name">{trimmedAuthorName}</span>
+          ) : null}
+        </div>
+      ) : null}
       <div className="xhs-page-inner">
         {page.blocks.length ? (
           page.blocks.map((block, index) => renderBlock(block, index, localImageSources))

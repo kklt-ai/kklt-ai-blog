@@ -1,6 +1,7 @@
 "use client";
 
 import { PanelTopOpen } from "lucide-react";
+import { useRef } from "react";
 import { clampDimensions } from "@/lib/dimensions";
 import { themes } from "@/lib/themes";
 import {
@@ -11,6 +12,7 @@ import {
   type FontSizePreset,
 } from "@/lib/typography";
 import type { Dimensions } from "@/lib/types";
+import type { WatermarkSettings } from "@/lib/types";
 
 type SettingsPanelProps = {
   selectedThemeId: string;
@@ -20,6 +22,7 @@ type SettingsPanelProps = {
   fontId: string;
   fontSizePreset: FontSizePreset;
   customFontSize: number;
+  watermark: WatermarkSettings;
   onThemeChange: (themeId: string) => void;
   onDimensionsChange: (dimensions: Dimensions) => void;
   onFixedSizeEnabledChange: (enabled: boolean) => void;
@@ -27,6 +30,8 @@ type SettingsPanelProps = {
   onFontChange: (fontId: string) => void;
   onFontSizePresetChange: (preset: FontSizePreset) => void;
   onCustomFontSizeChange: (size: number) => void;
+  onWatermarkChange: (watermark: WatermarkSettings) => void;
+  onWatermarkUploadError: (message: string) => void;
 };
 
 export function SettingsPanel({
@@ -37,6 +42,7 @@ export function SettingsPanel({
   fontId,
   fontSizePreset,
   customFontSize,
+  watermark,
   onThemeChange,
   onDimensionsChange,
   onFixedSizeEnabledChange,
@@ -44,10 +50,34 @@ export function SettingsPanel({
   onFontChange,
   onFontSizePresetChange,
   onCustomFontSizeChange,
+  onWatermarkChange,
+  onWatermarkUploadError,
 }: SettingsPanelProps) {
+  const watermarkAvatarInputRef = useRef<HTMLInputElement>(null);
+
   const updateDimension = (key: keyof Dimensions, value: string) => {
     const next = clampDimensions({ ...dimensions, [key]: Number(value) });
     onDimensionsChange(next);
+  };
+
+  const updateWatermark = (next: Partial<WatermarkSettings>) => {
+    onWatermarkChange({ ...watermark, ...next });
+  };
+
+  const handleWatermarkAvatarUpload = (file: File | undefined) => {
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") {
+        onWatermarkUploadError("头像读取失败，请换一张图片重试");
+        return;
+      }
+
+      updateWatermark({ avatarSrc: reader.result });
+    };
+    reader.onerror = () => onWatermarkUploadError("头像读取失败，请换一张图片重试");
+    reader.readAsDataURL(file);
   };
 
   return (
@@ -155,6 +185,67 @@ export function SettingsPanel({
             />
           </label>
         ) : null}
+      </section>
+
+      <section className="setting-group">
+        <h3>作者水印</h3>
+        <label className="switch-row">
+          <input
+            aria-label="显示水印"
+            type="checkbox"
+            checked={watermark.enabled}
+            onChange={(event) => updateWatermark({ enabled: event.target.checked })}
+          />
+          <span>显示水印</span>
+        </label>
+        <label className="watermark-name-field">
+          作者名
+          <input
+            aria-label="作者名"
+            type="text"
+            value={watermark.authorName}
+            onChange={(event) => updateWatermark({ authorName: event.target.value })}
+          />
+        </label>
+        <div className="watermark-avatar-row">
+          {watermark.avatarSrc ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="watermark-avatar-preview" alt="当前作者头像" src={watermark.avatarSrc} />
+          ) : (
+            <span className="watermark-avatar-empty" aria-hidden="true">
+              无头像
+            </span>
+          )}
+          <div className="watermark-avatar-actions">
+            <button
+              type="button"
+              className="watermark-avatar-button"
+              onClick={() => watermarkAvatarInputRef.current?.click()}
+            >
+              上传头像
+            </button>
+            {watermark.avatarSrc ? (
+              <button
+                type="button"
+                className="watermark-avatar-button watermark-avatar-button--muted"
+                onClick={() => updateWatermark({ avatarSrc: null })}
+              >
+                移除头像
+              </button>
+            ) : null}
+          </div>
+          <input
+            ref={watermarkAvatarInputRef}
+            aria-label="上传头像"
+            className="sr-only"
+            type="file"
+            accept="image/*"
+            onChange={(event) => {
+              handleWatermarkAvatarUpload(event.target.files?.[0]);
+              event.target.value = "";
+            }}
+          />
+        </div>
       </section>
 
       <section className="setting-group">

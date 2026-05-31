@@ -28,6 +28,12 @@ export type GeneratedPage = {
   estimatedHeight: number;
 };
 
+export type WatermarkSettings = {
+  enabled: boolean;
+  authorName: string;
+  avatarSrc: string | null;
+};
+
 export type ThemeDefinition = {
   id: string;
   name: string;

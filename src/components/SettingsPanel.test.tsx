@@ -12,6 +12,11 @@ describe("SettingsPanel", () => {
     fontId: "apple-system",
     fontSizePreset: "medium" as const,
     customFontSize: 44,
+    watermark: {
+      enabled: true,
+      authorName: "卡卡罗特AI",
+      avatarSrc: "/watermark-avatar.jpg",
+    },
     onThemeChange: vi.fn(),
     onDimensionsChange: vi.fn(),
     onFixedSizeEnabledChange: vi.fn(),
@@ -19,6 +24,8 @@ describe("SettingsPanel", () => {
     onFontChange: vi.fn(),
     onFontSizePresetChange: vi.fn(),
     onCustomFontSizeChange: vi.fn(),
+    onWatermarkChange: vi.fn(),
+    onWatermarkUploadError: vi.fn(),
   };
 
   it("changes theme and dimensions", () => {
@@ -152,5 +159,75 @@ describe("SettingsPanel", () => {
     fireEvent.change(slider, { target: { value: "56" } });
 
     expect(onCustomFontSizeChange).toHaveBeenCalledWith(56);
+  });
+
+  it("updates author watermark visibility and name", () => {
+    const onWatermarkChange = vi.fn();
+
+    render(<SettingsPanel {...baseProps} onWatermarkChange={onWatermarkChange} />);
+
+    fireEvent.click(screen.getByLabelText("显示水印"));
+    fireEvent.change(screen.getByLabelText("作者名"), {
+      target: { value: "新的作者" },
+    });
+
+    expect(onWatermarkChange).toHaveBeenCalledWith({
+      enabled: false,
+      authorName: "卡卡罗特AI",
+      avatarSrc: "/watermark-avatar.jpg",
+    });
+    expect(onWatermarkChange).toHaveBeenCalledWith({
+      enabled: true,
+      authorName: "新的作者",
+      avatarSrc: "/watermark-avatar.jpg",
+    });
+  });
+
+  it("removes the author avatar", () => {
+    const onWatermarkChange = vi.fn();
+
+    render(<SettingsPanel {...baseProps} onWatermarkChange={onWatermarkChange} />);
+
+    fireEvent.click(screen.getByRole("button", { name: "移除头像" }));
+
+    expect(onWatermarkChange).toHaveBeenCalledWith({
+      enabled: true,
+      authorName: "卡卡罗特AI",
+      avatarSrc: null,
+    });
+  });
+
+  it("uploads an author avatar as a data URL", async () => {
+    const onWatermarkChange = vi.fn();
+    const originalFileReader = global.FileReader;
+
+    class MockFileReader {
+      result = "data:image/png;base64,new-avatar";
+      onload: null | (() => void) = null;
+      onerror: null | (() => void) = null;
+
+      readAsDataURL() {
+        this.onload?.();
+      }
+    }
+
+    global.FileReader = MockFileReader as typeof FileReader;
+
+    try {
+      render(<SettingsPanel {...baseProps} onWatermarkChange={onWatermarkChange} />);
+
+      const file = new File(["avatar"], "avatar.png", { type: "image/png" });
+      fireEvent.change(screen.getByLabelText("上传头像"), {
+        target: { files: [file] },
+      });
+
+      expect(onWatermarkChange).toHaveBeenCalledWith({
+        enabled: true,
+        authorName: "卡卡罗特AI",
+        avatarSrc: "data:image/png;base64,new-avatar",
+      });
+    } finally {
+      global.FileReader = originalFileReader;
+    }
   });
 });
