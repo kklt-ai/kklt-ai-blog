@@ -49,12 +49,12 @@ const x = 1;
 
   it("preserves inline Markdown syntax for themed rendering", () => {
     const [paragraph] = parseMarkdownSegment(
-      "Plain **bold** *italic* ~~deleted~~ ==marked== `code`",
+      "Plain **bold** *italic* ~~deleted~~ ==marked== <u>underlined</u> ++also underlined++ `code`",
     );
 
     expect(paragraph).toEqual({
       type: "paragraph",
-      text: "Plain bold italic deleted marked code",
+      text: "Plain bold italic deleted marked underlined also underlined code",
       inline: [
         { type: "text", text: "Plain " },
         { type: "strong", children: [{ type: "text", text: "bold" }] },
@@ -64,6 +64,10 @@ const x = 1;
         { type: "delete", children: [{ type: "text", text: "deleted" }] },
         { type: "text", text: " " },
         { type: "mark", children: [{ type: "text", text: "marked" }] },
+        { type: "text", text: " " },
+        { type: "underline", children: [{ type: "text", text: "underlined" }] },
+        { type: "text", text: " " },
+        { type: "underline", children: [{ type: "text", text: "also underlined" }] },
         { type: "text", text: " " },
         { type: "inlineCode", code: "code" },
       ],

@@ -5,7 +5,7 @@ export type Dimensions = {
 
 export type MarkdownInline =
   | { type: "text"; text: string }
-  | { type: "strong" | "emphasis" | "delete" | "mark"; children: MarkdownInline[] }
+  | { type: "strong" | "emphasis" | "delete" | "mark" | "underline"; children: MarkdownInline[] }
   | { type: "inlineCode"; code: string };
 
 export type MarkdownListItem = {

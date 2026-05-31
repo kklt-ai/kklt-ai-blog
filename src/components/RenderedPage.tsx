@@ -47,6 +47,7 @@ function renderInline(inline: MarkdownInline[] | undefined, fallback: string, pr
     if (node.type === "strong") return <strong key={key}>{renderInline(node.children, "", key)}</strong>;
     if (node.type === "emphasis") return <em key={key}>{renderInline(node.children, "", key)}</em>;
     if (node.type === "delete") return <del key={key}>{renderInline(node.children, "", key)}</del>;
+    if (node.type === "underline") return <u key={key}>{renderInline(node.children, "", key)}</u>;
     return <mark key={key}>{renderInline(node.children, "", key)}</mark>;
   });
 }

@@ -33,9 +33,9 @@ function inlineText(inline: readonly MarkdownInline[]): string {
     .join("");
 }
 
-function highlightFromText(text: string): MarkdownInline[] {
+function customInlineFromText(text: string): MarkdownInline[] {
   const inline: MarkdownInline[] = [];
-  const pattern = /==([^=]+)==/g;
+  const pattern = /(==|\+\+)(?=\S)([\s\S]*?\S)\1/g;
   let cursor = 0;
   let match: RegExpExecArray | null;
 
@@ -43,7 +43,10 @@ function highlightFromText(text: string): MarkdownInline[] {
     if (match.index > cursor) {
       inline.push({ type: "text", text: text.slice(cursor, match.index) });
     }
-    inline.push({ type: "mark", children: [{ type: "text", text: match[1] }] });
+    inline.push({
+      type: match[1] === "==" ? "mark" : "underline",
+      children: [{ type: "text", text: match[2] }],
+    });
     cursor = match.index + match[0].length;
   }
 
@@ -56,7 +59,7 @@ function highlightFromText(text: string): MarkdownInline[] {
 
 function inlineFromNode(node: TextLikeNode): MarkdownInline[] {
   if (node.type === "text" && typeof node.value === "string") {
-    return highlightFromText(node.value);
+    return customInlineFromText(node.value);
   }
 
   if (node.type === "inlineCode" && typeof node.value === "string") {
@@ -85,14 +88,59 @@ function inlineFromNode(node: TextLikeNode): MarkdownInline[] {
   }
 
   if (typeof node.value === "string") {
-    return highlightFromText(node.value);
+    return customInlineFromText(node.value);
   }
 
   return [];
 }
 
+function isUnderlineOpenTag(node: TextLikeNode) {
+  return node.type === "html" && typeof node.value === "string" && /^<u(?:\s[^>]*)?>$/i.test(node.value);
+}
+
+function isUnderlineCloseTag(node: TextLikeNode) {
+  return node.type === "html" && typeof node.value === "string" && /^<\/u>$/i.test(node.value);
+}
+
 function inlineFromChildren(children: readonly TextLikeNode[] = []): MarkdownInline[] {
-  return children.flatMap(inlineFromNode);
+  const inline: MarkdownInline[] = [];
+  let underlined: MarkdownInline[] | null = null;
+  let openTag: TextLikeNode | null = null;
+
+  for (const child of children) {
+    if (isUnderlineOpenTag(child)) {
+      if (underlined) {
+        inline.push(...inlineFromNode(openTag ?? child), ...underlined);
+      }
+      underlined = [];
+      openTag = child;
+      continue;
+    }
+
+    if (isUnderlineCloseTag(child)) {
+      if (underlined) {
+        inline.push({ type: "underline", children: underlined });
+        underlined = null;
+        openTag = null;
+      } else {
+        inline.push(...inlineFromNode(child));
+      }
+      continue;
+    }
+
+    const childInline = inlineFromNode(child);
+    if (underlined) {
+      underlined.push(...childInline);
+    } else {
+      inline.push(...childInline);
+    }
+  }
+
+  if (underlined) {
+    inline.push(...inlineFromNode(openTag ?? {}), ...underlined);
+  }
+
+  return inline;
 }
 
 function isImageOnlyParagraph(paragraph: Paragraph): Image | null {

@@ -27,11 +27,13 @@ describe("RenderedPage", () => {
           blocks: [
             {
               type: "paragraph",
-              text: "Bold marked code",
+              text: "Bold marked underlined code",
               inline: [
                 { type: "strong", children: [{ type: "text", text: "Bold" }] },
                 { type: "text", text: " " },
                 { type: "mark", children: [{ type: "text", text: "marked" }] },
+                { type: "text", text: " " },
+                { type: "underline", children: [{ type: "text", text: "underlined" }] },
                 { type: "text", text: " " },
                 { type: "inlineCode", code: "code" },
               ],
@@ -49,6 +51,7 @@ describe("RenderedPage", () => {
 
     expect(screen.getByText("Bold").closest("strong")).not.toBeNull();
     expect(screen.getByText("marked").closest("mark")).not.toBeNull();
+    expect(screen.getByText("underlined").closest("u")).not.toBeNull();
     expect(screen.getByText("code").closest("code")).not.toBeNull();
     expect(screen.getByRole("article")).toHaveStyle({
       "--page-font": '"LikeJianJianTi", "PingFang SC", sans-serif',

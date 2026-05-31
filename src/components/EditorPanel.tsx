@@ -17,6 +17,7 @@ import {
   RotateCcw,
   ScissorsLineDashed,
   Undo2,
+  Underline,
 } from "lucide-react";
 
 type EditorPanelProps = {
@@ -264,6 +265,12 @@ export function EditorPanel({
       title: "斜体 (Cmd/Ctrl+I)",
       icon: <Italic aria-hidden="true" size={17} />,
       action: () => wrapSelection("*", "*", "斜体文字"),
+    },
+    {
+      label: "下划线",
+      title: "下划线",
+      icon: <Underline aria-hidden="true" size={17} />,
+      action: () => wrapSelection("<u>", "</u>", "下划线文字"),
     },
     {
       label: "删除线",

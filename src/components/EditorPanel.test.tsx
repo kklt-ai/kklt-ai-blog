@@ -52,6 +52,30 @@ describe("EditorPanel", () => {
     expect(onMarkdownChange).toHaveBeenCalledWith("# **Hello**");
   });
 
+  it("wraps selected text with HTML underline markup from the toolbar", () => {
+    const onMarkdownChange = vi.fn();
+
+    render(
+      <EditorPanel
+        markdown="Underline me"
+        error={null}
+        onMarkdownChange={onMarkdownChange}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
+      />,
+    );
+
+    const editor = screen.getByLabelText("Markdown 内容") as HTMLTextAreaElement;
+    editor.focus();
+    editor.setSelectionRange(0, 9);
+
+    fireEvent.click(screen.getByRole("button", { name: "下划线" }));
+
+    expect(onMarkdownChange).toHaveBeenCalledWith("<u>Underline</u> me");
+  });
+
   it("supports keyboard shortcuts for Markdown formatting", () => {
     const onMarkdownChange = vi.fn();
 
