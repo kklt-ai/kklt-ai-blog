@@ -53,4 +53,16 @@ describe("global layout styles", () => {
     expect(getRule(".xhs-page figure > img")).toContain("width: 100%");
     expect(getRule(".xhs-page .xhs-watermark-avatar")).toContain("border-radius: 999px");
   });
+
+  it("uses a prominent WeChat-style author watermark", () => {
+    const watermarkRule = getRule(".xhs-watermark");
+    const avatarRule = getRule(".xhs-page .xhs-watermark-avatar");
+
+    expect(watermarkRule).toContain("top: calc(var(--page-padding) * 0.32)");
+    expect(watermarkRule).toContain("right: calc(var(--page-padding) * 0.32)");
+    expect(watermarkRule).toContain("background: rgba(255, 255, 255, 0.9)");
+    expect(watermarkRule).toContain("font-size: max(14px, calc(var(--page-base) * 0.34))");
+    expect(avatarRule).toContain("width: 44px");
+    expect(avatarRule).toContain("height: 44px");
+  });
 });
