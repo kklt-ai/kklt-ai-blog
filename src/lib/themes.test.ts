@@ -37,6 +37,15 @@ describe("themes", () => {
     expect(ids).toEqual(expect.arrayContaining(referenceThemeIds));
   });
 
+  it("includes a notebook grid theme for note-style cards", () => {
+    const theme = getThemeById("notebook-grid");
+
+    expect(theme.name).toBe("方格笔记本");
+    expect(theme.motif).toBe("notebook-grid");
+    expect(theme.colors.background).toBe("#fbfbfa");
+    expect(theme.colors.accent).toBe("#ff3d00");
+  });
+
   it("keeps theme identifiers unique", () => {
     const ids = themes.map((theme) => theme.id);
 

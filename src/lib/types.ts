@@ -55,7 +55,7 @@ export type ThemeDefinition = {
   radius: number;
   borderWidth: number;
   syntax: ThemeSyntaxStyles;
-  motif: "none" | "dots" | "grid" | "burst" | "notes" | "memphis";
+  motif: "none" | "dots" | "grid" | "burst" | "notes" | "memphis" | "notebook-grid";
 };
 
 export type ThemeSyntaxStyles = {
