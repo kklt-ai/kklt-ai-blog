@@ -53,6 +53,21 @@ function estimateBlockHeight(
     return lines * theme.baseFontSize * 1.45 + theme.blockGap + 24;
   }
 
+  if (block.type === "table") {
+    const columnCount = Math.max(1, block.headers.length);
+    const cellWidth = contentWidth / columnCount - theme.baseFontSize * 0.7;
+    const rows = [block.headers, ...block.rows];
+    const tableHeight = rows.reduce((total, row) => {
+      const rowLines = Math.max(
+        1,
+        ...row.map((cell) => estimateTextLines(cell.text, theme.baseFontSize * 0.8, cellWidth)),
+      );
+      return total + rowLines * theme.baseFontSize * theme.lineHeight * 0.82;
+    }, theme.baseFontSize * 0.7);
+
+    return tableHeight + theme.blockGap;
+  }
+
   return Math.min(360, Math.max(180, contentWidth * 0.55)) + theme.blockGap;
 }
 

@@ -690,6 +690,7 @@ button:focus-visible {
 .xhs-page ul,
 .xhs-page ol,
 .xhs-page pre,
+.xhs-table,
 .xhs-page figure {
   margin: 0;
 }
@@ -785,6 +786,43 @@ button:focus-visible {
   padding: calc(var(--page-base) * 0.48);
   font-size: calc(var(--page-base) * 0.72);
   line-height: 1.45;
+}
+
+.xhs-table-wrap {
+  overflow: hidden;
+  border-radius: max(0px, calc(var(--page-radius) * 0.65));
+}
+
+.xhs-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  background: var(--syntax-table-row-bg);
+  font-size: calc(var(--page-base) * 0.78);
+  line-height: 1.36;
+}
+
+.xhs-table th,
+.xhs-table td {
+  border: max(2px, var(--page-border-width)) solid var(--syntax-table-border);
+  padding: calc(var(--page-base) * 0.3) calc(var(--page-base) * 0.34);
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+}
+
+.xhs-table th {
+  background: var(--syntax-table-header-bg);
+  color: var(--syntax-table-header);
+  font-weight: 900;
+}
+
+.xhs-table td {
+  background: var(--syntax-table-row-bg);
+}
+
+.xhs-table tbody tr:nth-child(even) td {
+  background: var(--syntax-table-row-alt-bg);
 }
 
 .xhs-page figure {

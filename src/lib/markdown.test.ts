@@ -74,6 +74,31 @@ const x = 1;
     });
   });
 
+  it("parses GFM tables with inline formatting", () => {
+    const [table] = parseMarkdownSegment(`| 项目 | 内容 |
+| --- | --- |
+| 名称 | **描述** |
+| 状态 | ==完成== |`);
+
+    expect(table).toEqual({
+      type: "table",
+      headers: [
+        { text: "项目", inline: [{ type: "text", text: "项目" }] },
+        { text: "内容", inline: [{ type: "text", text: "内容" }] },
+      ],
+      rows: [
+        [
+          { text: "名称", inline: [{ type: "text", text: "名称" }] },
+          { text: "描述", inline: [{ type: "strong", children: [{ type: "text", text: "描述" }] }] },
+        ],
+        [
+          { text: "状态", inline: [{ type: "text", text: "状态" }] },
+          { text: "完成", inline: [{ type: "mark", children: [{ type: "text", text: "完成" }] }] },
+        ],
+      ],
+    });
+  });
+
   it("treats standalone image URLs and paths as image blocks", () => {
     expect(
       parseMarkdownSegment(

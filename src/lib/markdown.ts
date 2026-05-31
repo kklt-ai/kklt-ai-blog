@@ -1,8 +1,23 @@
-import type { Blockquote, Code, Heading, Image, List, Paragraph, Root } from "mdast";
+import type {
+  Blockquote,
+  Code,
+  Heading,
+  Image,
+  List,
+  Paragraph,
+  Root,
+  Table,
+  TableCell,
+} from "mdast";
 import { unified } from "unified";
 import remarkGfm from "remark-gfm";
 import remarkParse from "remark-parse";
-import type { MarkdownBlock, MarkdownInline, MarkdownListItem } from "./types";
+import type {
+  MarkdownBlock,
+  MarkdownInline,
+  MarkdownListItem,
+  MarkdownTableCell,
+} from "./types";
 
 type TextLikeNode = {
   type?: string;
@@ -155,6 +170,14 @@ function isStandaloneImageSource(text: string) {
   );
 }
 
+function tableCellFromNode(cell: TableCell): MarkdownTableCell {
+  const inline = inlineFromChildren(cell.children as TextLikeNode[]);
+  return {
+    text: inlineText(inline).trim(),
+    inline,
+  };
+}
+
 export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
   const tree = unified().use(remarkParse).use(remarkGfm).parse(markdown) as Root;
   const blocks: MarkdownBlock[] = [];
@@ -208,6 +231,22 @@ export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
       continue;
     }
 
+    if (node.type === "table") {
+      const table = node as Table;
+      const [headerRow, ...bodyRows] = table.children;
+      const headers = headerRow?.children.map((cell) => tableCellFromNode(cell)) ?? [];
+      const rows = bodyRows.map((row) =>
+        row.children.map((cell) => tableCellFromNode(cell)),
+      );
+
+      blocks.push({
+        type: "table",
+        headers,
+        rows,
+      });
+      continue;
+    }
+
     if (node.type === "blockquote") {
       const blockquote = node as Blockquote;
       const inline = inlineFromChildren(blockquote.children as TextLikeNode[]);
@@ -231,6 +270,7 @@ export function parseMarkdownSegment(markdown: string): MarkdownBlock[] {
 
   return blocks.filter((block) => {
     if (block.type === "list") return block.items.length > 0;
+    if (block.type === "table") return block.headers.length > 0 && block.rows.length > 0;
     if (block.type === "code") return block.code.length > 0;
     if (block.type === "image") return block.url.length > 0;
     return block.text.length > 0;

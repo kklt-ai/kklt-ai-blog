@@ -59,6 +59,18 @@ describe("global layout styles", () => {
     expect(getRule(".xhs-page figcaption")).toContain("text-align: center");
   });
 
+  it("styles Markdown tables with theme syntax variables", () => {
+    expect(getRule(".xhs-table")).toContain("border-collapse: collapse");
+    expect(getRule(".xhs-table th")).toContain("background: var(--syntax-table-header-bg)");
+    expect(getRule(".xhs-table th")).toContain("color: var(--syntax-table-header)");
+    expect(getRule(".xhs-table th,\n.xhs-table td")).toContain(
+      "border: max(2px, var(--page-border-width)) solid var(--syntax-table-border)",
+    );
+    expect(getRule(".xhs-table tbody tr:nth-child(even) td")).toContain(
+      "background: var(--syntax-table-row-alt-bg)",
+    );
+  });
+
   it("keeps Markdown image styles from overriding the author watermark avatar", () => {
     expect(getRule(".xhs-page img")).toBe("");
     expect(getRule(".xhs-page figure > img")).toContain("width: 100%");

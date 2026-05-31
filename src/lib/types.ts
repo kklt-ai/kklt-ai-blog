@@ -13,10 +13,16 @@ export type MarkdownListItem = {
   inline: MarkdownInline[];
 };
 
+export type MarkdownTableCell = {
+  text: string;
+  inline: MarkdownInline[];
+};
+
 export type MarkdownBlock =
   | { type: "heading"; depth: 1 | 2 | 3; text: string; inline: MarkdownInline[] }
   | { type: "paragraph"; text: string; inline: MarkdownInline[] }
   | { type: "list"; ordered: boolean; items: MarkdownListItem[] }
+  | { type: "table"; headers: MarkdownTableCell[]; rows: MarkdownTableCell[][] }
   | { type: "quote"; text: string; inline: MarkdownInline[] }
   | { type: "code"; language?: string; code: string }
   | { type: "image"; alt: string; url: string };
@@ -70,6 +76,11 @@ export type ThemeSyntaxStyles = {
   codeColor: string;
   quoteBackground: string;
   listMarkerColor: string;
+  tableBorderColor: string;
+  tableHeaderBackground: string;
+  tableHeaderColor: string;
+  tableRowBackground: string;
+  tableAlternateRowBackground: string;
   imageBorderColor: string;
   imageRadius: number;
 };

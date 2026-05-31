@@ -76,6 +76,32 @@ describe("EditorPanel", () => {
     expect(onMarkdownChange).toHaveBeenCalledWith("<u>Underline</u> me");
   });
 
+  it("inserts a Markdown table from the format toolbar", () => {
+    const onMarkdownChange = vi.fn();
+
+    render(
+      <EditorPanel
+        markdown="Intro"
+        error={null}
+        onMarkdownChange={onMarkdownChange}
+        onUploadError={vi.fn()}
+        onReset={vi.fn()}
+        onUndo={vi.fn()}
+        canUndo={false}
+      />,
+    );
+
+    const editor = screen.getByLabelText("Markdown 内容") as HTMLTextAreaElement;
+    editor.focus();
+    editor.setSelectionRange(5, 5);
+
+    fireEvent.click(screen.getByRole("button", { name: "表格" }));
+
+    expect(onMarkdownChange).toHaveBeenCalledWith(
+      "Intro\n\n| 项目 | 内容 |\n| --- | --- |\n| 名称 | 描述 |\n\n",
+    );
+  });
+
   it("supports keyboard shortcuts for Markdown formatting", () => {
     const onMarkdownChange = vi.fn();
 

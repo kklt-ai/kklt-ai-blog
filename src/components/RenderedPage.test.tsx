@@ -127,6 +127,43 @@ describe("RenderedPage", () => {
     expect(screen.queryByText("Markdown 图片")).toBeNull();
   });
 
+  it("renders Markdown tables with theme table styles", () => {
+    render(
+      <RenderedPage
+        page={{
+          id: "page-1",
+          manualGroupIndex: 0,
+          estimatedHeight: 0,
+          blocks: [
+            {
+              type: "table",
+              headers: [
+                { text: "项目", inline: [{ type: "text", text: "项目" }] },
+                { text: "内容", inline: [{ type: "text", text: "内容" }] },
+              ],
+              rows: [
+                [
+                  { text: "名称", inline: [{ type: "text", text: "名称" }] },
+                  { text: "描述", inline: [{ type: "text", text: "描述" }] },
+                ],
+              ],
+            },
+          ],
+        }}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+      />,
+    );
+
+    expect(screen.getByText("项目").closest("th")).not.toBeNull();
+    expect(screen.getByText("描述").closest("td")).not.toBeNull();
+    expect(screen.getByRole("article")).toHaveStyle({
+      "--syntax-table-border": "#111111",
+      "--syntax-table-header-bg": "#00b7ff",
+      "--syntax-table-row-bg": "#ffffff",
+    });
+  });
+
   it("renders local image references through loaded image sources", () => {
     render(
       <RenderedPage

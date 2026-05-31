@@ -16,6 +16,7 @@ import {
   FileUp,
   RotateCcw,
   ScissorsLineDashed,
+  TableProperties,
   Undo2,
   Underline,
 } from "lucide-react";
@@ -109,6 +110,35 @@ export function EditorPanel({
       start + selectStartOffset,
       start + selectStartOffset + selectLength,
     );
+  };
+
+  const insertBlockSnippet = (snippet: string) => {
+    const textarea = textareaRef.current;
+    const selection = textarea
+      ? { start: textarea.selectionStart, end: textarea.selectionEnd }
+      : lastSelectionRef.current;
+    const start = selection.start;
+    const end = selection.end;
+    const before = markdown.slice(0, start);
+    const after = markdown.slice(end);
+    const prefix =
+      before.endsWith("\n\n") || before.length === 0
+        ? ""
+        : before.endsWith("\n")
+          ? "\n"
+          : "\n\n";
+    const suffix =
+      after.startsWith("\n\n")
+        ? ""
+        : after.length === 0
+          ? "\n\n"
+          : after.startsWith("\n")
+          ? "\n"
+          : "\n\n";
+    const nextSnippet = `${prefix}${snippet}${suffix}`;
+    const nextValue = `${before}${nextSnippet}${after}`;
+    const cursor = before.length + nextSnippet.length;
+    replaceSelection(nextValue, cursor, cursor);
   };
 
   const insertImageDivider = () => {
@@ -307,6 +337,12 @@ export function EditorPanel({
       title: "行内代码",
       icon: <Code2 aria-hidden="true" size={17} />,
       action: () => wrapSelection("`", "`", "code"),
+    },
+    {
+      label: "表格",
+      title: "表格",
+      icon: <TableProperties aria-hidden="true" size={17} />,
+      action: () => insertBlockSnippet("| 项目 | 内容 |\n| --- | --- |\n| 名称 | 描述 |"),
     },
     {
       label: "图片",

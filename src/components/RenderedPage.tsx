@@ -95,6 +95,39 @@ function renderBlock(
     );
   }
 
+  if (block.type === "table") {
+    return (
+      <div className="xhs-table-wrap" key={index}>
+        <table className="xhs-table">
+          <thead>
+            <tr>
+              {block.headers.map((cell, cellIndex) => (
+                <th key={`${cell.text}-${cellIndex}`} scope="col">
+                  {renderInline(cell.inline, cell.text, `table-${index}-head-${cellIndex}`)}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.rows.map((row, rowIndex) => (
+              <tr key={`row-${rowIndex}`}>
+                {row.map((cell, cellIndex) => (
+                  <td key={`${cell.text}-${cellIndex}`}>
+                    {renderInline(
+                      cell.inline,
+                      cell.text,
+                      `table-${index}-${rowIndex}-${cellIndex}`,
+                    )}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
   const caption = block.alt.trim();
 
   return (
@@ -165,6 +198,11 @@ export function RenderedPage({
     "--syntax-code": syntax.codeColor,
     "--syntax-quote-bg": syntax.quoteBackground,
     "--syntax-list-marker": syntax.listMarkerColor,
+    "--syntax-table-border": syntax.tableBorderColor,
+    "--syntax-table-header-bg": syntax.tableHeaderBackground,
+    "--syntax-table-header": syntax.tableHeaderColor,
+    "--syntax-table-row-bg": syntax.tableRowBackground,
+    "--syntax-table-row-alt-bg": syntax.tableAlternateRowBackground,
     "--syntax-image-border": syntax.imageBorderColor,
     "--syntax-image-radius": `${syntax.imageRadius}px`,
     width: dimensions.width,

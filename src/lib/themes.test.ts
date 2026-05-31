@@ -63,6 +63,11 @@ describe("themes", () => {
       expect(theme.blockGap).toBeGreaterThan(0);
       expect(Object.values(theme.colors)).not.toContain("");
       expect(Object.values(theme.syntax)).not.toContain("");
+      expect(theme.syntax.tableBorderColor).not.toHaveLength(0);
+      expect(theme.syntax.tableHeaderBackground).not.toHaveLength(0);
+      expect(theme.syntax.tableHeaderColor).not.toHaveLength(0);
+      expect(theme.syntax.tableRowBackground).not.toHaveLength(0);
+      expect(theme.syntax.tableAlternateRowBackground).not.toHaveLength(0);
     });
   });
 
