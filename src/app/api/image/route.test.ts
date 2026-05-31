@@ -27,4 +27,28 @@ describe("/api/image", () => {
     expect(response.headers.get("content-disposition")).toBe("inline");
     expect(await response.arrayBuffer()).toEqual(body.buffer);
   });
+
+  it("deduplicates concurrent remote image fetches for the same URL", async () => {
+    const body = new Uint8Array([4, 5, 6]);
+    vi.spyOn(globalThis, "fetch").mockImplementation(async () =>
+      new Response(new Uint8Array(body), {
+        status: 200,
+        headers: {
+          "content-type": "image/png",
+        },
+      }),
+    );
+
+    const src = encodeURIComponent("https://cdn.example.com/shared.png");
+    const [firstResponse, secondResponse] = await Promise.all([
+      GET(new Request(`http://localhost/api/image?src=${src}`)),
+      GET(new Request(`http://localhost/api/image?src=${src}`)),
+    ]);
+
+    expect(globalThis.fetch).toHaveBeenCalledTimes(1);
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(200);
+    expect(await firstResponse.arrayBuffer()).toEqual(body.buffer);
+    expect(await secondResponse.arrayBuffer()).toEqual(body.buffer);
+  });
 });

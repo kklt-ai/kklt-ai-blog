@@ -13,6 +13,22 @@ const CONTENT_TYPES: Record<string, string> = {
   ".webp": "image/webp",
 };
 
+type CachedImage = {
+  body: ArrayBuffer;
+  contentType: string;
+  cachedAt: number;
+};
+
+type ImageFetchResult =
+  | { ok: true; image: CachedImage }
+  | { ok: false; message: string; status: number };
+
+/** Simple in-memory cache for proxied images. */
+const imageCache = new Map<string, CachedImage>();
+const pendingRemoteImages = new Map<string, Promise<ImageFetchResult>>();
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes server-side
+const CACHE_MAX_ENTRIES = 50;
+
 function imageContentType(src: string, fallback = "application/octet-stream") {
   const pathname = src.startsWith("http")
     ? new URL(src).pathname
@@ -30,13 +46,37 @@ function inlineImageResponse(body: BodyInit, contentType: string) {
   });
 }
 
+function cachedImageResponse(image: CachedImage) {
+  return inlineImageResponse(image.body.slice(0), image.contentType);
+}
+
 function localPathFromSrc(src: string) {
   if (src.startsWith("file://")) return new URL(src);
   if (path.isAbsolute(src)) return src;
   return path.resolve(process.cwd(), src);
 }
 
-async function fetchRemoteImage(src: string) {
+function pruneImageCache() {
+  const now = Date.now();
+  const expired: string[] = [];
+
+  imageCache.forEach((entry, key) => {
+    if (now - entry.cachedAt > CACHE_MAX_AGE_MS) expired.push(key);
+  });
+
+  expired.forEach((key) => imageCache.delete(key));
+
+  // If still over the limit after expiring old entries, evict oldest first
+  if (imageCache.size > CACHE_MAX_ENTRIES) {
+    const entries = Array.from(imageCache.entries()).sort(
+      (a, b) => a[1].cachedAt - b[1].cachedAt,
+    );
+    const toDelete = entries.slice(0, imageCache.size - CACHE_MAX_ENTRIES);
+    toDelete.forEach(([key]) => imageCache.delete(key));
+  }
+}
+
+async function fetchRemoteImagePayload(src: string): Promise<ImageFetchResult> {
   const upstream = await fetch(src, {
     headers: {
       Accept: "image/avif,image/webp,image/*,*/*;q=0.8",
@@ -45,15 +85,39 @@ async function fetchRemoteImage(src: string) {
   });
 
   if (!upstream.ok) {
-    return new Response("Image fetch failed", { status: upstream.status });
+    return { ok: false, message: "Image fetch failed", status: upstream.status };
   }
 
   const contentType = upstream.headers.get("content-type") ?? imageContentType(src);
   if (!contentType.toLowerCase().startsWith("image/")) {
-    return new Response("URL is not an image", { status: 415 });
+    return { ok: false, message: "URL is not an image", status: 415 };
   }
 
-  return inlineImageResponse(await upstream.arrayBuffer(), contentType);
+  const body = await upstream.arrayBuffer();
+  const image = { body, contentType, cachedAt: Date.now() };
+  imageCache.set(src, image);
+
+  return { ok: true, image };
+}
+
+async function fetchRemoteImage(src: string) {
+  pruneImageCache();
+  const cached = imageCache.get(src);
+  if (cached) return cachedImageResponse(cached);
+
+  let pending = pendingRemoteImages.get(src);
+  if (!pending) {
+    pending = fetchRemoteImagePayload(src);
+    pendingRemoteImages.set(src, pending);
+    pending.finally(() => pendingRemoteImages.delete(src));
+  }
+
+  const result = await pending;
+  if (!result.ok) {
+    return new Response(result.message, { status: result.status });
+  }
+
+  return cachedImageResponse(result.image);
 }
 
 async function readLocalImage(src: string) {

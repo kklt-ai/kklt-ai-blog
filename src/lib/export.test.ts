@@ -1,0 +1,99 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearExportResourceCache, downloadNodeAsPng } from "./export";
+import { getFontEmbedCSS, toBlob } from "html-to-image";
+
+vi.mock("html-to-image", () => ({
+  getFontEmbedCSS: vi.fn(async () => "@font-face { font-family: TestFont; }"),
+  toBlob: vi.fn(async () => new Blob(["exported"], { type: "image/png" })),
+}));
+
+describe("downloadNodeAsPng", () => {
+  let clickSpy: ReturnType<typeof vi.spyOn>;
+  let createObjectUrlSpy: ReturnType<typeof vi.fn>;
+  let revokeObjectUrlSpy: ReturnType<typeof vi.fn>;
+
+  beforeEach(() => {
+    clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+    createObjectUrlSpy = vi.fn(() => "blob:http://localhost/exported");
+    revokeObjectUrlSpy = vi.fn();
+    Object.defineProperty(URL, "createObjectURL", {
+      configurable: true,
+      value: createObjectUrlSpy,
+    });
+    Object.defineProperty(URL, "revokeObjectURL", {
+      configurable: true,
+      value: revokeObjectUrlSpy,
+    });
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = "";
+    clickSpy.mockRestore();
+    delete (URL as Partial<typeof URL>).createObjectURL;
+    delete (URL as Partial<typeof URL>).revokeObjectURL;
+    clearExportResourceCache();
+    vi.clearAllMocks();
+  });
+
+  function createExportNode(fontFamily = '"Yozai", "PingFang SC", sans-serif') {
+    const wrapper = document.createElement("div");
+    const page = document.createElement("article");
+    page.className = "xhs-page";
+    page.style.fontFamily = fontFamily;
+    wrapper.append(page);
+    document.body.append(wrapper);
+    return wrapper;
+  }
+
+  it("reuses embedded font CSS across exports with the same page font", async () => {
+    const firstNode = createExportNode();
+    const secondNode = createExportNode();
+
+    await downloadNodeAsPng(firstNode, "first.png");
+    await downloadNodeAsPng(secondNode, "second.png");
+
+    expect(getFontEmbedCSS).toHaveBeenCalledTimes(1);
+    expect(toBlob).toHaveBeenCalledTimes(2);
+    expect(toBlob).toHaveBeenNthCalledWith(
+      1,
+      firstNode,
+      expect.objectContaining({
+        fontEmbedCSS: "@font-face { font-family: TestFont; }",
+      }),
+    );
+    expect(toBlob).toHaveBeenNthCalledWith(
+      2,
+      secondNode,
+      expect.objectContaining({
+        fontEmbedCSS: "@font-face { font-family: TestFont; }",
+      }),
+    );
+  });
+
+  it("downloads PNGs through blob URLs instead of base64 data URLs", async () => {
+    const node = createExportNode();
+
+    await downloadNodeAsPng(node, "page.png");
+
+    expect(toBlob).toHaveBeenCalledTimes(1);
+    expect(createObjectUrlSpy).toHaveBeenCalledWith(expect.any(Blob));
+    expect(clickSpy).toHaveBeenCalledTimes(1);
+    expect(document.querySelector("a")).not.toBeInTheDocument();
+  });
+
+  it("skips webfont embedding for system font stacks", async () => {
+    const node = createExportNode(
+      '-apple-system, BlinkMacSystemFont, "PingFang SC", sans-serif',
+    );
+
+    await downloadNodeAsPng(node, "system-font.png");
+
+    expect(getFontEmbedCSS).not.toHaveBeenCalled();
+    expect(toBlob).toHaveBeenCalledWith(
+      node,
+      expect.objectContaining({
+        skipFonts: true,
+      }),
+    );
+  });
+});
