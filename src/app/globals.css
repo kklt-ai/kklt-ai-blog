@@ -570,7 +570,6 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.9);
   color: rgba(17, 17, 17, 0.86);
   padding: 7px 13px 7px 7px;
-  backdrop-filter: blur(8px);
   font-family: var(--page-font);
   font-size: max(14px, calc(var(--page-base) * 0.34));
   font-weight: 900;

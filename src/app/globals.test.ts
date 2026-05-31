@@ -72,6 +72,7 @@ describe("global layout styles", () => {
     expect(watermarkRule).toContain("top: calc(var(--page-padding) * 0.32)");
     expect(watermarkRule).toContain("right: calc(var(--page-padding) * 0.32)");
     expect(watermarkRule).toContain("background: rgba(255, 255, 255, 0.9)");
+    expect(watermarkRule).not.toContain("backdrop-filter");
     expect(watermarkRule).toContain("font-size: max(14px, calc(var(--page-base) * 0.34))");
     expect(avatarRule).toContain("width: 44px");
     expect(avatarRule).toContain("height: 44px");
