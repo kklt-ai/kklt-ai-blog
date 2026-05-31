@@ -41,24 +41,51 @@ describe("SettingsPanel", () => {
       />,
     );
 
+    fireEvent.click(screen.getByRole("tab", { name: "主题" }));
+    fireEvent.click(screen.getByRole("button", { name: "展开更多主题" }));
     fireEvent.click(screen.getByRole("button", { name: /波普艺术/ }));
+    fireEvent.click(screen.getByRole("tab", { name: "设置" }));
     fireEvent.change(screen.getByLabelText("图片宽度"), { target: { value: "1200" } });
 
     expect(onThemeChange).toHaveBeenCalledWith("pop-art");
     expect(onDimensionsChange).toHaveBeenCalledWith({ width: 1200, height: 1440 });
   });
 
-  it("puts image size first and hides fixed size controls by default", () => {
+  it("keeps image size in the default settings tab and hides fixed size controls by default", () => {
     render(<SettingsPanel {...baseProps} />);
 
     const sizeHeading = screen.getByRole("heading", { name: "图片尺寸" });
-    const themeHeading = screen.getByRole("heading", { name: "主题风格" });
 
-    expect(
-      sizeHeading.compareDocumentPosition(themeHeading) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
+    expect(sizeHeading).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "主题风格" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("图片宽度")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("图片高度")).not.toBeInTheDocument();
+  });
+
+  it("shows priority themes first and collapses the remaining themes", () => {
+    render(<SettingsPanel {...baseProps} />);
+
+    expect(screen.getByRole("tab", { name: "设置" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "主题" })).toHaveClass("settings-tab--theme");
+    expect(screen.queryByRole("button", { name: /孟菲斯/ })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: "主题" }));
+
+    const themeButtons = screen.getAllByRole("button", {
+      name: /孟菲斯|iPhone 备忘录|日式极简|朋克风格/,
+    });
+
+    expect(themeButtons.map((button) => button.textContent)).toEqual([
+      expect.stringContaining("孟菲斯"),
+      expect.stringContaining("iPhone 备忘录"),
+      expect.stringContaining("日式极简"),
+      expect.stringContaining("朋克风格"),
+    ]);
+    expect(screen.queryByRole("button", { name: /波普艺术/ })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "展开更多主题" }));
+
+    expect(screen.getByRole("button", { name: /波普艺术/ })).toBeInTheDocument();
   });
 
   it("shows fixed size and pagination controls after enabling custom dimensions", () => {

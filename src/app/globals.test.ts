@@ -77,4 +77,11 @@ describe("global layout styles", () => {
     expect(avatarRule).toContain("width: 44px");
     expect(avatarRule).toContain("height: 44px");
   });
+
+  it("makes the theme tab more visible than regular settings tabs", () => {
+    const themeTabRule = getRule(".settings-tab--theme");
+
+    expect(themeTabRule).toContain("background: #ffeb3b");
+    expect(themeTabRule).toContain("box-shadow: 4px 4px 0 var(--hot-pink)");
+  });
 });

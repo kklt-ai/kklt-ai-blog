@@ -15,7 +15,7 @@ import {
 import { parseMarkdown } from "@/lib/markdown";
 import { paginateSegments } from "@/lib/pagination";
 import { DEFAULT_DIMENSIONS, SAMPLE_MARKDOWN } from "@/lib/sample";
-import { getThemeById } from "@/lib/themes";
+import { defaultTheme, getThemeById } from "@/lib/themes";
 import {
   clampFontSize,
   defaultTypography,
@@ -46,7 +46,7 @@ type StoredState = {
 
 export default function Home() {
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
-  const [themeId, setThemeId] = useState("punk");
+  const [themeId, setThemeId] = useState(defaultTheme.id);
   const [dimensions, setDimensions] = useState(DEFAULT_DIMENSIONS);
   const [fixedSizeEnabled, setFixedSizeEnabled] = useState(false);
   const [autoPaginate, setAutoPaginate] = useState(true);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getThemeById, themes } from "./themes";
+import { defaultTheme, getThemeById, themes } from "./themes";
 
 describe("themes", () => {
   const referenceThemeIds = [
@@ -57,7 +57,11 @@ describe("themes", () => {
     });
   });
 
-  it("falls back to punk when a theme id is unknown", () => {
-    expect(getThemeById("missing").id).toBe("punk");
+  it("uses Memphis as the default theme", () => {
+    expect(defaultTheme.id).toBe("memphis");
+  });
+
+  it("falls back to Memphis when a theme id is unknown", () => {
+    expect(getThemeById("missing").id).toBe("memphis");
   });
 });

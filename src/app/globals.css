@@ -332,6 +332,42 @@ button:focus-visible {
   gap: 10px;
 }
 
+.settings-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.settings-tab {
+  border: 3px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  padding: 9px 12px;
+  font-size: 14px;
+  font-weight: 900;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.settings-tab.is-active {
+  background: var(--accent);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.settings-tab--theme {
+  background: #ffeb3b;
+  box-shadow: 4px 4px 0 var(--hot-pink);
+}
+
+.settings-tab--theme.is-active {
+  background: #ffeb3b;
+  box-shadow: 4px 4px 0 var(--hot-pink);
+}
+
+.settings-tab-panel {
+  display: grid;
+  gap: 16px;
+}
+
 .setting-group h3 {
   margin: 0;
   font-size: 15px;
@@ -389,6 +425,21 @@ button:focus-visible {
 .theme-tile small {
   font-size: 11px;
   line-height: 1.35;
+}
+
+.theme-actions {
+  display: flex;
+}
+
+.theme-expand-button {
+  width: 100%;
+  border: 3px solid var(--ink);
+  background: var(--accent);
+  color: var(--ink);
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 900;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.16);
 }
 
 .dimension-row {

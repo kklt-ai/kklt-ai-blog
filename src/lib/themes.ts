@@ -628,7 +628,7 @@ export const themes: ThemeDefinition[] = [
   },
 ];
 
-export const defaultTheme = themes[0];
+export const defaultTheme = themes.find((theme) => theme.id === "memphis") ?? themes[0];
 
 export function getThemeById(id: string): ThemeDefinition {
   return themes.find((theme) => theme.id === id) ?? defaultTheme;
