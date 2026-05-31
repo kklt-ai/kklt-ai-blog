@@ -275,7 +275,7 @@ describe("PreviewPanel", () => {
     expect(screen.getByText("共 2 张")).toBeInTheDocument();
 
     const exportCurrent = screen.getByRole("button", { name: "导出当前页" });
-    const exportAll = screen.getByRole("button", { name: "导出全部 PNG" });
+    const exportAll = screen.getByRole("button", { name: "导出全部 ZIP" });
 
     expect(exportCurrent).toBeDisabled();
     expect(exportAll).toBeDisabled();

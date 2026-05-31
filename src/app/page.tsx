@@ -5,7 +5,12 @@ import { EditorPanel } from "@/components/EditorPanel";
 import { PreviewPanel } from "@/components/PreviewPanel";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { clampDimensions, resolvePageDimensions } from "@/lib/dimensions";
-import { downloadNodeAsPng } from "@/lib/export";
+import {
+  downloadNodesAsZip,
+  downloadNodeAsPng,
+  exportPageFilename,
+  exportZipFilename,
+} from "@/lib/export";
 import {
   deleteUnusedLocalImages,
   loadLocalImageSources,
@@ -218,10 +223,10 @@ export default function Home() {
   }, []);
 
   const exportPage = useCallback(
-    async (index: number) => {
+    async (index: number, exportDate = new Date()) => {
       const node = pageRefs.current[index];
       if (!node) throw new Error("预览还没有准备好，请稍后重试");
-      await downloadNodeAsPng(node, `xiaohongshu-page-${index + 1}.png`);
+      await downloadNodeAsPng(node, exportPageFilename(index, exportDate));
     },
     [],
   );
@@ -241,18 +246,26 @@ export default function Home() {
 
   const exportAll = useCallback(async () => {
     setIsExporting(true);
-    setMessage(`正在导出 ${pages.length} 张图片...`);
+    setMessage(`正在打包 ${pages.length} 张图片...`);
     try {
-      for (let index = 0; index < pages.length; index += 1) {
-        await exportPage(index);
-      }
-      setMessage("全部图片已导出");
+      const exportDate = new Date();
+      const entries = pages.map((_, index) => {
+        const node = pageRefs.current[index];
+        if (!node) throw new Error("预览还没有准备好，请稍后重试");
+        return {
+          node,
+          filename: exportPageFilename(index, exportDate),
+        };
+      });
+
+      await downloadNodesAsZip(entries, exportZipFilename(exportDate));
+      setMessage("全部图片已打包为 ZIP");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "导出失败，请重试");
     } finally {
       setIsExporting(false);
     }
-  }, [exportPage, pages.length]);
+  }, [pages]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

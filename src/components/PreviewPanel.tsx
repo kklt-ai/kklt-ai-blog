@@ -192,7 +192,7 @@ export function PreviewPanel({
           </button>
           <button type="button" disabled={isExporting} onClick={onExportAll}>
             <Images aria-hidden="true" size={15} />
-            导出全部 PNG
+            导出全部 ZIP
           </button>
         </div>
       </div>
