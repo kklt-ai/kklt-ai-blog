@@ -150,7 +150,7 @@ export function CoverEditor() {
   );
   const [layers, setLayers] = useState<CoverLayer[]>(() => cloneTemplateLayers(activeTemplate));
   const [selectedLayerId, setSelectedLayerId] = useState(layers[0]?.id ?? "");
-  const [message, setMessage] = useState("选择模板后，拖动画布里的文字即可自由排版。");
+  const [message, setMessage] = useState("拖拽调整位置。");
   const [isExporting, setIsExporting] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
@@ -165,7 +165,7 @@ export function CoverEditor() {
     const nextLayers = cloneTemplateLayers(nextTemplate);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
-    setMessage(`已切换到${getChannel(nextChannelId).name}封面尺寸。`);
+    setMessage(`已切换到${getChannel(nextChannelId).name}。`);
   };
 
   const chooseTemplate = (nextTemplateId: string) => {
@@ -263,24 +263,26 @@ export function CoverEditor() {
     transform: `scale(${canvasScale})`,
     transformOrigin: "top left",
   };
+  const pageStyle = {
+    "--cover-accent": channel.brandColor,
+    "--cover-accent-ink": channel.brandForeground,
+  } as CSSProperties;
 
   return (
-    <main className="min-h-screen bg-[#f4f0ff] p-4 text-zinc-950 md:p-6">
+    <main
+      className="min-h-screen bg-[#f6f7f9] p-4 text-zinc-950 md:p-6"
+      style={pageStyle}
+    >
       <div className="mx-auto flex max-w-[1560px] flex-col gap-4">
-        <header className="flex flex-col gap-3 rounded-[32px] border-4 border-zinc-950 bg-white p-4 shadow-[8px_8px_0_#18181b] md:flex-row md:items-center md:justify-between">
+        <header className="flex flex-col gap-3 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b] md:flex-row md:items-center md:justify-between">
           <div>
-            <p className="mb-1 text-xs font-black uppercase tracking-[0.24em] text-fuchsia-600">
-              Cover Studio
-            </p>
             <h1 className="text-2xl font-black leading-tight md:text-4xl">封面制作</h1>
-            <p className="mt-2 max-w-2xl text-sm font-semibold text-zinc-600">
-              对标稿定设计的轻量封面工作台：选模板、改文字、拖拽排版、加 AI 图标，然后导出 PNG。
-            </p>
+            <p className="mt-1 text-sm font-semibold text-zinc-600">选平台，改标题，导出 PNG。</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
               href="/"
-              className="rounded-full border-3 border-zinc-950 bg-white px-4 py-2 text-sm font-black shadow-[4px_4px_0_#18181b] transition hover:-translate-y-0.5"
+              className="rounded-full border-3 border-zinc-950 bg-white px-4 py-2 text-sm font-black shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5"
             >
               回 Markdown 转图
             </Link>
@@ -288,7 +290,7 @@ export function CoverEditor() {
               type="button"
               onClick={exportCover}
               disabled={isExporting}
-              className="inline-flex items-center gap-2 rounded-full border-3 border-zinc-950 bg-[#00b7ff] px-4 py-2 text-sm font-black shadow-[4px_4px_0_#18181b] transition hover:-translate-y-0.5 disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-full border-3 border-zinc-950 bg-[var(--cover-accent)] px-4 py-2 text-sm font-black text-[var(--cover-accent-ink)] shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5 disabled:opacity-60"
             >
               <Download size={17} aria-hidden="true" />
               {isExporting ? "导出中..." : "导出 PNG"}
@@ -297,9 +299,9 @@ export function CoverEditor() {
         </header>
 
         <div className="grid gap-4 xl:grid-cols-[300px_minmax(520px,1fr)_320px]">
-          <aside className="flex flex-col gap-4 rounded-[28px] border-4 border-zinc-950 bg-white p-4 shadow-[8px_8px_0_#18181b]">
+          <aside className="flex flex-col gap-4 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
             <section>
-              <h2 className="mb-3 text-lg font-black">封面尺寸</h2>
+              <h2 className="mb-3 text-lg font-black">平台</h2>
               <div className="grid grid-cols-2 gap-2">
                 {COVER_CHANNELS.map((item) => (
                   <button
@@ -307,13 +309,26 @@ export function CoverEditor() {
                     type="button"
                     aria-pressed={item.id === channelId}
                     onClick={() => chooseChannel(item.id)}
+                    style={
+                      {
+                        "--channel-color": item.brandColor,
+                        "--channel-ink": item.brandForeground,
+                      } as CSSProperties
+                    }
                     className={[
-                      "rounded-2xl border-3 border-zinc-950 px-3 py-3 text-left text-sm font-black shadow-[3px_3px_0_#18181b]",
-                      item.id === channelId ? "bg-[#fef15a]" : "bg-zinc-50",
+                      "rounded-2xl border-3 px-3 py-3 text-left text-sm font-black shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5",
+                      item.id === channelId
+                        ? "border-zinc-950 bg-[var(--channel-color)] text-[var(--channel-ink)]"
+                        : "border-[var(--channel-color)] bg-white text-zinc-950",
                     ].join(" ")}
                   >
                     {item.name}
-                    <span className="mt-1 block text-xs font-bold text-zinc-500">
+                    <span
+                      className={[
+                        "mt-1 block text-xs font-bold",
+                        item.id === channelId ? "text-white/80" : "text-zinc-500",
+                      ].join(" ")}
+                    >
                       {item.sizeLabel}
                     </span>
                   </button>
@@ -323,7 +338,7 @@ export function CoverEditor() {
 
             <section>
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-lg font-black">模板库</h2>
+                <h2 className="text-lg font-black">模板</h2>
                 <span className="rounded-full bg-zinc-950 px-2 py-1 text-xs font-black text-white">
                   {templates.length} 款
                 </span>
@@ -336,31 +351,30 @@ export function CoverEditor() {
                     aria-pressed={template.id === activeTemplate.id}
                     onClick={() => chooseTemplate(template.id)}
                     className={[
-                      "w-full rounded-3xl border-3 border-zinc-950 p-3 text-left shadow-[4px_4px_0_#18181b] transition hover:-translate-y-0.5",
-                      template.id === activeTemplate.id ? "bg-pink-100" : "bg-white",
+                      "w-full rounded-2xl border-3 border-zinc-950 p-3 text-left shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5",
+                      template.id === activeTemplate.id
+                        ? "bg-[color-mix(in_srgb,var(--cover-accent)_16%,white)]"
+                        : "bg-white",
                     ].join(" ")}
                   >
                     <span
                       className={[
-                        "mb-3 block h-20 rounded-2xl border-2 border-zinc-950",
+                        "mb-2 block h-16 rounded-xl border-2 border-zinc-950",
                         template.backgroundClassName,
                       ].join(" ")}
                     />
                     <span className="block font-black">{template.name}</span>
-                    <span className="mt-1 block text-xs font-semibold text-zinc-600">
-                      {template.description}
-                    </span>
                   </button>
                 ))}
               </div>
             </section>
 
             <section>
-              <h2 className="mb-3 text-lg font-black">素材</h2>
+              <h2 className="mb-3 text-lg font-black">添加</h2>
               <button
                 type="button"
                 onClick={addTextLayer}
-                className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-3 border-zinc-950 bg-[#fef15a] px-3 py-3 font-black shadow-[4px_4px_0_#18181b]"
+                className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-3 border-zinc-950 bg-[var(--cover-accent)] px-3 py-3 font-black text-[var(--cover-accent-ink)] shadow-[3px_3px_0_#18181b]"
               >
                 <Plus size={18} aria-hidden="true" />
                 添加文字
@@ -382,14 +396,14 @@ export function CoverEditor() {
                     >
                       {icon.mark}
                     </span>
-                    添加 {icon.name} 图标
+                    {icon.name}
                   </button>
                 ))}
               </div>
             </section>
           </aside>
 
-          <section className="min-w-0 rounded-[28px] border-4 border-zinc-950 bg-[linear-gradient(90deg,rgba(0,0,0,0.06)_1px,transparent_1px),linear-gradient(rgba(0,0,0,0.06)_1px,transparent_1px),#eef2ff] bg-[length:28px_28px] p-4 shadow-[8px_8px_0_#18181b]">
+          <section className="min-w-0 rounded-[24px] border-3 border-zinc-950 bg-[linear-gradient(90deg,rgba(0,0,0,0.06)_1px,transparent_1px),linear-gradient(rgba(0,0,0,0.06)_1px,transparent_1px),#eef2ff] bg-[length:28px_28px] p-4 shadow-[6px_6px_0_#18181b]">
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h2 className="text-lg font-black">画布</h2>
@@ -397,11 +411,11 @@ export function CoverEditor() {
               </div>
               <div className="inline-flex items-center gap-2 rounded-full border-2 border-zinc-950 bg-white px-3 py-2 text-xs font-black">
                 <MousePointer2 size={15} aria-hidden="true" />
-                拖拽文字自由排版
+                拖拽排版
               </div>
             </div>
 
-            <div className="flex min-h-[620px] items-center justify-center overflow-auto rounded-3xl border-3 border-zinc-950 bg-white/70 p-5">
+            <div className="flex min-h-[620px] items-center justify-center overflow-auto rounded-2xl border-3 border-zinc-950 bg-white/70 p-5">
               <div
                 className="relative"
                 style={{
@@ -446,10 +460,10 @@ export function CoverEditor() {
             </div>
           </section>
 
-          <aside className="rounded-[28px] border-4 border-zinc-950 bg-white p-4 shadow-[8px_8px_0_#18181b]">
+          <aside className="rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-black">属性面板</h2>
-              <span className="rounded-full bg-fuchsia-100 px-2 py-1 text-xs font-black text-fuchsia-700">
+              <h2 className="text-lg font-black">编辑</h2>
+              <span className="rounded-full bg-[color-mix(in_srgb,var(--cover-accent)_14%,white)] px-2 py-1 text-xs font-black text-zinc-950">
                 {selectedLayer?.type === "text" ? "文字" : selectedLayer ? "图标" : "未选择"}
               </span>
             </div>
@@ -585,7 +599,7 @@ export function CoverEditor() {
                   <Type size={20} aria-hidden="true" />
                   <p className="mt-2 font-black">{findBrandIcon(selectedLayer.iconId).name}</p>
                   <p className="mt-1 text-sm font-semibold text-zinc-600">
-                    图标可在画布中拖拽定位。后续可替换为正式 SVG 素材。
+                    可拖拽定位。
                   </p>
                 </div>
                 <label>

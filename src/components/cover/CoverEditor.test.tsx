@@ -21,6 +21,23 @@ describe("CoverEditor", () => {
     expect(screen.getByLabelText("封面画布")).toBeInTheDocument();
   });
 
+  it("uses platform colors and concise cover page copy", () => {
+    render(<CoverEditor />);
+
+    expect(screen.queryByText(/对标稿定设计/)).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /小红书/ }).getAttribute("style")).toContain(
+      "--channel-color: #ff2442",
+    );
+    expect(screen.getByRole("button", { name: /公众号/ }).getAttribute("style")).toContain(
+      "--channel-color: #07c160",
+    );
+    expect(screen.getByRole("main")).toHaveStyle("--cover-accent: #ff2442");
+
+    fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
+
+    expect(screen.getByRole("main")).toHaveStyle("--cover-accent: #07c160");
+  });
+
   it("adds and edits a text layer through the inspector", () => {
     render(<CoverEditor />);
 

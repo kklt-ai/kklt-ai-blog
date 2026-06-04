@@ -4,6 +4,8 @@ export type CoverChannel = {
   id: CoverChannelId;
   name: string;
   sizeLabel: string;
+  brandColor: string;
+  brandForeground: string;
   width: number;
   height: number;
 };
@@ -75,6 +77,8 @@ export const COVER_CHANNELS: CoverChannel[] = [
     id: "xiaohongshu",
     name: "小红书",
     sizeLabel: "3:4 竖版",
+    brandColor: "#ff2442",
+    brandForeground: "#ffffff",
     width: 1242,
     height: 1660,
   },
@@ -82,6 +86,8 @@ export const COVER_CHANNELS: CoverChannel[] = [
     id: "wechat",
     name: "公众号",
     sizeLabel: "首图横版",
+    brandColor: "#07c160",
+    brandForeground: "#ffffff",
     width: 1200,
     height: 628,
   },
