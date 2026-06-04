@@ -17,7 +17,9 @@ import {
 import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type WheelEvent as ReactWheelEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -50,8 +52,16 @@ type DragState = {
   startY: number;
 };
 
+const CANVAS_ZOOM_STEP = 0.04;
+const MIN_CANVAS_SCALE = 0.2;
+const MAX_CANVAS_SCALE = 0.8;
+
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
+}
+
+function defaultCanvasScale(channelId: CoverChannelId) {
+  return channelId === "wechat" ? 0.56 : 0.36;
 }
 
 function layerKey(layer: CoverLayer) {
@@ -61,40 +71,89 @@ function layerKey(layer: CoverLayer) {
 function TextLayerView({
   layer,
   selected,
+  editing,
   onSelect,
   onDragStart,
+  onEditStart,
+  onTextChange,
+  onFinishEditing,
+  interactive = true,
 }: {
   layer: CoverTextLayer;
   selected: boolean;
-  onSelect: () => void;
-  onDragStart: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  editing?: boolean;
+  onSelect?: () => void;
+  onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onEditStart?: () => void;
+  onTextChange?: (text: string) => void;
+  onFinishEditing?: () => void;
+  interactive?: boolean;
 }) {
+  const editorRef = useRef<HTMLTextAreaElement>(null);
+  const className = [
+    "absolute touch-none whitespace-pre-line rounded-2xl border-2 px-3 py-2 text-inherit",
+    interactive ? "transition" : "",
+    editing && interactive
+      ? "border-sky-400 bg-white/20 outline-none ring-4 ring-sky-300/30"
+      : selected && interactive
+      ? "border-sky-400 bg-white/15 shadow-[0_0_0_4px_rgba(56,189,248,0.24)]"
+      : interactive
+        ? "border-transparent hover:border-white/70"
+        : "border-transparent",
+  ].join(" ");
+  const style: CSSProperties = {
+    left: `${layer.x}%`,
+    top: `${layer.y}%`,
+    width: `${layer.width}%`,
+    color: layer.color,
+    fontSize: `${layer.fontSize}px`,
+    fontFamily: fontFamilyCss(layer.fontFamily),
+    fontWeight: layer.bold ? 900 : 500,
+    fontStyle: layer.italic ? "italic" : "normal",
+    textDecoration: layer.underline ? "underline" : "none",
+    textAlign: layer.align,
+    lineHeight: 1.08,
+    letterSpacing: layer.letterSpacing ? `${layer.letterSpacing}px` : undefined,
+  };
+
+  useEffect(() => {
+    if (!editing) return;
+    editorRef.current?.focus();
+    editorRef.current?.select();
+  }, [editing]);
+
+  if (!interactive) {
+    return (
+      <div className={className} style={style}>
+        {layer.text}
+      </div>
+    );
+  }
+
+  if (editing) {
+    return (
+      <textarea
+        ref={editorRef}
+        aria-label={`${layer.text.replace(/\s+/g, " ")} 文字编辑框`}
+        value={layer.text}
+        onChange={(event) => onTextChange?.(event.target.value)}
+        onBlur={onFinishEditing}
+        onPointerDown={(event) => event.stopPropagation()}
+        className={`${className} resize-none`}
+        style={style}
+      />
+    );
+  }
+
   return (
     <button
       type="button"
       aria-label={`${layer.text.replace(/\s+/g, " ")} 文字图层`}
       onClick={onSelect}
-      onPointerDown={(event) => onDragStart(event, layer)}
-      className={[
-        "absolute touch-none whitespace-pre-line rounded-2xl border-2 px-3 py-2 text-inherit transition",
-        selected
-          ? "border-sky-400 bg-white/15 shadow-[0_0_0_4px_rgba(56,189,248,0.24)]"
-          : "border-transparent hover:border-white/70",
-      ].join(" ")}
-      style={{
-        left: `${layer.x}%`,
-        top: `${layer.y}%`,
-        width: `${layer.width}%`,
-        color: layer.color,
-        fontSize: `${layer.fontSize}px`,
-        fontFamily: fontFamilyCss(layer.fontFamily),
-        fontWeight: layer.bold ? 900 : 500,
-        fontStyle: layer.italic ? "italic" : "normal",
-        textDecoration: layer.underline ? "underline" : "none",
-        textAlign: layer.align,
-        lineHeight: 1.08,
-        letterSpacing: layer.letterSpacing ? `${layer.letterSpacing}px` : undefined,
-      }}
+      onDoubleClick={onEditStart}
+      onPointerDown={(event) => onDragStart?.(event, layer)}
+      className={className}
+      style={style}
     >
       {layer.text}
     </button>
@@ -106,37 +165,105 @@ function IconLayerView({
   selected,
   onSelect,
   onDragStart,
+  interactive = true,
 }: {
   layer: CoverIconLayer;
   selected: boolean;
-  onSelect: () => void;
-  onDragStart: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onSelect?: () => void;
+  onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  interactive?: boolean;
 }) {
   const icon = findBrandIcon(layer.iconId);
+  const className = [
+    "absolute flex touch-none items-center justify-center rounded-[28%] border-2 font-black shadow-xl",
+    interactive ? "transition" : "",
+    icon.className,
+    selected && interactive
+      ? "border-sky-300 ring-4 ring-sky-300/35"
+      : interactive
+        ? "border-white/70 hover:ring-4 hover:ring-white/30"
+        : "border-white/70",
+  ].join(" ");
+  const style: CSSProperties = {
+    left: `${layer.x}%`,
+    top: `${layer.y}%`,
+    width: `${layer.size}%`,
+    aspectRatio: "1 / 1",
+    fontSize: `${Math.max(13, layer.size * 2.4)}px`,
+  };
+
+  if (!interactive) {
+    return (
+      <div className={className} style={style}>
+        {icon.mark}
+      </div>
+    );
+  }
 
   return (
     <button
       type="button"
       aria-label={`${icon.name} 图标图层`}
       onClick={onSelect}
-      onPointerDown={(event) => onDragStart(event, layer)}
-      className={[
-        "absolute flex touch-none items-center justify-center rounded-[28%] border-2 font-black shadow-xl transition",
-        icon.className,
-        selected
-          ? "border-sky-300 ring-4 ring-sky-300/35"
-          : "border-white/70 hover:ring-4 hover:ring-white/30",
-      ].join(" ")}
-      style={{
-        left: `${layer.x}%`,
-        top: `${layer.y}%`,
-        width: `${layer.size}%`,
-        aspectRatio: "1 / 1",
-        fontSize: `${Math.max(13, layer.size * 2.4)}px`,
-      }}
+      onPointerDown={(event) => onDragStart?.(event, layer)}
+      className={className}
+      style={style}
     >
       {icon.mark}
     </button>
+  );
+}
+
+function CoverCanvasContent({
+  layers,
+  selectedLayerId,
+  editingLayerId,
+  onSelectLayer,
+  onDragStart,
+  onEditTextLayer,
+  onTextLayerChange,
+  onFinishEditing,
+  interactive = true,
+}: {
+  layers: CoverLayer[];
+  selectedLayerId?: string;
+  editingLayerId?: string;
+  onSelectLayer?: (layerId: string) => void;
+  onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onEditTextLayer?: (layerId: string) => void;
+  onTextLayerChange?: (layerId: string, text: string) => void;
+  onFinishEditing?: () => void;
+  interactive?: boolean;
+}) {
+  return (
+    <>
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,255,255,0.45)_0_8%,transparent_9%),radial-gradient(circle_at_18%_82%,rgba(255,255,255,0.36)_0_10%,transparent_11%)]" />
+      {layers.map((layer) =>
+        layer.type === "text" ? (
+          <TextLayerView
+            key={layerKey(layer)}
+            layer={layer}
+            selected={layer.id === selectedLayerId}
+            editing={layer.id === editingLayerId}
+            onSelect={() => onSelectLayer?.(layer.id)}
+            onDragStart={onDragStart}
+            onEditStart={() => onEditTextLayer?.(layer.id)}
+            onTextChange={(text) => onTextLayerChange?.(layer.id, text)}
+            onFinishEditing={onFinishEditing}
+            interactive={interactive}
+          />
+        ) : (
+          <IconLayerView
+            key={layerKey(layer)}
+            layer={layer}
+            selected={layer.id === selectedLayerId}
+            onSelect={() => onSelectLayer?.(layer.id)}
+            onDragStart={onDragStart}
+            interactive={interactive}
+          />
+        ),
+      )}
+    </>
   );
 }
 
@@ -153,10 +280,12 @@ export function CoverEditor() {
   const [message, setMessage] = useState("拖拽调整位置。");
   const [isExporting, setIsExporting] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
+  const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
   const canvasRef = useRef<HTMLDivElement>(null);
+  const exportCanvasRef = useRef<HTMLDivElement>(null);
   const channel = getChannel(channelId);
   const selectedLayer = layers.find((layer) => layer.id === selectedLayerId) ?? null;
-  const canvasScale = channel.id === "wechat" ? 0.46 : 0.28;
 
   const chooseChannel = (nextChannelId: CoverChannelId) => {
     const nextTemplate = getTemplatesByChannel(nextChannelId)[0];
@@ -165,6 +294,7 @@ export function CoverEditor() {
     const nextLayers = cloneTemplateLayers(nextTemplate);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
+    setCanvasScale(defaultCanvasScale(nextChannelId));
     setMessage(`已切换到${getChannel(nextChannelId).name}。`);
   };
 
@@ -180,14 +310,18 @@ export function CoverEditor() {
 
   const patchSelectedLayer = <T extends CoverLayer>(patch: Partial<T>) => {
     if (!selectedLayer) return;
-    setLayers((currentLayers) => updateLayer<T>(currentLayers, selectedLayer.id, patch));
+    patchLayer<T>(selectedLayer.id, patch);
+  };
+
+  const patchLayer = <T extends CoverLayer>(layerId: string, patch: Partial<T>) => {
+    setLayers((currentLayers) => updateLayer<T>(currentLayers, layerId, patch));
   };
 
   const addTextLayer = () => {
     const layer = createTextLayer("新的封面标题");
     setLayers((currentLayers) => [...currentLayers, layer]);
     setSelectedLayerId(layer.id);
-    setMessage("已添加文字，右侧可以改内容和样式。");
+    setMessage("已添加文字。");
   };
 
   const addIconLayer = (iconId: BrandIconId) => {
@@ -204,6 +338,7 @@ export function CoverEditor() {
       setSelectedLayerId(nextLayers[0]?.id ?? "");
       return nextLayers;
     });
+    setEditingLayerId(null);
   };
 
   const beginDrag = (
@@ -213,6 +348,7 @@ export function CoverEditor() {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     setSelectedLayerId(layer.id);
+    setEditingLayerId(null);
     setDragState({
       layerId: layer.id,
       startClientX: event.clientX,
@@ -243,12 +379,26 @@ export function CoverEditor() {
     [dragState, layers],
   );
 
+  const handlePreviewWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const direction = event.deltaY < 0 ? 1 : -1;
+    setCanvasScale((currentScale) =>
+      Number(
+        clamp(
+          currentScale + direction * CANVAS_ZOOM_STEP,
+          MIN_CANVAS_SCALE,
+          MAX_CANVAS_SCALE,
+        ).toFixed(2),
+      ),
+    );
+  };
+
   const exportCover = async () => {
-    if (!canvasRef.current) return;
+    if (!exportCanvasRef.current) return;
     setIsExporting(true);
     setMessage("正在导出封面...");
     try {
-      await downloadNodeAsPng(canvasRef.current, `cover-${channel.id}.png`);
+      await downloadNodeAsPng(exportCanvasRef.current, `cover-${channel.id}.png`);
       setMessage("封面已导出。");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "导出失败，请重试");
@@ -274,11 +424,7 @@ export function CoverEditor() {
       style={pageStyle}
     >
       <div className="mx-auto flex max-w-[1560px] flex-col gap-4">
-        <header className="flex flex-col gap-3 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b] md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-2xl font-black leading-tight md:text-4xl">封面制作</h1>
-            <p className="mt-1 text-sm font-semibold text-zinc-600">选平台，改标题，导出 PNG。</p>
-          </div>
+        <header className="flex flex-wrap items-center justify-end gap-2 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
           <div className="flex flex-wrap gap-2">
             <Link
               href="/"
@@ -403,19 +549,12 @@ export function CoverEditor() {
             </section>
           </aside>
 
-          <section className="min-w-0 rounded-[24px] border-3 border-zinc-950 bg-[linear-gradient(90deg,rgba(0,0,0,0.06)_1px,transparent_1px),linear-gradient(rgba(0,0,0,0.06)_1px,transparent_1px),#eef2ff] bg-[length:28px_28px] p-4 shadow-[6px_6px_0_#18181b]">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <h2 className="text-lg font-black">画布</h2>
-                <p className="text-sm font-semibold text-zinc-600">{message}</p>
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full border-2 border-zinc-950 bg-white px-3 py-2 text-xs font-black">
-                <MousePointer2 size={15} aria-hidden="true" />
-                拖拽排版
-              </div>
-            </div>
-
-            <div className="flex min-h-[620px] items-center justify-center overflow-auto rounded-2xl border-3 border-zinc-950 bg-white/70 p-5">
+          <section
+            aria-label="封面预览面板"
+            onWheel={handlePreviewWheel}
+            className="min-w-0 rounded-[24px] border-3 border-zinc-950 bg-[linear-gradient(90deg,rgba(0,0,0,0.06)_1px,transparent_1px),linear-gradient(rgba(0,0,0,0.06)_1px,transparent_1px),#eef2ff] bg-[length:28px_28px] p-3 shadow-[6px_6px_0_#18181b]"
+          >
+            <div className="flex min-h-[600px] items-center justify-center overflow-auto rounded-2xl border-3 border-zinc-950 bg-white/70 p-3">
               <div
                 className="relative"
                 style={{
@@ -435,26 +574,21 @@ export function CoverEditor() {
                   ].join(" ")}
                   style={canvasStyle}
                 >
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,255,255,0.45)_0_8%,transparent_9%),radial-gradient(circle_at_18%_82%,rgba(255,255,255,0.36)_0_10%,transparent_11%)]" />
-                  {layers.map((layer) =>
-                    layer.type === "text" ? (
-                      <TextLayerView
-                        key={layerKey(layer)}
-                        layer={layer}
-                        selected={layer.id === selectedLayerId}
-                        onSelect={() => setSelectedLayerId(layer.id)}
-                        onDragStart={beginDrag}
-                      />
-                    ) : (
-                      <IconLayerView
-                        key={layerKey(layer)}
-                        layer={layer}
-                        selected={layer.id === selectedLayerId}
-                        onSelect={() => setSelectedLayerId(layer.id)}
-                        onDragStart={beginDrag}
-                      />
-                    ),
-                  )}
+                  <CoverCanvasContent
+                    layers={layers}
+                    selectedLayerId={selectedLayerId}
+                    editingLayerId={editingLayerId ?? undefined}
+                    onSelectLayer={setSelectedLayerId}
+                    onDragStart={beginDrag}
+                    onEditTextLayer={(layerId) => {
+                      setSelectedLayerId(layerId);
+                      setEditingLayerId(layerId);
+                    }}
+                    onTextLayerChange={(layerId, text) =>
+                      patchLayer<CoverTextLayer>(layerId, { text })
+                    }
+                    onFinishEditing={() => setEditingLayerId(null)}
+                  />
                 </div>
               </div>
             </div>
@@ -476,18 +610,6 @@ export function CoverEditor() {
 
             {selectedLayer?.type === "text" && (
               <div className="space-y-4">
-                <label className="block">
-                  <span className="mb-2 block text-sm font-black">文字内容</span>
-                  <textarea
-                    aria-label="文字内容"
-                    value={selectedLayer.text}
-                    onChange={(event) =>
-                      patchSelectedLayer<CoverTextLayer>({ text: event.target.value })
-                    }
-                    className="min-h-28 w-full rounded-2xl border-3 border-zinc-950 bg-zinc-50 p-3 font-bold outline-none focus:ring-4 focus:ring-sky-200"
-                  />
-                </label>
-
                 <div className="grid grid-cols-2 gap-3">
                   <label>
                     <span className="mb-2 block text-sm font-black">字号</span>
@@ -632,6 +754,22 @@ export function CoverEditor() {
               </button>
             )}
           </aside>
+        </div>
+
+        <div className="export-pages" aria-hidden="true">
+          <div
+            ref={exportCanvasRef}
+            className={[
+              "cover-export-node relative overflow-hidden",
+              activeTemplate.backgroundClassName,
+            ].join(" ")}
+            style={{
+              width: `${channel.width}px`,
+              height: `${channel.height}px`,
+            }}
+          >
+            <CoverCanvasContent layers={layers} interactive={false} />
+          </div>
         </div>
       </div>
     </main>
