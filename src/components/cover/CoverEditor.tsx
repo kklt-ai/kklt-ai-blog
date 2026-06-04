@@ -16,6 +16,8 @@ import {
 } from "lucide-react";
 import {
   type CSSProperties,
+  type FocusEvent as ReactFocusEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
   useCallback,
@@ -77,6 +79,7 @@ function TextLayerView({
   onEditStart,
   onTextChange,
   onFinishEditing,
+  onDelete,
   interactive = true,
 }: {
   layer: CoverTextLayer;
@@ -87,11 +90,12 @@ function TextLayerView({
   onEditStart?: () => void;
   onTextChange?: (text: string) => void;
   onFinishEditing?: () => void;
+  onDelete?: () => void;
   interactive?: boolean;
 }) {
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const className = [
-    "absolute touch-none whitespace-pre-line rounded-2xl border-2 px-3 py-2 text-inherit",
+    "touch-none whitespace-pre-line rounded-2xl border-2 px-3 py-2 text-inherit",
     interactive ? "transition" : "",
     editing && interactive
       ? "border-sky-400 bg-white/20 outline-none ring-4 ring-sky-300/30"
@@ -101,10 +105,13 @@ function TextLayerView({
         ? "border-transparent hover:border-white/70"
         : "border-transparent",
   ].join(" ");
-  const style: CSSProperties = {
+  const positionedClassName = `absolute ${className}`;
+  const positionStyle: CSSProperties = {
     left: `${layer.x}%`,
     top: `${layer.y}%`,
     width: `${layer.width}%`,
+  };
+  const textStyle: CSSProperties = {
     color: layer.color,
     fontSize: `${layer.fontSize}px`,
     fontFamily: fontFamilyCss(layer.fontFamily),
@@ -115,6 +122,10 @@ function TextLayerView({
     lineHeight: 1.08,
     letterSpacing: layer.letterSpacing ? `${layer.letterSpacing}px` : undefined,
   };
+  const style: CSSProperties = {
+    ...positionStyle,
+    ...textStyle,
+  };
 
   useEffect(() => {
     if (!editing) return;
@@ -124,7 +135,7 @@ function TextLayerView({
 
   if (!interactive) {
     return (
-      <div className={className} style={style}>
+      <div className={positionedClassName} style={style}>
         {layer.text}
       </div>
     );
@@ -139,24 +150,32 @@ function TextLayerView({
         onChange={(event) => onTextChange?.(event.target.value)}
         onBlur={onFinishEditing}
         onPointerDown={(event) => event.stopPropagation()}
-        className={`${className} resize-none`}
+        data-cover-text-editor="true"
+        className={`${positionedClassName} resize-none`}
         style={style}
       />
     );
   }
 
   return (
-    <button
-      type="button"
-      aria-label={`${layer.text.replace(/\s+/g, " ")} 文字图层`}
-      onClick={onSelect}
-      onDoubleClick={onEditStart}
-      onPointerDown={(event) => onDragStart?.(event, layer)}
-      className={className}
-      style={style}
-    >
-      {layer.text}
-    </button>
+    <div className="group absolute" style={positionStyle}>
+      <button
+        type="button"
+        aria-label={`${layer.text.replace(/\s+/g, " ")} 文字图层`}
+        onClick={onSelect}
+        onDoubleClick={onEditStart}
+        onPointerDown={(event) => onDragStart?.(event, layer)}
+        className={`${className} h-full w-full`}
+        style={textStyle}
+      >
+        {layer.text}
+      </button>
+      <LayerDeleteButton
+        label={`删除 ${layer.text.replace(/\s+/g, " ")} 图层`}
+        selected={selected}
+        onDelete={onDelete}
+      />
+    </div>
   );
 }
 
@@ -165,17 +184,19 @@ function IconLayerView({
   selected,
   onSelect,
   onDragStart,
+  onDelete,
   interactive = true,
 }: {
   layer: CoverIconLayer;
   selected: boolean;
   onSelect?: () => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onDelete?: () => void;
   interactive?: boolean;
 }) {
   const icon = findBrandIcon(layer.iconId);
   const className = [
-    "absolute flex touch-none items-center justify-center rounded-[28%] border-2 font-black shadow-xl",
+    "flex h-full w-full touch-none items-center justify-center rounded-[28%] border-2 font-black shadow-xl",
     interactive ? "transition" : "",
     icon.className,
     selected && interactive
@@ -194,22 +215,58 @@ function IconLayerView({
 
   if (!interactive) {
     return (
-      <div className={className} style={style}>
+      <div className={`absolute ${className}`} style={style}>
         {icon.mark}
       </div>
     );
   }
 
   return (
+    <div className="group absolute" style={style}>
+      <button
+        type="button"
+        aria-label={`${icon.name} 图标图层`}
+        onClick={onSelect}
+        onPointerDown={(event) => onDragStart?.(event, layer)}
+        className={className}
+      >
+        {icon.mark}
+      </button>
+      <LayerDeleteButton
+        label={`删除 ${icon.name} 图层`}
+        selected={selected}
+        onDelete={onDelete}
+      />
+    </div>
+  );
+}
+
+function LayerDeleteButton({
+  label,
+  selected,
+  onDelete,
+}: {
+  label: string;
+  selected: boolean;
+  onDelete?: () => void;
+}) {
+  const handleClick = (event: ReactMouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    onDelete?.();
+  };
+
+  return (
     <button
       type="button"
-      aria-label={`${icon.name} 图标图层`}
-      onClick={onSelect}
-      onPointerDown={(event) => onDragStart?.(event, layer)}
-      className={className}
-      style={style}
+      aria-label={label}
+      onClick={handleClick}
+      onPointerDown={(event) => event.stopPropagation()}
+      className={[
+        "absolute -right-3 -top-3 inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-zinc-950 bg-white text-rose-600 shadow-[2px_2px_0_#18181b] transition hover:bg-rose-100",
+        selected ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+      ].join(" ")}
     >
-      {icon.mark}
+      <Trash2 size={17} aria-hidden="true" />
     </button>
   );
 }
@@ -223,6 +280,7 @@ function CoverCanvasContent({
   onEditTextLayer,
   onTextLayerChange,
   onFinishEditing,
+  onDeleteLayer,
   interactive = true,
 }: {
   layers: CoverLayer[];
@@ -233,6 +291,7 @@ function CoverCanvasContent({
   onEditTextLayer?: (layerId: string) => void;
   onTextLayerChange?: (layerId: string, text: string) => void;
   onFinishEditing?: () => void;
+  onDeleteLayer?: (layerId: string) => void;
   interactive?: boolean;
 }) {
   return (
@@ -250,6 +309,7 @@ function CoverCanvasContent({
             onEditStart={() => onEditTextLayer?.(layer.id)}
             onTextChange={(text) => onTextLayerChange?.(layer.id, text)}
             onFinishEditing={onFinishEditing}
+            onDelete={() => onDeleteLayer?.(layer.id)}
             interactive={interactive}
           />
         ) : (
@@ -259,6 +319,7 @@ function CoverCanvasContent({
             selected={layer.id === selectedLayerId}
             onSelect={() => onSelectLayer?.(layer.id)}
             onDragStart={onDragStart}
+            onDelete={() => onDeleteLayer?.(layer.id)}
             interactive={interactive}
           />
         ),
@@ -331,10 +392,9 @@ export function CoverEditor() {
     setMessage(`已添加 ${findBrandIcon(iconId).name} 图标。`);
   };
 
-  const deleteSelectedLayer = () => {
-    if (!selectedLayer) return;
+  const deleteLayer = (layerId: string) => {
     setLayers((currentLayers) => {
-      const nextLayers = currentLayers.filter((layer) => layer.id !== selectedLayer.id);
+      const nextLayers = currentLayers.filter((layer) => layer.id !== layerId);
       setSelectedLayerId(nextLayers[0]?.id ?? "");
       return nextLayers;
     });
@@ -407,6 +467,20 @@ export function CoverEditor() {
     }
   };
 
+  const finishEditingIfOutsideTextEditor = (target: EventTarget | null) => {
+    if (!editingLayerId || !(target instanceof HTMLElement)) return;
+    if (target.closest("[data-cover-text-editor='true']")) return;
+    setEditingLayerId(null);
+  };
+
+  const handlePointerDownCapture = (event: ReactPointerEvent<HTMLElement>) => {
+    finishEditingIfOutsideTextEditor(event.target);
+  };
+
+  const handleFocusCapture = (event: ReactFocusEvent<HTMLElement>) => {
+    finishEditingIfOutsideTextEditor(event.target);
+  };
+
   const canvasStyle: CSSProperties = {
     width: `${channel.width}px`,
     height: `${channel.height}px`,
@@ -422,6 +496,8 @@ export function CoverEditor() {
     <main
       className="min-h-screen bg-[#f6f7f9] p-4 text-zinc-950 md:p-6"
       style={pageStyle}
+      onPointerDownCapture={handlePointerDownCapture}
+      onFocusCapture={handleFocusCapture}
     >
       <div className="mx-auto flex max-w-[1560px] flex-col gap-4">
         <header className="flex flex-wrap items-center justify-end gap-2 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
@@ -588,6 +664,7 @@ export function CoverEditor() {
                       patchLayer<CoverTextLayer>(layerId, { text })
                     }
                     onFinishEditing={() => setEditingLayerId(null)}
+                    onDeleteLayer={deleteLayer}
                   />
                 </div>
               </div>
@@ -743,16 +820,6 @@ export function CoverEditor() {
               </div>
             )}
 
-            {selectedLayer && (
-              <button
-                type="button"
-                onClick={deleteSelectedLayer}
-                className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-3 border-zinc-950 bg-rose-100 px-3 py-3 font-black text-rose-700 shadow-[4px_4px_0_#18181b]"
-              >
-                <Trash2 size={17} aria-hidden="true" />
-                删除当前图层
-              </button>
-            )}
           </aside>
         </div>
 

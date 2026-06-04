@@ -62,12 +62,40 @@ describe("CoverEditor", () => {
     expect(layer).toHaveStyle("font-style: italic");
   });
 
+  it("keeps the preview layer selected after leaving text edit focus", () => {
+    render(<CoverEditor />);
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" }));
+    expect(screen.getByLabelText("AI 工具 效率翻倍 文字编辑框")).toBeInTheDocument();
+
+    fireEvent.pointerDown(screen.getByLabelText("字号"));
+    fireEvent.click(screen.getByLabelText("字号"));
+
+    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    expect(layer).toHaveClass("border-sky-400");
+    expect(screen.getByRole("button", { name: "删除 AI 工具 效率翻倍 图层" })).toHaveClass(
+      "opacity-100",
+    );
+  });
+
   it("adds a brand icon from the library", () => {
     render(<CoverEditor />);
 
     fireEvent.click(screen.getByRole("button", { name: "添加 OpenAI 图标" }));
 
     expect(screen.getByLabelText("OpenAI 图标图层")).toBeInTheDocument();
+  });
+
+  it("deletes the selected layer from the preview canvas", () => {
+    render(<CoverEditor />);
+
+    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    fireEvent.click(layer);
+
+    expect(screen.queryByRole("button", { name: "删除当前图层" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "删除 AI 工具 效率翻倍 图层" }));
+
+    expect(screen.queryByRole("button", { name: "AI 工具 效率翻倍 文字图层" })).not.toBeInTheDocument();
   });
 
   it("starts with a larger preview and zooms the canvas with the mouse wheel", () => {
