@@ -1,14 +1,23 @@
-# 小红书 Markdown 排版工具
+# 小红书 Markdown 图片工具
 
-一个纯前端工具，把 Markdown 转成适合小红书发布的多页 PNG 图片。
+一个纯前端 Next.js 工具，包含 Markdown 多页图片生成和封面制作两个工作区。
 
 ## 功能
+
+### Markdown 图片
 
 - Markdown 编辑和 `.md` 上传
 - 自动分页和 `-------` 手动分割
 - 多主题预览
 - 自定义图片宽高
-- 当前页或全部页面 PNG 导出
+- 当前页 PNG 导出或全部页面 ZIP 打包
+- 本地图片上传，使用 `local-image://...` 短引用保持 Markdown 轻量
+
+### 封面制作
+
+- 小红书和公众号封面尺寸
+- 模板、文字图层和品牌图标
+- 独立封面 PNG 导出
 
 ## 本地图片存储
 
@@ -24,10 +33,17 @@
 
 相关代码位置：
 
-- `src/lib/localImages.ts`：IndexedDB 图片库，负责保存图片、读取图片引用、提取当前 Markdown 使用到的图片、清理未引用旧图片。
-- `src/components/EditorPanel.tsx`：图片上传入口。读取本地文件后调用图片库保存，只把 `local-image://...` 短引用插入 Markdown。
-- `src/app/page.tsx`：连接编辑器、预览和图片库。页面打开后会异步清理未被当前 Markdown 引用的旧图片。
-- `src/lib/images.ts` 和 `src/components/RenderedPage.tsx`：预览渲染时把 `local-image://...` 解析成实际图片数据。
+- `src/md-image/lib/localImages.ts`：IndexedDB 图片库，负责保存图片、读取图片引用、提取当前 Markdown 使用到的图片、清理未引用旧图片。
+- `src/md-image/components/EditorPanel.tsx`：图片上传入口。读取本地文件后调用图片库保存，只把 `local-image://...` 短引用插入 Markdown。
+- `src/md-image/MarkdownImageApp.tsx`：连接编辑器、预览和图片库。页面打开后会异步清理未被当前 Markdown 引用的旧图片。
+- `src/md-image/lib/images.ts` 和 `src/md-image/components/RenderedPage.tsx`：预览渲染时把 `local-image://...` 解析成实际图片数据。
+
+## 导出
+
+两种工作区各自维护导出逻辑：
+
+- `src/md-image/lib/export.ts`：Markdown 图片的单页 PNG、全部页面 ZIP 和日期文件名。
+- `src/cover/lib/export.ts`：封面制作的单张 PNG 导出和封面文件名。
 
 ## 开发
 
