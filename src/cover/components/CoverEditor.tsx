@@ -7,8 +7,10 @@ import {
   AlignRight,
   Bold,
   Download,
+  Image as ImageIcon,
   Italic,
-  MousePointer2,
+  LayoutTemplate,
+  Paintbrush,
   Plus,
   Trash2,
   Type,
@@ -53,6 +55,19 @@ type DragState = {
   startX: number;
   startY: number;
 };
+
+type CoverToolId = "templates" | "text" | "image" | "background";
+
+const COVER_TOOLS: Array<{
+  id: CoverToolId;
+  label: string;
+  icon: typeof LayoutTemplate;
+}> = [
+  { id: "templates", label: "模板", icon: LayoutTemplate },
+  { id: "text", label: "文字", icon: Type },
+  { id: "image", label: "图片", icon: ImageIcon },
+  { id: "background", label: "背景", icon: Paintbrush },
+];
 
 const CANVAS_ZOOM_STEP = 0.04;
 const MIN_CANVAS_SCALE = 0.2;
@@ -342,6 +357,7 @@ export function CoverEditor() {
   const [isExporting, setIsExporting] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
+  const [activeToolId, setActiveToolId] = useState<CoverToolId>("templates");
   const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
   const canvasRef = useRef<HTMLDivElement>(null);
   const exportCanvasRef = useRef<HTMLDivElement>(null);
@@ -494,143 +510,182 @@ export function CoverEditor() {
 
   return (
     <main
-      className="min-h-screen bg-[#f6f7f9] p-4 text-zinc-950 md:p-6"
+      className="min-h-screen bg-[#f2f3f5] text-zinc-950"
       style={pageStyle}
       onPointerDownCapture={handlePointerDownCapture}
       onFocusCapture={handleFocusCapture}
     >
-      <div className="mx-auto flex max-w-[1560px] flex-col gap-4">
-        <header className="flex flex-wrap items-center justify-end gap-2 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/"
-              className="rounded-full border-3 border-zinc-950 bg-white px-4 py-2 text-sm font-black shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5"
-            >
-              回 Markdown 转图
-            </Link>
-            <button
-              type="button"
-              onClick={exportCover}
-              disabled={isExporting}
-              className="inline-flex items-center gap-2 rounded-full border-3 border-zinc-950 bg-[var(--cover-accent)] px-4 py-2 text-sm font-black text-[var(--cover-accent-ink)] shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5 disabled:opacity-60"
-            >
-              <Download size={17} aria-hidden="true" />
-              {isExporting ? "导出中..." : "导出 PNG"}
-            </button>
+      <div className="grid min-h-screen grid-cols-[minmax(360px,430px)_minmax(420px,1fr)_330px] max-xl:grid-cols-1">
+        <aside className="flex min-h-0 border-r border-zinc-200 bg-white max-xl:min-h-[520px] max-sm:flex-col">
+          <nav
+            aria-label="封面功能栏"
+            className="flex w-[88px] shrink-0 flex-col gap-2 border-r border-zinc-200 px-3 py-5 max-sm:w-full max-sm:flex-row max-sm:border-b max-sm:border-r-0"
+          >
+            {COVER_TOOLS.map((tool) => {
+              const Icon = tool.icon;
+              const isActive = tool.id === activeToolId;
+              return (
+                <button
+                  key={tool.id}
+                  type="button"
+                  aria-pressed={isActive}
+                  onClick={() => setActiveToolId(tool.id)}
+                  className={[
+                    "flex h-[72px] flex-col items-center justify-center gap-1 rounded-lg text-sm font-semibold transition max-sm:h-14 max-sm:flex-1",
+                    isActive
+                      ? "bg-zinc-100 text-zinc-950"
+                      : "bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
+                  ].join(" ")}
+                >
+                  <Icon size={23} aria-hidden="true" strokeWidth={2.1} />
+                  <span>{tool.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+            {activeToolId === "templates" && (
+              <section>
+                <div className="mb-5 flex items-center justify-between">
+                  <h2 className="text-xl font-bold">模板</h2>
+                  <span className="text-sm font-semibold text-zinc-500">
+                    {templates.length} 款
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {templates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      aria-pressed={template.id === activeTemplate.id}
+                      onClick={() => chooseTemplate(template.id)}
+                      className={[
+                        "w-full rounded-lg border p-3 text-left transition",
+                        template.id === activeTemplate.id
+                          ? "border-zinc-950 bg-zinc-50"
+                          : "border-zinc-200 bg-white hover:border-zinc-300",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "mb-2 block h-20 rounded-md border border-zinc-200",
+                          template.backgroundClassName,
+                        ].join(" ")}
+                      />
+                      <span className="block font-semibold">{template.name}</span>
+                      <span className="mt-1 block text-xs leading-5 text-zinc-500">
+                        {template.description}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeToolId === "text" && (
+              <section>
+                <h2 className="mb-5 text-xl font-bold">文字</h2>
+                <button
+                  type="button"
+                  onClick={addTextLayer}
+                  className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 px-3 py-3 font-semibold text-white transition hover:bg-zinc-800"
+                >
+                  <Plus size={18} aria-hidden="true" />
+                  添加文字
+                </button>
+                <div className="grid grid-cols-2 gap-3 rounded-lg bg-zinc-100 p-3">
+                  {[
+                    { label: "标题", sample: "H1" },
+                    { label: "副标题", sample: "H2" },
+                    { label: "正文", sample: "Aa" },
+                    { label: "强调", sample: "abc" },
+                  ].map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      onClick={addTextLayer}
+                      className="rounded-md bg-white px-3 py-4 text-center text-sm font-semibold text-zinc-600 transition hover:text-zinc-950"
+                    >
+                      <span className="mb-2 block text-2xl font-bold text-zinc-950">
+                        {item.sample}
+                      </span>
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeToolId === "image" && (
+              <section>
+                <h2 className="mb-5 text-xl font-bold">图片素材</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {BRAND_ICONS.map((icon) => (
+                    <button
+                      key={icon.id}
+                      type="button"
+                      aria-label={`添加 ${icon.name} 图标`}
+                      onClick={() => addIconLayer(icon.id)}
+                      className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm font-semibold transition hover:border-zinc-300 hover:bg-white"
+                    >
+                      <span
+                        className={[
+                          "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-lg text-xs",
+                          icon.className,
+                        ].join(" ")}
+                      >
+                        {icon.mark}
+                      </span>
+                      {icon.name}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {activeToolId === "background" && (
+              <section>
+                <h2 className="mb-5 text-xl font-bold">背景样式</h2>
+                <div className="grid grid-cols-2 gap-3">
+                  {templates.map((template) => (
+                    <button
+                      key={template.id}
+                      type="button"
+                      aria-label={`使用 ${template.name} 背景`}
+                      aria-pressed={template.id === activeTemplate.id}
+                      onClick={() => chooseTemplate(template.id)}
+                      className={[
+                        "rounded-lg border bg-white p-2 text-left transition",
+                        template.id === activeTemplate.id
+                          ? "border-zinc-950"
+                          : "border-zinc-200 hover:border-zinc-300",
+                      ].join(" ")}
+                    >
+                      <span
+                        className={[
+                          "block aspect-[4/3] rounded-md",
+                          template.backgroundClassName,
+                        ].join(" ")}
+                      />
+                      <span className="mt-2 block truncate text-sm font-semibold">
+                        {template.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
-        </header>
-
-        <div className="grid gap-4 xl:grid-cols-[300px_minmax(520px,1fr)_320px]">
-          <aside className="flex flex-col gap-4 rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
-            <section>
-              <h2 className="mb-3 text-lg font-black">平台</h2>
-              <div className="grid grid-cols-2 gap-2">
-                {COVER_CHANNELS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={item.id === channelId}
-                    onClick={() => chooseChannel(item.id)}
-                    style={
-                      {
-                        "--channel-color": item.brandColor,
-                        "--channel-ink": item.brandForeground,
-                      } as CSSProperties
-                    }
-                    className={[
-                      "rounded-2xl border-3 px-3 py-3 text-left text-sm font-black shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5",
-                      item.id === channelId
-                        ? "border-zinc-950 bg-[var(--channel-color)] text-[var(--channel-ink)]"
-                        : "border-[var(--channel-color)] bg-white text-zinc-950",
-                    ].join(" ")}
-                  >
-                    {item.name}
-                    <span
-                      className={[
-                        "mt-1 block text-xs font-bold",
-                        item.id === channelId ? "text-white/80" : "text-zinc-500",
-                      ].join(" ")}
-                    >
-                      {item.sizeLabel}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-lg font-black">模板</h2>
-                <span className="rounded-full bg-zinc-950 px-2 py-1 text-xs font-black text-white">
-                  {templates.length} 款
-                </span>
-              </div>
-              <div className="space-y-3">
-                {templates.map((template) => (
-                  <button
-                    key={template.id}
-                    type="button"
-                    aria-pressed={template.id === activeTemplate.id}
-                    onClick={() => chooseTemplate(template.id)}
-                    className={[
-                      "w-full rounded-2xl border-3 border-zinc-950 p-3 text-left shadow-[3px_3px_0_#18181b] transition hover:-translate-y-0.5",
-                      template.id === activeTemplate.id
-                        ? "bg-[color-mix(in_srgb,var(--cover-accent)_16%,white)]"
-                        : "bg-white",
-                    ].join(" ")}
-                  >
-                    <span
-                      className={[
-                        "mb-2 block h-16 rounded-xl border-2 border-zinc-950",
-                        template.backgroundClassName,
-                      ].join(" ")}
-                    />
-                    <span className="block font-black">{template.name}</span>
-                  </button>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h2 className="mb-3 text-lg font-black">添加</h2>
-              <button
-                type="button"
-                onClick={addTextLayer}
-                className="mb-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border-3 border-zinc-950 bg-[var(--cover-accent)] px-3 py-3 font-black text-[var(--cover-accent-ink)] shadow-[3px_3px_0_#18181b]"
-              >
-                <Plus size={18} aria-hidden="true" />
-                添加文字
-              </button>
-              <div className="grid grid-cols-2 gap-2">
-                {BRAND_ICONS.map((icon) => (
-                  <button
-                    key={icon.id}
-                    type="button"
-                    aria-label={`添加 ${icon.name} 图标`}
-                    onClick={() => addIconLayer(icon.id)}
-                    className="rounded-2xl border-2 border-zinc-950 bg-zinc-50 p-2 text-sm font-black transition hover:bg-sky-100"
-                  >
-                    <span
-                      className={[
-                        "mx-auto mb-2 flex h-10 w-10 items-center justify-center rounded-xl text-xs",
-                        icon.className,
-                      ].join(" ")}
-                    >
-                      {icon.mark}
-                    </span>
-                    {icon.name}
-                  </button>
-                ))}
-              </div>
-            </section>
-          </aside>
+        </aside>
 
           <section
             aria-label="封面预览面板"
             onWheel={handlePreviewWheel}
-            className="min-w-0 rounded-[24px] border-3 border-zinc-950 bg-[linear-gradient(90deg,rgba(0,0,0,0.06)_1px,transparent_1px),linear-gradient(rgba(0,0,0,0.06)_1px,transparent_1px),#eef2ff] bg-[length:28px_28px] p-3 shadow-[6px_6px_0_#18181b]"
+            className="min-w-0 bg-[#f2f3f5] p-6 max-sm:p-3"
           >
-            <div className="flex min-h-[600px] items-center justify-center overflow-auto rounded-2xl border-3 border-zinc-950 bg-white/70 p-3">
+            <div className="flex min-h-[calc(100vh-48px)] items-center justify-center overflow-auto p-3 max-xl:min-h-[720px]">
               <div
                 className="relative"
                 style={{
@@ -645,7 +700,7 @@ export function CoverEditor() {
                   onPointerUp={() => setDragState(null)}
                   onPointerCancel={() => setDragState(null)}
                   className={[
-                    "absolute left-0 top-0 overflow-hidden rounded-[64px] border-[10px] border-zinc-950 shadow-2xl",
+                    "absolute left-0 top-0 overflow-hidden shadow-[0_18px_50px_rgba(15,23,42,0.18)]",
                     activeTemplate.backgroundClassName,
                   ].join(" ")}
                   style={canvasStyle}
@@ -671,16 +726,70 @@ export function CoverEditor() {
             </div>
           </section>
 
-          <aside className="rounded-[24px] border-3 border-zinc-950 bg-white p-4 shadow-[6px_6px_0_#18181b]">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-black">编辑</h2>
-              <span className="rounded-full bg-[color-mix(in_srgb,var(--cover-accent)_14%,white)] px-2 py-1 text-xs font-black text-zinc-950">
-                {selectedLayer?.type === "text" ? "文字" : selectedLayer ? "图标" : "未选择"}
-              </span>
+          <aside className="border-l border-zinc-200 bg-white px-5 py-5 max-xl:border-l-0 max-xl:border-t">
+            <div className="mb-6 flex items-center justify-between">
+              <h2 className="text-xl font-bold">画板</h2>
+              <Link href="/" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950">
+                返回
+              </Link>
             </div>
 
+            <section className="border-b border-zinc-100 pb-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-bold">尺寸</h3>
+                <span className="font-semibold text-zinc-500">
+                  {channel.width} × {channel.height} px
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={exportCover}
+                disabled={isExporting}
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60"
+              >
+                <Download size={17} aria-hidden="true" />
+                {isExporting ? "导出中..." : "导出 PNG"}
+              </button>
+            </section>
+
+            <section className="border-b border-zinc-100 py-5">
+              <h3 className="mb-3 font-bold">平台</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {COVER_CHANNELS.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    aria-pressed={item.id === channelId}
+                    onClick={() => chooseChannel(item.id)}
+                    style={
+                      {
+                        "--channel-color": item.brandColor,
+                        "--channel-ink": item.brandForeground,
+                      } as CSSProperties
+                    }
+                    className={[
+                      "rounded-lg border px-3 py-2 text-sm font-semibold transition",
+                      item.id === channelId
+                        ? "border-[var(--channel-color)] bg-[var(--channel-color)] text-[var(--channel-ink)]"
+                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-white",
+                    ].join(" ")}
+                  >
+                    {item.name}
+                  </button>
+                ))}
+              </div>
+            </section>
+
+            <section className="py-5">
+              <div className="mb-4 flex items-center justify-between">
+                <h3 className="font-bold">编辑</h3>
+                <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600">
+                {selectedLayer?.type === "text" ? "文字" : selectedLayer ? "图标" : "未选择"}
+              </span>
+              </div>
+
             {!selectedLayer && (
-              <div className="rounded-3xl border-3 border-dashed border-zinc-300 p-6 text-center font-bold text-zinc-500">
+              <div className="rounded-lg border border-dashed border-zinc-300 p-6 text-center font-semibold text-zinc-500">
                 选择画布里的文字或图标后，可以在这里编辑。
               </div>
             )}
@@ -689,7 +798,7 @@ export function CoverEditor() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-3">
                   <label>
-                    <span className="mb-2 block text-sm font-black">字号</span>
+                    <span className="mb-2 block text-sm font-bold">字号</span>
                     <input
                       aria-label="字号"
                       type="number"
@@ -701,11 +810,11 @@ export function CoverEditor() {
                           fontSize: Number(event.target.value),
                         })
                       }
-                      className="w-full rounded-2xl border-3 border-zinc-950 bg-white p-2 font-black"
+                      className="w-full rounded-lg border border-zinc-200 bg-white p-2 font-semibold"
                     />
                   </label>
                   <label>
-                    <span className="mb-2 block text-sm font-black">文字颜色</span>
+                    <span className="mb-2 block text-sm font-bold">文字颜色</span>
                     <input
                       aria-label="文字颜色"
                       type="color"
@@ -713,13 +822,13 @@ export function CoverEditor() {
                       onChange={(event) =>
                         patchSelectedLayer<CoverTextLayer>({ color: event.target.value })
                       }
-                      className="h-12 w-full rounded-2xl border-3 border-zinc-950 bg-white p-1"
+                      className="h-11 w-full rounded-lg border border-zinc-200 bg-white p-1"
                     />
                   </label>
                 </div>
 
                 <label className="block">
-                  <span className="mb-2 block text-sm font-black">字体</span>
+                  <span className="mb-2 block text-sm font-bold">字体</span>
                   <select
                     aria-label="字体"
                     value={selectedLayer.fontFamily}
@@ -728,7 +837,7 @@ export function CoverEditor() {
                         fontFamily: event.target.value as CoverTextLayer["fontFamily"],
                       })
                     }
-                    className="w-full rounded-2xl border-3 border-zinc-950 bg-white p-3 font-black"
+                    className="w-full rounded-lg border border-zinc-200 bg-white p-3 font-semibold"
                   >
                     {COVER_FONT_FAMILIES.map((font) => (
                       <option key={font.id} value={font.id}>
@@ -754,7 +863,7 @@ export function CoverEditor() {
                         key={item.label}
                         type="button"
                         onClick={() => patchSelectedLayer<CoverTextLayer>(item.patch)}
-                        className="inline-flex items-center justify-center gap-1 rounded-2xl border-2 border-zinc-950 bg-zinc-50 px-2 py-2 text-sm font-black hover:bg-[#fef15a]"
+                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-2 text-sm font-semibold hover:bg-white"
                       >
                         <Icon size={15} aria-hidden="true" />
                         {item.label}
@@ -779,8 +888,10 @@ export function CoverEditor() {
                           patchSelectedLayer<CoverTextLayer>({ align: item.align })
                         }
                         className={[
-                          "inline-flex items-center justify-center gap-1 rounded-2xl border-2 border-zinc-950 px-2 py-2 text-sm font-black",
-                          selectedLayer.align === item.align ? "bg-sky-200" : "bg-zinc-50",
+                          "inline-flex items-center justify-center gap-1 rounded-lg border px-2 py-2 text-sm font-semibold",
+                          selectedLayer.align === item.align
+                            ? "border-zinc-950 bg-zinc-950 text-white"
+                            : "border-zinc-200 bg-zinc-50",
                         ].join(" ")}
                       >
                         <Icon size={15} aria-hidden="true" />
@@ -794,15 +905,15 @@ export function CoverEditor() {
 
             {selectedLayer?.type === "icon" && (
               <div className="space-y-4">
-                <div className="rounded-3xl border-3 border-zinc-950 bg-zinc-50 p-4">
+                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
                   <Type size={20} aria-hidden="true" />
-                  <p className="mt-2 font-black">{findBrandIcon(selectedLayer.iconId).name}</p>
-                  <p className="mt-1 text-sm font-semibold text-zinc-600">
+                  <p className="mt-2 font-bold">{findBrandIcon(selectedLayer.iconId).name}</p>
+                  <p className="mt-1 text-sm font-semibold text-zinc-500">
                     可拖拽定位。
                   </p>
                 </div>
                 <label>
-                  <span className="mb-2 block text-sm font-black">图标大小</span>
+                  <span className="mb-2 block text-sm font-bold">图标大小</span>
                   <input
                     aria-label="图标大小"
                     type="range"
@@ -820,8 +931,8 @@ export function CoverEditor() {
               </div>
             )}
 
+            </section>
           </aside>
-        </div>
 
         <div className="export-pages" aria-hidden="true">
           <div

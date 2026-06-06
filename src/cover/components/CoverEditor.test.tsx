@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { downloadCoverNodeAsPng } from "@/cover/lib/export";
 import { CoverEditor } from "./CoverEditor";
@@ -18,10 +18,33 @@ describe("CoverEditor", () => {
     expect(screen.queryByText("封面制作")).not.toBeInTheDocument();
     expect(screen.queryByText("选平台，改标题，导出 PNG。")).not.toBeInTheDocument();
     expect(screen.queryByText("画布")).not.toBeInTheDocument();
+    const toolNav = screen.getByRole("navigation", { name: "封面功能栏" });
+    expect(within(toolNav).getAllByRole("button").map((button) => button.textContent)).toEqual([
+      "模板",
+      "文字",
+      "图片",
+      "背景",
+    ]);
     expect(screen.getByRole("button", { name: /小红书/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /公众号/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /AI 爆款封面/ })).toBeInTheDocument();
+    expect(screen.getByText("画板")).toBeInTheDocument();
+    expect(screen.getByText("1242 × 1660 px")).toBeInTheDocument();
     expect(screen.getByLabelText("封面画布")).toBeInTheDocument();
+  });
+
+  it("switches between the retained left toolbar panels", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "文字" }));
+    expect(screen.getByRole("button", { name: "添加文字" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+    expect(screen.getByText("图片素材")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "添加 OpenAI 图标" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+    expect(screen.getByText("背景样式")).toBeInTheDocument();
   });
 
   it("uses platform colors and concise cover page copy", () => {
@@ -45,6 +68,7 @@ describe("CoverEditor", () => {
   it("adds and edits a text layer from the preview canvas", () => {
     render(<CoverEditor />);
 
+    fireEvent.click(screen.getByRole("button", { name: "文字" }));
     fireEvent.click(screen.getByRole("button", { name: "添加文字" }));
     expect(screen.queryByLabelText("文字内容")).not.toBeInTheDocument();
 
@@ -81,6 +105,7 @@ describe("CoverEditor", () => {
   it("adds a brand icon from the library", () => {
     render(<CoverEditor />);
 
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
     fireEvent.click(screen.getByRole("button", { name: "添加 OpenAI 图标" }));
 
     expect(screen.getByLabelText("OpenAI 图标图层")).toBeInTheDocument();
