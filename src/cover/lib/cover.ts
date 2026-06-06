@@ -38,7 +38,44 @@ export type BrandIconId =
 
 export type TextAlign = "left" | "center" | "right";
 export type CoverFontFamily = "system" | "serif" | "rounded" | "mono";
-export type CoverTextEffect = "none" | "outline" | "shadow" | "glow" | "gradient" | "poster";
+export type CoverTextEffect =
+  | "none"
+  | "outline"
+  | "outline-white"
+  | "outline-warm"
+  | "outline-red"
+  | "outline-blue"
+  | "outline-lime"
+  | "shadow"
+  | "shadow-speed"
+  | "shadow-soft"
+  | "shadow-yellow"
+  | "shadow-scan"
+  | "shadow-poster"
+  | "texture-ice"
+  | "texture-gold"
+  | "texture-blue"
+  | "texture-stripe"
+  | "texture-copper"
+  | "texture-comic"
+  | "gradient"
+  | "gradient-silver"
+  | "gradient-red-black"
+  | "gradient-outline"
+  | "gradient-peach"
+  | "gradient-sun"
+  | "glow"
+  | "glow-red"
+  | "glow-outline"
+  | "glow-indigo"
+  | "glow-lime"
+  | "glow-pink"
+  | "three-d-blue"
+  | "three-d-violet"
+  | "three-d-cyan"
+  | "three-d-orange"
+  | "three-d-wire"
+  | "three-d-yellow";
 
 export type CoverTextLayer = {
   id: string;

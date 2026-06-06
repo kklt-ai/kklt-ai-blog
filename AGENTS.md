@@ -12,6 +12,7 @@ Follow the project-specific guidance in `CLAUDE.md`. In short:
 - Match the existing style, naming, and component boundaries.
 - Verify work with the narrowest meaningful tests, and broaden verification when the change touches shared behavior.
 - Do not overwrite or revert user changes. Check `git status --short` before editing when unsure.
+- Keep new or substantially edited code files near 400 lines or less so AI coding agents can read, reason about, and modify them safely in one pass. If a file approaches that size, split it by package and feature responsibility instead of adding more unrelated behavior.
 
 ## Project Summary
 

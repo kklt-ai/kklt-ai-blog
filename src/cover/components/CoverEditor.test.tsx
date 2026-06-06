@@ -28,8 +28,8 @@ describe("CoverEditor", () => {
     expect(screen.getByRole("button", { name: /小红书/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /公众号/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /AI 爆款封面/ })).toBeInTheDocument();
-    expect(screen.getByText("画板")).toBeInTheDocument();
-    expect(screen.getByText("1242 × 1660 px")).toBeInTheDocument();
+    expect(screen.queryByText("画板")).not.toBeInTheDocument();
+    expect(screen.queryByText("1242 × 1660 px")).not.toBeInTheDocument();
     expect(screen.getByLabelText("封面画布")).toBeInTheDocument();
   });
 
@@ -137,15 +137,19 @@ describe("CoverEditor", () => {
     expect(screen.queryByText(/已切换到/)).not.toBeInTheDocument();
   });
 
-  it("keeps the platform switch and export action at the top of settings", () => {
+  it("keeps page navigation, platform switch, and export action in a top navbar", () => {
     render(<CoverEditor />);
 
+    const navbar = screen.getByRole("navigation", { name: "封面顶部导航" });
     const settingsPanel = screen.getByRole("complementary", { name: "封面设置" });
-    const topActions = within(settingsPanel).getByLabelText("封面顶部操作");
-    const platformSwitch = within(topActions).getByRole("group", { name: "平台切换" });
-    const exportButton = within(topActions).getByRole("button", { name: "导出 PNG" });
-    const editRegion = within(settingsPanel).getByRole("region", { name: "图层编辑" });
+    const platformSwitch = within(navbar).getByRole("group", { name: "平台切换" });
+    const exportButton = within(navbar).getByRole("button", { name: "导出 PNG" });
 
+    expect(within(navbar).getByText("封面设计")).toBeInTheDocument();
+    expect(within(navbar).getByRole("link", { name: "MD 申请卡片" })).toHaveAttribute(
+      "href",
+      "/",
+    );
     expect(within(platformSwitch).getByRole("button", { name: "小红书" })).toHaveAttribute(
       "aria-pressed",
       "true",
@@ -154,12 +158,25 @@ describe("CoverEditor", () => {
       "aria-pressed",
       "false",
     );
-    expect(topActions.compareDocumentPosition(editRegion)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
-    expect(exportButton.compareDocumentPosition(editRegion)).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING,
-    );
+    expect(settingsPanel).not.toContainElement(navbar);
+    expect(settingsPanel).not.toContainElement(exportButton);
+    expect(within(settingsPanel).queryByLabelText("平台切换")).not.toBeInTheDocument();
+    expect(within(settingsPanel).queryByRole("button", { name: "导出 PNG" })).not.toBeInTheDocument();
+    expect(within(settingsPanel).queryByText("编辑")).not.toBeInTheDocument();
+    expect(within(settingsPanel).queryByText("文字")).not.toBeInTheDocument();
+    expect(within(settingsPanel).queryByText("选择画布里的文字或图标后，可以在这里编辑。")).not.toBeInTheDocument();
+  });
+
+  it("uses compact action controls on narrow screens", () => {
+    render(<CoverEditor />);
+
+    const navbar = screen.getByRole("navigation", { name: "封面顶部导航" });
+    const platformSwitch = within(navbar).getByRole("group", { name: "平台切换" });
+    const exportButton = within(navbar).getByRole("button", { name: "导出 PNG" });
+
+    expect(navbar).toHaveClass("max-lg:grid", "max-lg:grid-cols-[1fr_auto]");
+    expect(platformSwitch).toHaveClass("max-sm:order-3", "max-sm:col-span-2");
+    expect(within(exportButton).getByText("PNG")).toHaveClass("max-[420px]:hidden");
   });
 
   it("adds and edits a text layer from the preview canvas", () => {
@@ -189,11 +206,28 @@ describe("CoverEditor", () => {
     const italicButton = screen.getByRole("button", { name: "斜体" });
     expect(italicButton.textContent).toBe("");
 
+    const effectPanel = screen.getByRole("region", { name: "文字特效" });
+    const effectCategories = within(effectPanel).getByRole("group", { name: "文字特效分类" });
+    expect(
+      within(effectCategories).getAllByRole("button").map((button) => button.textContent),
+    ).toEqual(["描边", "投影", "纹理", "渐变", "发光", "3D"]);
+    expect(within(effectPanel).getAllByRole("button", { name: /文字特效$/ })).toHaveLength(7);
+
     fireEvent.click(screen.getByRole("button", { name: "描边文字特效" }));
 
     const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
-    expect(layer.style.textShadow).toContain("#ffffff");
+    expect(layer.style.textShadow).toContain("#111111");
     expect(screen.getByRole("button", { name: "描边文字特效" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    fireEvent.click(within(effectCategories).getByRole("button", { name: "渐变" }));
+    fireEvent.click(screen.getByRole("button", { name: "银灰渐变文字特效" }));
+
+    expect(layer.style.color).toBe("transparent");
+    expect(layer.style.backgroundImage).toContain("linear-gradient");
+    expect(screen.getByRole("button", { name: "银灰渐变文字特效" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
