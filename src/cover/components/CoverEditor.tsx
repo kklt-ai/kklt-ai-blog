@@ -26,7 +26,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { downloadNodeAsPng } from "@/lib/export";
+import { downloadNodeAsPng } from "@/shared/export";
 import {
   BRAND_ICONS,
   COVER_CHANNELS,
@@ -44,7 +44,7 @@ import {
   getChannel,
   getTemplatesByChannel,
   updateLayer,
-} from "@/lib/cover";
+} from "@/cover/lib/cover";
 
 type DragState = {
   layerId: string;

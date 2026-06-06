@@ -8,9 +8,9 @@ import {
   PenTool,
   Share,
 } from "lucide-react";
-import { resolveThemeSyntax } from "@/lib/themes";
-import { resolveImageSrc } from "@/lib/images";
-import type { LocalImageSources } from "@/lib/localImages";
+import { resolveThemeSyntax } from "@/md-image/lib/themes";
+import { resolveImageSrc } from "@/md-image/lib/images";
+import type { LocalImageSources } from "@/md-image/lib/localImages";
 import type {
   Dimensions,
   GeneratedPage,
@@ -18,8 +18,8 @@ import type {
   MarkdownInline,
   ThemeDefinition,
   WatermarkSettings,
-} from "@/lib/types";
-import type { ResolvedTypography } from "@/lib/typography";
+} from "@/md-image/lib/types";
+import type { ResolvedTypography } from "@/md-image/lib/typography";
 
 type RenderedPageProps = {
   page: GeneratedPage;

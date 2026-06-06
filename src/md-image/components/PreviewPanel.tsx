@@ -8,11 +8,15 @@ import type {
   GeneratedPage,
   ThemeDefinition,
   WatermarkSettings,
-} from "@/lib/types";
-import type { LocalImageSources } from "@/lib/localImages";
-import type { ResolvedTypography } from "@/lib/typography";
+} from "@/md-image/lib/types";
+import type { LocalImageSources } from "@/md-image/lib/localImages";
+import type { ResolvedTypography } from "@/md-image/lib/typography";
 
 const MIN_AUTO_PAGE_HEIGHT = 320;
+const previewPanelClassName =
+  "flex min-h-[calc(100vh-36px)] min-w-0 flex-col gap-4 border-4 border-[var(--ink)] bg-[linear-gradient(90deg,rgba(0,183,255,0.16)_1px,transparent_1px),linear-gradient(rgba(255,79,179,0.14)_1px,transparent_1px),#f2f2f2] bg-[length:28px_28px] p-[18px] shadow-[8px_8px_0_var(--ink)] max-[1080px]:min-h-0 max-sm:border-[3px] max-sm:p-3 max-sm:shadow-[5px_5px_0_var(--ink)]";
+const exportButtonClassName =
+  "inline-flex min-h-9 items-center justify-center gap-1.5 border-2 border-[var(--ink)] bg-[var(--electric-blue)] px-[9px] py-1.5 text-xs font-black shadow-[3px_3px_0_var(--ink)] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--hot-pink)]";
 
 type PreviewPanelProps = {
   pages: GeneratedPage[];
@@ -182,29 +186,50 @@ export function PreviewPanel({
   }, [selectedDimensions.width]);
 
   return (
-    <section className="preview-panel" aria-label="图片预览">
-      <div className="preview-export-bar">
-        <span className="page-count">共 {pages.length} 张</span>
-        <div className="preview-export-actions" aria-label="导出">
-          <button type="button" disabled={isExporting} onClick={onExportCurrent}>
+    <section className={previewPanelClassName} aria-label="图片预览">
+      <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-start">
+        <span className="border-2 border-[var(--ink)] bg-white p-2 text-xs font-black">
+          共 {pages.length} 张
+        </span>
+        <div className="flex flex-wrap gap-2" aria-label="导出">
+          <button
+            className={exportButtonClassName}
+            type="button"
+            disabled={isExporting}
+            onClick={onExportCurrent}
+          >
             <Download aria-hidden="true" size={15} />
             导出当前页
           </button>
-          <button type="button" disabled={isExporting} onClick={onExportAll}>
+          <button
+            className={`${exportButtonClassName} bg-[var(--ink)] text-white`}
+            type="button"
+            disabled={isExporting}
+            onClick={onExportAll}
+          >
             <Images aria-hidden="true" size={15} />
             导出全部 ZIP
           </button>
         </div>
       </div>
 
-      <div ref={scrollRef} className="preview-scroll">
+      <div
+        ref={scrollRef}
+        className="flex flex-1 flex-col items-center gap-9 overflow-y-auto overflow-x-hidden px-0 pb-[30px] pt-[38px]"
+      >
         {pages.map((page, index) => {
           const pageSize = resolvedPageDimensions[index] ?? dimensions;
+          const isSelected = index === selectedPageIndex;
 
           return (
             <div
               key={page.id}
-              className={`preview-item ${index === selectedPageIndex ? "is-active" : ""}`}
+              className={[
+                "preview-item relative flex-none cursor-pointer overflow-visible shadow-[0_16px_36px_rgba(17,17,17,0.16)] transition-[box-shadow,outline-color,transform] duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[10px] focus-visible:outline-[var(--hot-pink)]",
+                isSelected
+                  ? "outline outline-2 outline-offset-8 outline-dashed outline-[rgba(17,17,17,0.42)] shadow-[0_18px_42px_rgba(17,17,17,0.2)]"
+                  : "",
+              ].join(" ")}
               style={{
                 width: pageSize.width * scale,
                 height: pageSize.height * scale,
@@ -219,8 +244,11 @@ export function PreviewPanel({
                 }
               }}
             >
-              {index === selectedPageIndex ? (
-                <span className="preview-item-label" aria-hidden="true">
+              {isSelected ? (
+                <span
+                  className="absolute -top-8 left-3 z-[2] inline-flex min-h-6 items-center border-2 border-[rgba(17,17,17,0.55)] bg-[var(--panel)] px-2 py-[3px] text-[11px] font-black leading-none text-[var(--ink)] shadow-[3px_3px_0_rgba(17,17,17,0.14)]"
+                  aria-hidden="true"
+                >
                   当前页
                 </span>
               ) : null}
@@ -238,7 +266,7 @@ export function PreviewPanel({
         })}
       </div>
 
-      <div className="export-pages" aria-hidden="true">
+      <div className="fixed left-[-100000px] top-0 h-px w-px overflow-hidden" aria-hidden="true">
         {pages.map((page, index) => {
           const pageSize = resolvedPageDimensions[index] ?? dimensions;
 
@@ -249,7 +277,7 @@ export function PreviewPanel({
                 exportPageRefs.current[index] = node;
                 registerPageRef(index, node);
               }}
-              className="export-page-node"
+              className="inline-block"
             >
               <RenderedPage
                 page={page}

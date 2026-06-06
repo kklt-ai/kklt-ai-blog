@@ -1,6 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getThemeById } from "@/lib/themes";
+import { getThemeById } from "@/md-image/lib/themes";
 import { PreviewPanel } from "./PreviewPanel";
 
 describe("PreviewPanel", () => {

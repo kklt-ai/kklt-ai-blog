@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { getThemeById } from "@/lib/themes";
+import { getThemeById } from "@/md-image/lib/themes";
 import { RenderedPage } from "./RenderedPage";
 
 describe("RenderedPage", () => {

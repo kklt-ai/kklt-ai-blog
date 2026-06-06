@@ -4,96 +4,19 @@ import { describe, expect, it } from "vitest";
 
 const css = readFileSync(resolve(process.cwd(), "src/app/globals.css"), "utf8");
 
-function getRule(selector: string) {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = css.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`));
-
-  return match?.[1] ?? "";
-}
-
-describe("global layout styles", () => {
-  it("keeps the desktop settings panel from stretching with long preview content", () => {
-    const settingsRule = getRule(".settings-panel");
-
-    expect(settingsRule).toContain("align-self: start");
-    expect(settingsRule).toContain("position: sticky");
-    expect(settingsRule).toContain("top: 18px");
-    expect(settingsRule).toContain("min-height: 0");
-    expect(settingsRule).toContain("overflow: hidden");
-    expect(settingsRule).not.toMatch(/(^|\n)\s*height:/);
+describe("global styles", () => {
+  it("keeps Tailwind and shared application tokens in the global stylesheet", () => {
+    expect(css).toContain("@tailwind base;");
+    expect(css).toContain("--app-bg: #fef15a;");
+    expect(css).toContain("--ink: #111111;");
+    expect(css).toContain("font-family: Arial");
   });
 
-  it("keeps editor controls visible while the left panel scrolls", () => {
-    const editorControlsRule = getRule(".editor-sticky-controls");
-
-    expect(editorControlsRule).toContain("position: sticky");
-    expect(editorControlsRule).toContain("top: 0");
-    expect(editorControlsRule).toContain("z-index: 5");
-    expect(editorControlsRule).toContain("margin: -18px -18px 0");
-    expect(editorControlsRule).toContain("padding: 18px 18px 2px");
-    expect(editorControlsRule).toContain("background: var(--panel)");
-  });
-
-  it("restores native iPhone Notes list markers", () => {
-    expect(css).toContain(".theme-iphone-notes ul {\n  list-style-type: disc;");
-    expect(css).toContain(".theme-iphone-notes ol {\n  list-style-type: decimal;");
-    expect(getRule(".theme-iphone-notes li::marker")).toContain("font-weight: 400");
-  });
-
-  it("restores markdown list markers for every page theme", () => {
-    expect(css).toContain(".xhs-page ul {\n  list-style-type: disc;");
-    expect(css).toContain(".xhs-page ol {\n  list-style-type: decimal;");
-  });
-
-  it("keeps preview selection chrome outside the exported page edge", () => {
-    const previewItemRule = getRule(".preview-item");
-    const activePreviewItemRule = getRule(".preview-item.is-active");
-
-    expect(previewItemRule).not.toContain("border:");
-    expect(activePreviewItemRule).not.toContain("border-color:");
-    expect(activePreviewItemRule).toContain("outline:");
-    expect(activePreviewItemRule).toContain("outline-offset:");
-  });
-
-  it("centers Markdown image captions", () => {
-    expect(getRule(".xhs-page figcaption")).toContain("text-align: center");
-  });
-
-  it("styles Markdown tables with theme syntax variables", () => {
-    expect(getRule(".xhs-table")).toContain("border-collapse: collapse");
-    expect(getRule(".xhs-table th")).toContain("background: var(--syntax-table-header-bg)");
-    expect(getRule(".xhs-table th")).toContain("color: var(--syntax-table-header)");
-    expect(getRule(".xhs-table th,\n.xhs-table td")).toContain(
-      "border: max(2px, var(--page-border-width)) solid var(--syntax-table-border)",
-    );
-    expect(getRule(".xhs-table tbody tr:nth-child(even) td")).toContain(
-      "background: var(--syntax-table-row-alt-bg)",
-    );
-  });
-
-  it("keeps Markdown image styles from overriding the author watermark avatar", () => {
-    expect(getRule(".xhs-page img")).toBe("");
-    expect(getRule(".xhs-page figure > img")).toContain("width: 100%");
-    expect(getRule(".xhs-page .xhs-watermark-avatar")).toContain("border-radius: 999px");
-  });
-
-  it("uses a prominent WeChat-style author watermark", () => {
-    const watermarkRule = getRule(".xhs-watermark");
-    const avatarRule = getRule(".xhs-page .xhs-watermark-avatar");
-
-    expect(watermarkRule).toContain("top: calc(var(--page-padding) * 0.12)");
-    expect(watermarkRule).toContain("right: calc(var(--page-padding) * 0.12)");
-    expect(watermarkRule).toContain("background: rgba(255, 255, 255, 0.9)");
-    expect(watermarkRule).not.toContain("backdrop-filter");
-    expect(watermarkRule).toContain("font-size: max(14px, calc(var(--page-base) * 0.34))");
-    expect(avatarRule).toContain("width: 44px");
-    expect(avatarRule).toContain("height: 44px");
-  });
-
-  it("makes the theme tab more visible than regular settings tabs", () => {
-    const themeTabRule = getRule(".settings-tab--theme");
-
-    expect(themeTabRule).toContain("background: #ffeb3b");
-    expect(themeTabRule).toContain("box-shadow: 4px 4px 0 var(--hot-pink)");
+  it("keeps Markdown image workspace chrome out of the global stylesheet", () => {
+    expect(css).not.toContain(".app-shell");
+    expect(css).not.toContain(".workspace-panel");
+    expect(css).not.toContain(".preview-panel");
+    expect(css).not.toContain(".markdown-input");
+    expect(css).not.toContain(".settings-panel");
   });
 });

@@ -171,7 +171,7 @@ describe("EditorPanel", () => {
     expect(onUndo).toHaveBeenCalledTimes(2);
   });
 
-  it("uses compact icon buttons for undo and reset actions", () => {
+  it("uses compact Tailwind sizing for undo and reset actions", () => {
     render(
       <EditorPanel
         markdown="A"
@@ -185,10 +185,12 @@ describe("EditorPanel", () => {
     );
 
     expect(screen.getByRole("button", { name: "撤销" })).toHaveClass(
-      "icon-button--compact",
+      "w-[34px]",
+      "min-h-8",
     );
     expect(screen.getByRole("button", { name: "恢复示例" })).toHaveClass(
-      "icon-button--compact",
+      "w-[34px]",
+      "min-h-8",
     );
   });
 

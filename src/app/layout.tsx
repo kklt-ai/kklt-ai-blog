@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "@/md-image/styles.css";
 
 export const metadata: Metadata = {
   title: "小红书 Markdown 排版工具",

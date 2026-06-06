@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { defaultTypography } from "@/lib/typography";
+import { defaultTypography } from "@/md-image/lib/typography";
 import { SettingsPanel } from "./SettingsPanel";
 
 describe("SettingsPanel", () => {
@@ -66,7 +66,7 @@ describe("SettingsPanel", () => {
     render(<SettingsPanel {...baseProps} />);
 
     expect(screen.getByRole("tab", { name: "设置" })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: "主题" })).toHaveClass("settings-tab--theme");
+    expect(screen.getByRole("tab", { name: "主题" })).toHaveClass("bg-[#ffeb3b]");
     expect(screen.queryByRole("button", { name: /孟菲斯/ })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "主题" }));

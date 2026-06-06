@@ -32,6 +32,17 @@ type EditorPanelProps = {
   canUndo: boolean;
 };
 
+const workspacePanelClassName =
+  "flex min-h-[calc(100vh-36px)] min-w-0 flex-col gap-4 border-4 border-[var(--ink)] bg-[var(--panel)] p-[18px] shadow-[8px_8px_0_var(--ink)] max-[1080px]:min-h-0 max-sm:border-[3px] max-sm:p-3 max-sm:shadow-[5px_5px_0_var(--ink)]";
+const panelHeadingClassName =
+  "flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-start";
+const iconButtonClassName =
+  "inline-flex min-h-[38px] items-center justify-center gap-1.5 border-[3px] border-[var(--ink)] bg-[var(--electric-blue)] px-2.5 py-2 font-black text-[var(--ink)] shadow-[4px_4px_0_var(--ink)] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--hot-pink)]";
+const compactIconButtonClassName =
+  "inline-flex min-h-8 w-[34px] items-center justify-center gap-1.5 border-2 border-[var(--ink)] bg-[var(--electric-blue)] p-[5px] font-black text-[var(--ink)] shadow-[3px_3px_0_var(--ink)] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--hot-pink)]";
+const formatButtonClassName =
+  "inline-flex h-[34px] w-9 items-center justify-center border-2 border-[var(--ink)] bg-white p-0 text-[var(--ink)] shadow-[3px_3px_0_rgba(0,0,0,0.14)] hover:bg-[var(--hot-pink)] focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--hot-pink)]";
+
 export function EditorPanel({
   markdown,
   error,
@@ -359,16 +370,16 @@ export function EditorPanel({
   ];
 
   return (
-    <section className="workspace-panel editor-panel" aria-label="Markdown 编辑面板">
-      <div className="editor-sticky-controls">
-        <div className="panel-heading">
+    <section className={workspacePanelClassName} aria-label="Markdown 编辑面板">
+      <div className="sticky top-0 z-[5] -mx-[18px] -mt-[18px] mb-0 flex flex-col gap-4 border-b-[3px] border-[var(--ink)] bg-[var(--panel)] px-[18px] pb-0.5 pt-[18px] max-sm:-mx-3 max-sm:-mt-3 max-sm:px-3 max-sm:pt-3">
+        <div className={panelHeadingClassName}>
           <div>
-            <p className="eyebrow">Write</p>
-            <h1>Markdown</h1>
+            <p className="mb-1 mt-0 text-xs font-black uppercase tracking-normal">Write</p>
+            <h1 className="m-0 text-2xl leading-[1.05]">Markdown</h1>
           </div>
-          <div className="toolbar">
+          <div className="flex items-center gap-2">
             <button
-              className="icon-button icon-button--compact"
+              className={compactIconButtonClassName}
               type="button"
               onClick={onUndo}
               disabled={!canUndo}
@@ -377,7 +388,7 @@ export function EditorPanel({
               <Undo2 aria-hidden="true" size={18} />
               <span className="sr-only">撤销</span>
             </button>
-            <label className="icon-button" title="上传 Markdown 文件">
+            <label className={iconButtonClassName} title="上传 Markdown 文件">
               <FileUp aria-hidden="true" size={18} />
               <span className="sr-only">上传 Markdown 文件</span>
               <input
@@ -389,7 +400,7 @@ export function EditorPanel({
               />
             </label>
             <button
-              className="icon-button icon-button--compact"
+              className={compactIconButtonClassName}
               type="button"
               onClick={onReset}
               title="恢复示例"
@@ -400,14 +411,21 @@ export function EditorPanel({
           </div>
         </div>
 
-        {error ? <p className="inline-error">{error}</p> : null}
+        {error ? (
+          <p className="m-0 border-2 border-[var(--ink)] bg-[var(--hot-pink)] p-2.5 font-black">
+            {error}
+          </p>
+        ) : null}
 
-        <div className="markdown-format-toolbar" aria-label="Markdown 格式工具栏">
+        <div
+          className="flex flex-wrap gap-2 border-[3px] border-[var(--ink)] bg-[#f4f7fb] p-2"
+          aria-label="Markdown 格式工具栏"
+        >
           {formatButtons.map((button) =>
             "upload" in button ? (
               <label
                 key={button.label}
-                className="format-button"
+                className={formatButtonClassName}
                 title={button.title}
                 aria-label={button.label}
               >
@@ -423,7 +441,7 @@ export function EditorPanel({
             ) : (
               <button
                 key={button.label}
-                className="format-button"
+                className={formatButtonClassName}
                 type="button"
                 onClick={button.action}
                 title={button.title}
@@ -443,7 +461,7 @@ export function EditorPanel({
         ref={textareaRef}
         id="markdown-editor"
         aria-label="Markdown 内容"
-        className="markdown-input"
+        className="min-h-[380px] w-full flex-1 resize-none border-[3px] border-[var(--ink)] bg-[#fffef5] p-4 font-mono text-sm leading-[1.65] text-[var(--ink)] shadow-[inset_4px_4px_0_rgba(0,0,0,0.08)] outline-none focus:outline focus:outline-[3px] focus:outline-offset-2 focus:outline-[var(--hot-pink)]"
         value={markdown}
         spellCheck={false}
         onChange={(event) => {

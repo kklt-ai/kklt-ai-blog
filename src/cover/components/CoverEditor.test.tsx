@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { downloadNodeAsPng } from "@/lib/export";
+import { downloadNodeAsPng } from "@/shared/export";
 import { CoverEditor } from "./CoverEditor";
 
-vi.mock("@/lib/export", () => ({
+vi.mock("@/shared/export", () => ({
   downloadNodeAsPng: vi.fn().mockResolvedValue(undefined),
 }));
 

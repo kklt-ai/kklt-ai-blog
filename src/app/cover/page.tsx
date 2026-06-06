@@ -1,4 +1,4 @@
-import { CoverEditor } from "@/components/cover/CoverEditor";
+import { CoverEditor } from "@/cover/components/CoverEditor";
 
 export default function CoverPage() {
   return <CoverEditor />;
