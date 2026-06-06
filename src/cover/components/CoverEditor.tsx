@@ -43,6 +43,7 @@ import {
   cloneTemplateLayers,
   findBrandIcon,
   fontFamilyCss,
+  getBackgroundImagesByChannel,
   getChannel,
   getTemplatesByChannel,
   updateLayer,
@@ -57,6 +58,10 @@ type DragState = {
 };
 
 type CoverToolId = "templates" | "text" | "image" | "background";
+type CoverBackgroundTabId = "image" | "color";
+type CoverBackgroundSelection =
+  | { kind: "image"; id: string; src: string }
+  | { kind: "color"; id: string; className: string };
 
 const COVER_TOOLS: Array<{
   id: CoverToolId;
@@ -79,6 +84,10 @@ function clamp(value: number, min: number, max: number) {
 
 function defaultCanvasScale(channelId: CoverChannelId) {
   return channelId === "wechat" ? 0.56 : 0.36;
+}
+
+function backgroundPreviewAspectClassName(channelId: CoverChannelId) {
+  return channelId === "wechat" ? "aspect-[1200/628]" : "aspect-[3/4]";
 }
 
 function layerKey(layer: CoverLayer) {
@@ -290,6 +299,7 @@ function CoverCanvasContent({
   layers,
   selectedLayerId,
   editingLayerId,
+  showBackgroundDecorations = true,
   onSelectLayer,
   onDragStart,
   onEditTextLayer,
@@ -301,6 +311,7 @@ function CoverCanvasContent({
   layers: CoverLayer[];
   selectedLayerId?: string;
   editingLayerId?: string;
+  showBackgroundDecorations?: boolean;
   onSelectLayer?: (layerId: string) => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
   onEditTextLayer?: (layerId: string) => void;
@@ -311,7 +322,9 @@ function CoverCanvasContent({
 }) {
   return (
     <>
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,255,255,0.45)_0_8%,transparent_9%),radial-gradient(circle_at_18%_82%,rgba(255,255,255,0.36)_0_10%,transparent_11%)]" />
+      {showBackgroundDecorations && (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(255,255,255,0.45)_0_8%,transparent_9%),radial-gradient(circle_at_18%_82%,rgba(255,255,255,0.36)_0_10%,transparent_11%)]" />
+      )}
       {layers.map((layer) =>
         layer.type === "text" ? (
           <TextLayerView
@@ -346,6 +359,10 @@ function CoverCanvasContent({
 export function CoverEditor() {
   const [channelId, setChannelId] = useState<CoverChannelId>("xiaohongshu");
   const templates = useMemo(() => getTemplatesByChannel(channelId), [channelId]);
+  const backgroundImages = useMemo(
+    () => getBackgroundImagesByChannel(channelId),
+    [channelId],
+  );
   const [templateId, setTemplateId] = useState(templates[0].id);
   const activeTemplate = useMemo(
     () => templates.find((template) => template.id === templateId) ?? templates[0],
@@ -358,6 +375,12 @@ export function CoverEditor() {
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [activeToolId, setActiveToolId] = useState<CoverToolId>("templates");
+  const [backgroundTabId, setBackgroundTabId] = useState<CoverBackgroundTabId>("image");
+  const [selectedBackground, setSelectedBackground] = useState<CoverBackgroundSelection>(() => ({
+    kind: "color",
+    id: activeTemplate.id,
+    className: activeTemplate.backgroundClassName,
+  }));
   const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
   const canvasRef = useRef<HTMLDivElement>(null);
   const exportCanvasRef = useRef<HTMLDivElement>(null);
@@ -371,6 +394,11 @@ export function CoverEditor() {
     const nextLayers = cloneTemplateLayers(nextTemplate);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
+    setSelectedBackground({
+      kind: "color",
+      id: nextTemplate.id,
+      className: nextTemplate.backgroundClassName,
+    });
     setCanvasScale(defaultCanvasScale(nextChannelId));
     setMessage(`已切换到${getChannel(nextChannelId).name}。`);
   };
@@ -382,6 +410,11 @@ export function CoverEditor() {
     setTemplateId(nextTemplate.id);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
+    setSelectedBackground({
+      kind: "color",
+      id: nextTemplate.id,
+      className: nextTemplate.backgroundClassName,
+    });
     setMessage(`已套用「${nextTemplate.name}」。`);
   };
 
@@ -503,6 +536,17 @@ export function CoverEditor() {
     transform: `scale(${canvasScale})`,
     transformOrigin: "top left",
   };
+  const selectedBackgroundClassName =
+    selectedBackground.kind === "color" ? selectedBackground.className : "";
+  const selectedBackgroundStyle: CSSProperties =
+    selectedBackground.kind === "image"
+      ? {
+          backgroundImage: `url(${selectedBackground.src})`,
+          backgroundPosition: "center",
+          backgroundSize: "cover",
+        }
+      : {};
+  const backgroundPreviewAspectClassNameValue = backgroundPreviewAspectClassName(channel.id);
   const pageStyle = {
     "--cover-accent": channel.brandColor,
     "--cover-accent-ink": channel.brandForeground,
@@ -648,32 +692,107 @@ export function CoverEditor() {
             {activeToolId === "background" && (
               <section>
                 <h2 className="mb-5 text-xl font-bold">背景样式</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {templates.map((template) => (
+                <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-zinc-100 p-1">
+                  {[
+                    { id: "image" as const, label: "图片背景" },
+                    { id: "color" as const, label: "颜色背景" },
+                  ].map((tab) => (
                     <button
-                      key={template.id}
+                      key={tab.id}
                       type="button"
-                      aria-label={`使用 ${template.name} 背景`}
-                      aria-pressed={template.id === activeTemplate.id}
-                      onClick={() => chooseTemplate(template.id)}
+                      aria-pressed={backgroundTabId === tab.id}
+                      onClick={() => setBackgroundTabId(tab.id)}
                       className={[
-                        "rounded-lg border bg-white p-2 text-left transition",
-                        template.id === activeTemplate.id
-                          ? "border-zinc-950"
-                          : "border-zinc-200 hover:border-zinc-300",
+                        "rounded-md px-3 py-2 text-sm font-bold transition",
+                        backgroundTabId === tab.id
+                          ? "bg-white text-zinc-950 shadow-sm"
+                          : "text-zinc-500 hover:text-zinc-950",
                       ].join(" ")}
                     >
-                      <span
-                        className={[
-                          "block aspect-[4/3] rounded-md",
-                          template.backgroundClassName,
-                        ].join(" ")}
-                      />
-                      <span className="mt-2 block truncate text-sm font-semibold">
-                        {template.name}
-                      </span>
+                      {tab.label}
                     </button>
                   ))}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  {backgroundTabId === "image" &&
+                    backgroundImages.map((background) => (
+                      <button
+                        key={background.id}
+                        type="button"
+                        aria-label={`使用 ${background.name} 背景`}
+                        aria-pressed={
+                          selectedBackground.kind === "image" &&
+                          selectedBackground.id === background.id
+                        }
+                        onClick={() =>
+                          setSelectedBackground({
+                            kind: "image",
+                            id: background.id,
+                            src: background.src,
+                          })
+                        }
+                        className={[
+                          "rounded-lg border bg-white p-2 text-left transition",
+                          selectedBackground.kind === "image" &&
+                          selectedBackground.id === background.id
+                            ? "border-zinc-950"
+                            : "border-zinc-200 hover:border-zinc-300",
+                        ].join(" ")}
+                      >
+                        <img
+                          src={background.src}
+                          alt={`${background.name}背景预览`}
+                          className={[
+                            "block w-full rounded-md object-cover",
+                            backgroundPreviewAspectClassNameValue,
+                          ].join(" ")}
+                        />
+                        <span className="mt-2 block truncate text-sm font-semibold">
+                          {background.name}
+                        </span>
+                      </button>
+                    ))}
+
+                  {backgroundTabId === "color" &&
+                    templates.map((template) => (
+                      <button
+                        key={template.id}
+                        type="button"
+                        aria-label={`使用 ${template.name} 背景`}
+                        aria-pressed={
+                          selectedBackground.kind === "color" &&
+                          selectedBackground.id === template.id
+                        }
+                        onClick={() =>
+                          setSelectedBackground({
+                            kind: "color",
+                            id: template.id,
+                            className: template.backgroundClassName,
+                          })
+                        }
+                        className={[
+                          "rounded-lg border bg-white p-2 text-left transition",
+                          selectedBackground.kind === "color" &&
+                          selectedBackground.id === template.id
+                            ? "border-zinc-950"
+                            : "border-zinc-200 hover:border-zinc-300",
+                        ].join(" ")}
+                      >
+                        <span
+                          role="img"
+                          aria-label={`${template.name}背景预览`}
+                          className={[
+                            "block w-full rounded-md",
+                            backgroundPreviewAspectClassNameValue,
+                            template.backgroundClassName,
+                          ].join(" ")}
+                        />
+                        <span className="mt-2 block truncate text-sm font-semibold">
+                          {template.name}
+                        </span>
+                      </button>
+                    ))}
                 </div>
               </section>
             )}
@@ -701,14 +820,15 @@ export function CoverEditor() {
                   onPointerCancel={() => setDragState(null)}
                   className={[
                     "absolute left-0 top-0 overflow-hidden shadow-[0_18px_50px_rgba(15,23,42,0.18)]",
-                    activeTemplate.backgroundClassName,
+                    selectedBackgroundClassName,
                   ].join(" ")}
-                  style={canvasStyle}
+                  style={{ ...canvasStyle, ...selectedBackgroundStyle }}
                 >
                   <CoverCanvasContent
                     layers={layers}
                     selectedLayerId={selectedLayerId}
                     editingLayerId={editingLayerId ?? undefined}
+                    showBackgroundDecorations={selectedBackground.kind === "color"}
                     onSelectLayer={setSelectedLayerId}
                     onDragStart={beginDrag}
                     onEditTextLayer={(layerId) => {
@@ -934,19 +1054,27 @@ export function CoverEditor() {
             </section>
           </aside>
 
-        <div className="export-pages" aria-hidden="true">
+        <div
+          className="export-pages pointer-events-none fixed -left-[10000px] top-0"
+          aria-hidden="true"
+        >
           <div
             ref={exportCanvasRef}
             className={[
               "cover-export-node relative overflow-hidden",
-              activeTemplate.backgroundClassName,
+              selectedBackgroundClassName,
             ].join(" ")}
             style={{
               width: `${channel.width}px`,
               height: `${channel.height}px`,
+              ...selectedBackgroundStyle,
             }}
           >
-            <CoverCanvasContent layers={layers} interactive={false} />
+            <CoverCanvasContent
+              layers={layers}
+              interactive={false}
+              showBackgroundDecorations={selectedBackground.kind === "color"}
+            />
           </div>
         </div>
       </div>

@@ -12,3 +12,5 @@ dist/
 tsconfig.tsbuildinfo
 .env*
 !.env.example
+!public/cover/template/wechat/
+!public/cover/template/wechat/*.jpeg

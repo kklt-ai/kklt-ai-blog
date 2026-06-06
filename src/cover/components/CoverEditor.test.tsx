@@ -47,6 +47,78 @@ describe("CoverEditor", () => {
     expect(screen.getByText("背景样式")).toBeInTheDocument();
   });
 
+  it("shows image backgrounds first and applies them to the preview and export canvases", async () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+
+    expect(screen.getByRole("button", { name: "图片背景" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "颜色背景" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(screen.getByRole("img", { name: "窗口卡片背景预览" })).toHaveAttribute(
+      "src",
+      "/cover/template/xiaohongshu/1.jpeg",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "使用 窗口卡片 背景" }));
+
+    const previewCanvas = screen.getByLabelText("封面画布");
+    expect(previewCanvas.style.backgroundImage).toBe(
+      'url("/cover/template/xiaohongshu/1.jpeg")',
+    );
+    expect(previewCanvas.style.backgroundSize).toBe("cover");
+    expect(previewCanvas.style.backgroundPosition).toBe("center");
+
+    fireEvent.click(screen.getByRole("button", { name: "导出 PNG" }));
+
+    await waitFor(() => expect(downloadCoverNodeAsPng).toHaveBeenCalledTimes(1));
+    const exportedNode = vi.mocked(downloadCoverNodeAsPng).mock.calls[0][0];
+    expect(exportedNode.style.backgroundImage).toBe(
+      'url("/cover/template/xiaohongshu/1.jpeg")',
+    );
+    expect(exportedNode.style.backgroundSize).toBe("cover");
+    expect(exportedNode.style.backgroundPosition).toBe("center");
+  });
+
+  it("shows only background images for the active platform", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+
+    expect(screen.getByRole("img", { name: "窗口卡片背景预览" })).toBeInTheDocument();
+    expect(screen.queryByRole("img", { name: "公众号横版 1背景预览" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+
+    expect(screen.getByRole("img", { name: "公众号横版 1背景预览" })).toHaveAttribute(
+      "src",
+      "/cover/template/wechat/1040g0k031k37k0f5k81g5o9g8p1gj1ofh8vag48.jpeg",
+    );
+    expect(screen.queryByRole("img", { name: "窗口卡片背景预览" })).not.toBeInTheDocument();
+  });
+
+  it("uses cover-shaped background thumbnails for image and color backgrounds", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+
+    expect(screen.getByRole("img", { name: "窗口卡片背景预览" })).toHaveClass(
+      "aspect-[3/4]",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "颜色背景" }));
+
+    expect(screen.getByRole("img", { name: "AI 爆款封面背景预览" })).toHaveClass(
+      "aspect-[3/4]",
+    );
+  });
+
   it("uses platform colors and concise cover page copy", () => {
     render(<CoverEditor />);
 
@@ -162,5 +234,22 @@ describe("CoverEditor", () => {
     expect(exportedNode).toHaveClass("cover-export-node");
     expect(exportedNode).toHaveStyle({ width: "1242px", height: "1660px" });
     expect(exportedNode.style.transform).toBe("");
+  });
+
+  it("keeps the full-size export canvas out of the visible page layout", async () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "导出 PNG" }));
+
+    await waitFor(() => expect(downloadCoverNodeAsPng).toHaveBeenCalledTimes(1));
+    const exportedNode = vi.mocked(downloadCoverNodeAsPng).mock.calls[0][0];
+
+    expect(exportedNode.parentElement).toHaveClass(
+      "export-pages",
+      "pointer-events-none",
+      "fixed",
+      "-left-[10000px]",
+      "top-0",
+    );
   });
 });

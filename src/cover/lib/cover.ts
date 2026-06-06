@@ -58,6 +58,13 @@ export type CoverTemplate = {
   layers: CoverLayer[];
 };
 
+export type CoverBackgroundImage = {
+  id: string;
+  name: string;
+  channel: CoverChannelId;
+  src: string;
+};
+
 export type BrandIcon = {
   id: BrandIconId;
   name: string;
@@ -156,6 +163,51 @@ export const COVER_FONT_FAMILIES: Array<{
     id: "mono",
     name: "科技等宽",
     css: "'SFMono-Regular', Consolas, 'Liberation Mono', monospace",
+  },
+];
+
+export const COVER_BACKGROUND_IMAGES: CoverBackgroundImage[] = [
+  {
+    id: "window-card",
+    name: "窗口卡片",
+    channel: "xiaohongshu",
+    src: "/cover/template/xiaohongshu/1.jpeg",
+  },
+  {
+    id: "binder-grid",
+    name: "活页方格",
+    channel: "xiaohongshu",
+    src: "/cover/template/xiaohongshu/2.jpeg",
+  },
+  {
+    id: "plaster-texture",
+    name: "石膏纹理",
+    channel: "xiaohongshu",
+    src: "/cover/template/xiaohongshu/3.jpeg",
+  },
+  {
+    id: "wechat-wide-1",
+    name: "公众号横版 1",
+    channel: "wechat",
+    src: "/cover/template/wechat/1040g0k031k37k0f5k81g5o9g8p1gj1ofh8vag48.jpeg",
+  },
+  {
+    id: "wechat-wide-2",
+    name: "公众号横版 2",
+    channel: "wechat",
+    src: "/cover/template/wechat/1040g0k031k37k0f5k83g5o9g8p1gj1ofailuu80.jpeg",
+  },
+  {
+    id: "wechat-wide-3",
+    name: "公众号横版 3",
+    channel: "wechat",
+    src: "/cover/template/wechat/1040g0k031k37k0f5k8405o9g8p1gj1ofno0kkko.jpeg",
+  },
+  {
+    id: "wechat-cover-1",
+    name: "公众号竖版",
+    channel: "wechat",
+    src: "/cover/template/wechat/1040g34o31k37lf3pj60g5o9g8p1gj1ofmbm41oo.jpeg",
   },
 ];
 
@@ -400,6 +452,10 @@ export function getChannel(channelId: CoverChannelId) {
 
 export function getTemplatesByChannel(channelId: CoverChannelId) {
   return COVER_TEMPLATES.filter((template) => template.channel === channelId);
+}
+
+export function getBackgroundImagesByChannel(channelId: CoverChannelId) {
+  return COVER_BACKGROUND_IMAGES.filter((image) => image.channel === channelId);
 }
 
 export function cloneTemplateLayers(template: CoverTemplate): CoverLayer[] {
