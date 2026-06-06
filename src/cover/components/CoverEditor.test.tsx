@@ -1,10 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { downloadNodeAsPng } from "@/shared/export";
+import { downloadCoverNodeAsPng } from "@/cover/lib/export";
 import { CoverEditor } from "./CoverEditor";
 
-vi.mock("@/shared/export", () => ({
-  downloadNodeAsPng: vi.fn().mockResolvedValue(undefined),
+vi.mock("@/cover/lib/export", () => ({
+  downloadCoverNodeAsPng: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe("CoverEditor", () => {
@@ -129,8 +129,8 @@ describe("CoverEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "导出 PNG" }));
 
-    await waitFor(() => expect(downloadNodeAsPng).toHaveBeenCalledTimes(1));
-    const exportedNode = vi.mocked(downloadNodeAsPng).mock.calls[0][0];
+    await waitFor(() => expect(downloadCoverNodeAsPng).toHaveBeenCalledTimes(1));
+    const exportedNode = vi.mocked(downloadCoverNodeAsPng).mock.calls[0][0];
     const previewCanvas = screen.getByLabelText("封面画布");
 
     expect(exportedNode).not.toBe(previewCanvas);

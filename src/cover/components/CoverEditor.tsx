@@ -26,7 +26,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { downloadNodeAsPng } from "@/shared/export";
+import { downloadCoverNodeAsPng } from "@/cover/lib/export";
 import {
   BRAND_ICONS,
   COVER_CHANNELS,
@@ -458,7 +458,7 @@ export function CoverEditor() {
     setIsExporting(true);
     setMessage("正在导出封面...");
     try {
-      await downloadNodeAsPng(exportCanvasRef.current, `cover-${channel.id}.png`);
+      await downloadCoverNodeAsPng(exportCanvasRef.current, channel.id);
       setMessage("封面已导出。");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "导出失败，请重试");

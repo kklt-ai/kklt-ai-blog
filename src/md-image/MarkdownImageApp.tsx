@@ -11,7 +11,7 @@ import {
   downloadNodeAsPng,
   exportPageFilename,
   exportZipFilename,
-} from "@/shared/export";
+} from "@/md-image/lib/export";
 import {
   deleteUnusedLocalImages,
   loadLocalImageSources,
