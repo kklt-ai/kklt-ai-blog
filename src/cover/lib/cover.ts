@@ -11,12 +11,30 @@ export type CoverChannel = {
 };
 
 export type BrandIconId =
+  | "alibaba"
   | "codex"
   | "openai"
   | "anthropic"
-  | "chatgpt"
-  | "claude"
-  | "gemini";
+  | "antigravity"
+  | "apple"
+  | "baidu"
+  | "capcut"
+  | "claudecode"
+  | "cline"
+  | "cursor"
+  | "deepseek"
+  | "dify"
+  | "figma"
+  | "github"
+  | "google"
+  | "grok"
+  | "huawei"
+  | "jimeng"
+  | "kiro"
+  | "moonshot"
+  | "nanobanana"
+  | "notion"
+  | "qoder";
 
 export type TextAlign = "left" | "center" | "right";
 export type CoverFontFamily = "system" | "serif" | "rounded" | "mono";
@@ -70,6 +88,7 @@ export type BrandIcon = {
   name: string;
   mark: string;
   className: string;
+  src?: string;
 };
 
 let nextLayerId = 1;
@@ -105,37 +124,169 @@ export const BRAND_ICONS: BrandIcon[] = [
     id: "codex",
     name: "Codex",
     mark: "Cx",
-    className: "bg-zinc-950 text-white",
+    className: "bg-white text-zinc-950",
+    src: "/logo/codex.svg",
   },
   {
     id: "openai",
     name: "OpenAI",
     mark: "OA",
-    className: "bg-emerald-950 text-emerald-50",
+    className: "bg-white text-zinc-950",
+    src: "/logo/openai.svg",
   },
   {
     id: "anthropic",
     name: "Anthropic",
     mark: "A",
-    className: "bg-orange-100 text-stone-950",
+    className: "bg-white text-zinc-950",
+    src: "/logo/anthropic.svg",
   },
   {
-    id: "chatgpt",
-    name: "ChatGPT",
-    mark: "GPT",
-    className: "bg-teal-500 text-white",
+    id: "alibaba",
+    name: "Alibaba",
+    mark: "A",
+    className: "bg-white text-zinc-950",
+    src: "/logo/alibaba.svg",
   },
   {
-    id: "claude",
-    name: "Claude",
+    id: "antigravity",
+    name: "Antigravity",
+    mark: "Ag",
+    className: "bg-white text-zinc-950",
+    src: "/logo/antigravity.svg",
+  },
+  {
+    id: "apple",
+    name: "Apple",
+    mark: "Ap",
+    className: "bg-white text-zinc-950",
+    src: "/logo/apple.svg",
+  },
+  {
+    id: "baidu",
+    name: "Baidu",
+    mark: "Bd",
+    className: "bg-white text-zinc-950",
+    src: "/logo/baidu.svg",
+  },
+  {
+    id: "capcut",
+    name: "CapCut",
+    mark: "Cc",
+    className: "bg-white text-zinc-950",
+    src: "/logo/capcut.svg",
+  },
+  {
+    id: "claudecode",
+    name: "Claude Code",
+    mark: "CC",
+    className: "bg-white text-zinc-950",
+    src: "/logo/claudecode.svg",
+  },
+  {
+    id: "cline",
+    name: "Cline",
     mark: "Cl",
-    className: "bg-amber-700 text-amber-50",
+    className: "bg-white text-zinc-950",
+    src: "/logo/cline.svg",
   },
   {
-    id: "gemini",
-    name: "Gemini",
-    mark: "G",
-    className: "bg-indigo-600 text-white",
+    id: "cursor",
+    name: "Cursor",
+    mark: "Cu",
+    className: "bg-white text-zinc-950",
+    src: "/logo/cursor.svg",
+  },
+  {
+    id: "deepseek",
+    name: "DeepSeek",
+    mark: "Ds",
+    className: "bg-white text-zinc-950",
+    src: "/logo/deepseek.svg",
+  },
+  {
+    id: "dify",
+    name: "Dify",
+    mark: "Df",
+    className: "bg-white text-zinc-950",
+    src: "/logo/dify.svg",
+  },
+  {
+    id: "figma",
+    name: "Figma",
+    mark: "Fg",
+    className: "bg-white text-zinc-950",
+    src: "/logo/figma.svg",
+  },
+  {
+    id: "github",
+    name: "GitHub",
+    mark: "Gh",
+    className: "bg-white text-zinc-950",
+    src: "/logo/github.svg",
+  },
+  {
+    id: "google",
+    name: "Google",
+    mark: "Go",
+    className: "bg-white text-zinc-950",
+    src: "/logo/google.svg",
+  },
+  {
+    id: "grok",
+    name: "Grok",
+    mark: "Gk",
+    className: "bg-white text-zinc-950",
+    src: "/logo/grok.svg",
+  },
+  {
+    id: "huawei",
+    name: "Huawei",
+    mark: "Hw",
+    className: "bg-white text-zinc-950",
+    src: "/logo/huawei.svg",
+  },
+  {
+    id: "jimeng",
+    name: "Jimeng",
+    mark: "Jm",
+    className: "bg-white text-zinc-950",
+    src: "/logo/jimeng.svg",
+  },
+  {
+    id: "kiro",
+    name: "Kiro",
+    mark: "Ki",
+    className: "bg-white text-zinc-950",
+    src: "/logo/kiro.svg",
+  },
+  {
+    id: "moonshot",
+    name: "Moonshot",
+    mark: "Ms",
+    className: "bg-white text-zinc-950",
+    src: "/logo/moonshot.svg",
+  },
+  {
+    id: "nanobanana",
+    name: "Nano Banana",
+    mark: "NB",
+    className: "bg-white text-zinc-950",
+    src: "/logo/nanobanana.svg",
+  },
+  {
+    id: "notion",
+    name: "Notion",
+    mark: "No",
+    className: "bg-white text-zinc-950",
+    src: "/logo/notion.svg",
+  },
+  {
+    id: "qoder",
+    name: "Qoder",
+    mark: "Qd",
+    className: "bg-white text-zinc-950",
+    src: "/logo/qoder.svg",
   },
 ];
 
@@ -347,7 +498,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
         fontSize: 38,
         color: "#ffffff",
       }),
-      templateIconLayer("xhs-black-gold-icon", "claude", { x: 73, y: 11, size: 13 }),
+      templateIconLayer("xhs-black-gold-icon", "anthropic", { x: 73, y: 11, size: 13 }),
     ],
   },
   {
@@ -405,7 +556,7 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
         color: "#881337",
         align: "left",
       }),
-      templateIconLayer("wechat-newsroom-icon", "gemini", {
+      templateIconLayer("wechat-newsroom-icon", "google", {
         x: 78,
         y: 30,
         size: 12,

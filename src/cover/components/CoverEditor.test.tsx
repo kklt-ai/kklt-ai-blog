@@ -183,6 +183,51 @@ describe("CoverEditor", () => {
     expect(screen.getByLabelText("OpenAI 图标图层")).toBeInTheDocument();
   });
 
+  it("shows bundled logo icons and links to LobeHub Icons from the image panel", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+
+    expect(screen.getByRole("link", { name: "前往 LobeHub Icons 下载 Logo" })).toHaveAttribute(
+      "href",
+      "https://icons.lobehub.com/",
+    );
+    expect(screen.getByRole("link", { name: "前往 LobeHub Icons 下载 Logo" })).toHaveAttribute(
+      "title",
+      "Logo下载网站",
+    );
+    expect(screen.getByRole("img", { name: "Alibaba logo" })).toHaveAttribute(
+      "src",
+      "/logo/alibaba.svg",
+    );
+    expect(screen.getByRole("img", { name: "OpenAI logo" })).toHaveAttribute(
+      "src",
+      "/logo/openai.svg",
+    );
+  });
+
+  it("removes text-only logo options and filters logos from a scoped scroll area", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+
+    expect(screen.queryByRole("button", { name: "添加 ChatGPT 图标" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "添加 Claude 图标" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "添加 Gemini 图标" })).not.toBeInTheDocument();
+    expect(screen.getByLabelText("Logo 素材列表")).toHaveClass(
+      "overflow-y-auto",
+      "overscroll-contain",
+    );
+
+    expect(screen.getByRole("searchbox", { name: "搜索 Logo" })).toBeInTheDocument();
+    fireEvent.change(screen.getByRole("searchbox", { name: "搜索 Logo" }), {
+      target: { value: "deep" },
+    });
+
+    expect(screen.getByRole("button", { name: "添加 DeepSeek 图标" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "添加 Alibaba 图标" })).not.toBeInTheDocument();
+  });
+
   it("deletes the selected layer from the preview canvas", () => {
     render(<CoverEditor />);
 

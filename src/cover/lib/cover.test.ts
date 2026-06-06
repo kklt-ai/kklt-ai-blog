@@ -59,13 +59,42 @@ describe("cover editor model", () => {
   });
 
   it("includes common AI brand icons", () => {
-    expect(BRAND_ICONS.map((icon) => icon.id)).toEqual([
-      "codex",
-      "openai",
-      "anthropic",
-      "chatgpt",
-      "claude",
-      "gemini",
-    ]);
+    const iconIds = BRAND_ICONS.map((icon) => icon.id);
+
+    expect(iconIds).toEqual(
+      expect.arrayContaining([
+        "alibaba",
+        "anthropic",
+        "apple",
+        "codex",
+        "deepseek",
+        "github",
+        "google",
+        "openai",
+        "qoder",
+      ]),
+    );
+    expect(iconIds).not.toEqual(expect.arrayContaining(["chatgpt", "claude", "gemini"]));
+    expect(BRAND_ICONS.every((icon) => icon.src)).toBe(true);
+    expect(BRAND_ICONS.filter((icon) => icon.src).map((icon) => icon.src)).toEqual(
+      expect.arrayContaining([
+        "/logo/alibaba.svg",
+        "/logo/anthropic.svg",
+        "/logo/apple.svg",
+        "/logo/codex.svg",
+        "/logo/openai.svg",
+      ]),
+    );
+  });
+
+  it("uses registered logo icons in cover templates", () => {
+    const iconIds = new Set(BRAND_ICONS.map((icon) => icon.id));
+    const templateIconIds = COVER_TEMPLATES.flatMap((template) =>
+      template.layers
+        .filter((layer) => layer.type === "icon")
+        .map((layer) => layer.iconId),
+    );
+
+    expect(templateIconIds.every((iconId) => iconIds.has(iconId))).toBe(true);
   });
 });

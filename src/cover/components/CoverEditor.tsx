@@ -7,11 +7,13 @@ import {
   AlignRight,
   Bold,
   Download,
+  ExternalLink,
   Image as ImageIcon,
   Italic,
   LayoutTemplate,
   Paintbrush,
   Plus,
+  Search,
   Trash2,
   Type,
   Underline,
@@ -240,7 +242,16 @@ function IconLayerView({
   if (!interactive) {
     return (
       <div className={`absolute ${className}`} style={style}>
-        {icon.mark}
+        {icon.src ? (
+          <img
+            src={icon.src}
+            alt={`${icon.name} logo`}
+            className="h-[72%] w-[72%] object-contain"
+            draggable={false}
+          />
+        ) : (
+          icon.mark
+        )}
       </div>
     );
   }
@@ -254,7 +265,16 @@ function IconLayerView({
         onPointerDown={(event) => onDragStart?.(event, layer)}
         className={className}
       >
-        {icon.mark}
+        {icon.src ? (
+          <img
+            src={icon.src}
+            alt={`${icon.name} logo`}
+            className="h-[72%] w-[72%] object-contain"
+            draggable={false}
+          />
+        ) : (
+          icon.mark
+        )}
       </button>
       <LayerDeleteButton
         label={`删除 ${icon.name} 图层`}
@@ -376,6 +396,7 @@ export function CoverEditor() {
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [activeToolId, setActiveToolId] = useState<CoverToolId>("templates");
   const [backgroundTabId, setBackgroundTabId] = useState<CoverBackgroundTabId>("image");
+  const [logoSearchQuery, setLogoSearchQuery] = useState("");
   const [selectedBackground, setSelectedBackground] = useState<CoverBackgroundSelection>(() => ({
     kind: "color",
     id: activeTemplate.id,
@@ -384,8 +405,16 @@ export function CoverEditor() {
   const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
   const canvasRef = useRef<HTMLDivElement>(null);
   const exportCanvasRef = useRef<HTMLDivElement>(null);
+  const logoSearchInputRef = useRef<HTMLInputElement>(null);
   const channel = getChannel(channelId);
   const selectedLayer = layers.find((layer) => layer.id === selectedLayerId) ?? null;
+  const filteredBrandIcons = useMemo(() => {
+    const keyword = logoSearchQuery.trim().toLowerCase();
+    if (!keyword) return BRAND_ICONS;
+    return BRAND_ICONS.filter((icon) =>
+      `${icon.name} ${icon.id}`.toLowerCase().includes(keyword),
+    );
+  }, [logoSearchQuery]);
 
   const chooseChannel = (nextChannelId: CoverChannelId) => {
     const nextTemplate = getTemplatesByChannel(nextChannelId)[0];
@@ -554,13 +583,13 @@ export function CoverEditor() {
 
   return (
     <main
-      className="min-h-screen bg-[#f2f3f5] text-zinc-950"
+      className="min-h-screen bg-[#f2f3f5] text-zinc-950 xl:h-screen xl:overflow-hidden"
       style={pageStyle}
       onPointerDownCapture={handlePointerDownCapture}
       onFocusCapture={handleFocusCapture}
     >
-      <div className="grid min-h-screen grid-cols-[minmax(360px,430px)_minmax(420px,1fr)_330px] max-xl:grid-cols-1">
-        <aside className="flex min-h-0 border-r border-zinc-200 bg-white max-xl:min-h-[520px] max-sm:flex-col">
+      <div className="grid min-h-screen grid-cols-[minmax(360px,430px)_minmax(420px,1fr)_330px] max-xl:grid-cols-1 xl:h-full xl:min-h-0">
+        <aside className="flex min-h-0 border-r border-zinc-200 bg-white max-xl:min-h-[520px] max-sm:flex-col xl:h-full">
           <nav
             aria-label="封面功能栏"
             className="flex w-[88px] shrink-0 flex-col gap-2 border-r border-zinc-200 px-3 py-5 max-sm:w-full max-sm:flex-row max-sm:border-b max-sm:border-r-0"
@@ -588,9 +617,9 @@ export function CoverEditor() {
             })}
           </nav>
 
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
+          <div className="min-h-0 flex-1 overflow-hidden px-5 py-5">
             {activeToolId === "templates" && (
-              <section>
+              <section className="h-full overflow-y-auto pr-1">
                 <div className="mb-5 flex items-center justify-between">
                   <h2 className="text-xl font-bold">模板</h2>
                   <span className="text-sm font-semibold text-zinc-500">
@@ -629,7 +658,7 @@ export function CoverEditor() {
             )}
 
             {activeToolId === "text" && (
-              <section>
+              <section className="h-full overflow-y-auto pr-1">
                 <h2 className="mb-5 text-xl font-bold">文字</h2>
                 <button
                   type="button"
@@ -663,10 +692,36 @@ export function CoverEditor() {
             )}
 
             {activeToolId === "image" && (
-              <section>
-                <h2 className="mb-5 text-xl font-bold">图片素材</h2>
-                <div className="grid grid-cols-2 gap-3">
-                  {BRAND_ICONS.map((icon) => (
+              <section className="flex h-full min-h-0 flex-col">
+                <div className="mb-5 flex items-center justify-between gap-3">
+                  <h2 className="text-xl font-bold">图片素材</h2>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href="https://icons.lobehub.com/"
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Logo下载网站"
+                      aria-label="前往 LobeHub Icons 下载 Logo"
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-600 transition hover:border-zinc-300 hover:bg-white hover:text-zinc-950"
+                    >
+                      <ExternalLink size={18} aria-hidden="true" />
+                    </a>
+                  </div>
+                </div>
+                <input
+                  ref={logoSearchInputRef}
+                  type="search"
+                  aria-label="搜索 Logo"
+                  value={logoSearchQuery}
+                  onChange={(event) => setLogoSearchQuery(event.target.value)}
+                  placeholder="搜索 Logo"
+                  className="mb-4 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-semibold outline-none transition focus:border-zinc-400 focus:bg-white"
+                />
+                <div
+                  aria-label="Logo 素材列表"
+                  className="grid min-h-0 flex-1 grid-cols-2 content-start gap-3 overflow-y-auto overscroll-contain pr-1"
+                >
+                  {filteredBrandIcons.map((icon) => (
                     <button
                       key={icon.id}
                       type="button"
@@ -676,11 +731,20 @@ export function CoverEditor() {
                     >
                       <span
                         className={[
-                          "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-lg text-xs",
+                          "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-200 text-xs",
                           icon.className,
                         ].join(" ")}
                       >
-                        {icon.mark}
+                        {icon.src ? (
+                          <img
+                            src={icon.src}
+                            alt={`${icon.name} logo`}
+                            className="h-7 w-7 object-contain"
+                            draggable={false}
+                          />
+                        ) : (
+                          icon.mark
+                        )}
                       </span>
                       {icon.name}
                     </button>
@@ -690,7 +754,7 @@ export function CoverEditor() {
             )}
 
             {activeToolId === "background" && (
-              <section>
+              <section className="h-full overflow-y-auto pr-1">
                 <h2 className="mb-5 text-xl font-bold">背景样式</h2>
                 <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-zinc-100 p-1">
                   {[
