@@ -137,6 +137,31 @@ describe("CoverEditor", () => {
     expect(screen.queryByText(/已切换到/)).not.toBeInTheDocument();
   });
 
+  it("keeps the platform switch and export action at the top of settings", () => {
+    render(<CoverEditor />);
+
+    const settingsPanel = screen.getByRole("complementary", { name: "封面设置" });
+    const topActions = within(settingsPanel).getByLabelText("封面顶部操作");
+    const platformSwitch = within(topActions).getByRole("group", { name: "平台切换" });
+    const exportButton = within(topActions).getByRole("button", { name: "导出 PNG" });
+    const editRegion = within(settingsPanel).getByRole("region", { name: "图层编辑" });
+
+    expect(within(platformSwitch).getByRole("button", { name: "小红书" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(within(platformSwitch).getByRole("button", { name: "公众号" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    expect(topActions.compareDocumentPosition(editRegion)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(exportButton.compareDocumentPosition(editRegion)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
   it("adds and edits a text layer from the preview canvas", () => {
     render(<CoverEditor />);
 
@@ -156,6 +181,22 @@ describe("CoverEditor", () => {
     const layer = screen.getByRole("button", { name: "双击编辑标题 文字图层" });
     expect(layer).toHaveStyle({ color: "rgb(255, 0, 85)", fontSize: "88px" });
     expect(layer).toHaveStyle("font-style: italic");
+  });
+
+  it("uses icon-only text operation buttons and applies text effects", () => {
+    render(<CoverEditor />);
+
+    const italicButton = screen.getByRole("button", { name: "斜体" });
+    expect(italicButton.textContent).toBe("");
+
+    fireEvent.click(screen.getByRole("button", { name: "描边文字特效" }));
+
+    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    expect(layer.style.textShadow).toContain("#ffffff");
+    expect(screen.getByRole("button", { name: "描边文字特效" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
   });
 
   it("keeps the preview layer selected after leaving text edit focus", () => {

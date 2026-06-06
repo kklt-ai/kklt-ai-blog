@@ -40,6 +40,7 @@ import {
   type CoverIconLayer,
   type CoverLayer,
   type CoverTextLayer,
+  type CoverTextEffect,
   createIconLayer,
   createTextLayer,
   cloneTemplateLayers,
@@ -92,8 +93,95 @@ function backgroundPreviewAspectClassName(channelId: CoverChannelId) {
   return channelId === "wechat" ? "aspect-[1200/628]" : "aspect-[3/4]";
 }
 
+const TEXT_EFFECTS: Array<{
+  id: CoverTextEffect;
+  label: string;
+  sampleStyle: CSSProperties;
+}> = [
+  {
+    id: "none",
+    label: "无",
+    sampleStyle: { color: "#737373" },
+  },
+  {
+    id: "outline",
+    label: "描边",
+    sampleStyle: {
+      color: "#111111",
+      textShadow:
+        "2px 0 0 #ffffff, -2px 0 0 #ffffff, 0 2px 0 #ffffff, 0 -2px 0 #ffffff",
+    },
+  },
+  {
+    id: "shadow",
+    label: "投影",
+    sampleStyle: {
+      color: "#ff4b1f",
+      textShadow: "4px 4px 0 #ffffff, 8px 8px 0 rgba(0,0,0,0.18)",
+    },
+  },
+  {
+    id: "glow",
+    label: "发光",
+    sampleStyle: {
+      color: "#60a5fa",
+      textShadow: "0 0 8px rgba(96,165,250,0.88), 0 0 18px rgba(96,165,250,0.55)",
+    },
+  },
+  {
+    id: "gradient",
+    label: "渐变",
+    sampleStyle: {
+      color: "#2563eb",
+      textShadow: "3px 3px 0 #facc15",
+    },
+  },
+  {
+    id: "poster",
+    label: "海报",
+    sampleStyle: {
+      color: "#22d3ee",
+      textShadow: "3px 3px 0 #111111, 6px 6px 0 #f97316",
+    },
+  },
+];
+
 function layerKey(layer: CoverLayer) {
   return `${layer.type}-${layer.id}`;
+}
+
+function textEffectStyle(layer: CoverTextLayer): CSSProperties {
+  switch (layer.textEffect ?? "none") {
+    case "outline":
+      return {
+        textShadow:
+          "2px 0 0 #ffffff, -2px 0 0 #ffffff, 0 2px 0 #ffffff, 0 -2px 0 #ffffff, 2px 2px 0 #ffffff, -2px -2px 0 #ffffff",
+      };
+    case "shadow":
+      return {
+        textShadow: "0 10px 18px rgba(0,0,0,0.24), 5px 5px 0 rgba(255,255,255,0.82)",
+      };
+    case "glow":
+      return {
+        textShadow:
+          "0 0 10px rgba(255,255,255,0.95), 0 0 24px rgba(56,189,248,0.72), 0 0 42px rgba(236,72,153,0.48)",
+      };
+    case "gradient":
+      return {
+        color: "transparent",
+        backgroundImage: "linear-gradient(135deg,#2563eb 0%,#ec4899 52%,#facc15 100%)",
+        backgroundClip: "text",
+        WebkitBackgroundClip: "text",
+        WebkitTextFillColor: "transparent",
+        textShadow: "3px 3px 0 rgba(17,17,17,0.2)",
+      };
+    case "poster":
+      return {
+        textShadow: "5px 5px 0 #2563eb, 9px 9px 0 rgba(17,17,17,0.22)",
+      };
+    default:
+      return {};
+  }
 }
 
 function TextLayerView({
@@ -147,6 +235,7 @@ function TextLayerView({
     textAlign: layer.align,
     lineHeight: 1.08,
     letterSpacing: layer.letterSpacing ? `${layer.letterSpacing}px` : undefined,
+    ...textEffectStyle(layer),
   };
   const style: CSSProperties = {
     ...positionStyle,
@@ -910,95 +999,197 @@ export function CoverEditor() {
             </div>
           </section>
 
-          <aside className="border-l border-zinc-200 bg-white px-5 py-5 max-xl:border-l-0 max-xl:border-t">
-            <div className="mb-6 flex items-center justify-between">
-              <h2 className="text-xl font-bold">画板</h2>
-              <Link href="/" className="text-sm font-semibold text-zinc-500 hover:text-zinc-950">
-                返回
-              </Link>
-            </div>
-
-            <section className="border-b border-zinc-100 pb-5">
-              <div className="mb-4 flex items-center justify-between">
-                <h3 className="font-bold">尺寸</h3>
-                <span className="font-semibold text-zinc-500">
-                  {channel.width} × {channel.height} px
-                </span>
+          <aside
+            aria-label="封面设置"
+            className="border-l border-zinc-200 bg-white px-5 py-5 max-xl:border-l-0 max-xl:border-t"
+          >
+            <div aria-label="封面顶部操作" className="mb-5 space-y-3">
+              <div className="flex items-center gap-2">
+                <div
+                  role="group"
+                  aria-label="平台切换"
+                  className="grid min-h-11 flex-1 grid-cols-2 rounded-lg bg-zinc-100 p-1"
+                >
+                  {COVER_CHANNELS.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      aria-pressed={item.id === channelId}
+                      onClick={() => chooseChannel(item.id)}
+                      style={
+                        {
+                          "--channel-color": item.brandColor,
+                          "--channel-ink": item.brandForeground,
+                        } as CSSProperties
+                      }
+                      className={[
+                        "rounded-md px-3 py-2 text-sm font-bold transition",
+                        item.id === channelId
+                          ? "bg-[var(--channel-color)] text-[var(--channel-ink)] shadow-sm"
+                          : "text-zinc-500 hover:bg-white hover:text-zinc-950",
+                      ].join(" ")}
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
+                <Link
+                  href="/"
+                  className="inline-flex h-11 items-center justify-center rounded-lg bg-zinc-100 px-3 text-sm font-bold text-zinc-600 transition hover:bg-zinc-200 hover:text-zinc-950"
+                >
+                  返回
+                </Link>
               </div>
               <button
                 type="button"
                 onClick={exportCover}
                 disabled={isExporting}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-zinc-800 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#2551f4] px-4 py-3 text-sm font-bold text-white transition hover:bg-[#1d43d1] disabled:opacity-60"
               >
                 <Download size={17} aria-hidden="true" />
                 {isExporting ? "导出中..." : "导出 PNG"}
               </button>
-            </section>
+            </div>
 
-            <section className="border-b border-zinc-100 py-5">
-              <h3 className="mb-3 font-bold">平台</h3>
-              <div className="grid grid-cols-2 gap-2">
-                {COVER_CHANNELS.map((item) => (
-                  <button
-                    key={item.id}
-                    type="button"
-                    aria-pressed={item.id === channelId}
-                    onClick={() => chooseChannel(item.id)}
-                    style={
-                      {
-                        "--channel-color": item.brandColor,
-                        "--channel-ink": item.brandForeground,
-                      } as CSSProperties
-                    }
-                    className={[
-                      "rounded-lg border px-3 py-2 text-sm font-semibold transition",
-                      item.id === channelId
-                        ? "border-[var(--channel-color)] bg-[var(--channel-color)] text-[var(--channel-ink)]"
-                        : "border-zinc-200 bg-zinc-50 text-zinc-700 hover:bg-white",
-                    ].join(" ")}
-                  >
-                    {item.name}
-                  </button>
-                ))}
+            <section className="border-y border-zinc-100 py-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold">画板</h2>
+                <span className="text-sm font-semibold text-zinc-500">
+                  {channel.width} × {channel.height} px
+                </span>
               </div>
             </section>
 
-            <section className="py-5">
+            <section aria-label="图层编辑" className="py-5">
               <div className="mb-4 flex items-center justify-between">
                 <h3 className="font-bold">编辑</h3>
                 <span className="rounded-full bg-zinc-100 px-2 py-1 text-xs font-semibold text-zinc-600">
-                {selectedLayer?.type === "text" ? "文字" : selectedLayer ? "图标" : "未选择"}
-              </span>
+                  {selectedLayer?.type === "text" ? "文字" : selectedLayer ? "图标" : "未选择"}
+                </span>
               </div>
 
-            {!selectedLayer && (
-              <div className="rounded-lg border border-dashed border-zinc-300 p-6 text-center font-semibold text-zinc-500">
-                选择画布里的文字或图标后，可以在这里编辑。
-              </div>
-            )}
+              {!selectedLayer && (
+                <div className="rounded-lg border border-dashed border-zinc-300 p-6 text-center font-semibold text-zinc-500">
+                  选择画布里的文字或图标后，可以在这里编辑。
+                </div>
+              )}
 
-            {selectedLayer?.type === "text" && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-3">
-                  <label>
-                    <span className="mb-2 block text-sm font-bold">字号</span>
-                    <input
-                      aria-label="字号"
-                      type="number"
-                      min={18}
-                      max={180}
-                      value={selectedLayer.fontSize}
-                      onChange={(event) =>
-                        patchSelectedLayer<CoverTextLayer>({
-                          fontSize: Number(event.target.value),
-                        })
-                      }
-                      className="w-full rounded-lg border border-zinc-200 bg-white p-2 font-semibold"
-                    />
-                  </label>
-                  <label>
-                    <span className="mb-2 block text-sm font-bold">文字颜色</span>
+              {selectedLayer?.type === "text" && (
+                <div className="space-y-5">
+                  <div className="grid grid-cols-[1fr_86px] gap-2">
+                    <label className="block">
+                      <span className="sr-only">字体</span>
+                      <select
+                        aria-label="字体"
+                        value={selectedLayer.fontFamily}
+                        onChange={(event) =>
+                          patchSelectedLayer<CoverTextLayer>({
+                            fontFamily: event.target.value as CoverTextLayer["fontFamily"],
+                          })
+                        }
+                        className="h-12 w-full rounded-lg border-0 bg-zinc-100 px-3 text-sm font-bold outline-none transition focus:bg-white focus:ring-2 focus:ring-zinc-300"
+                      >
+                        {COVER_FONT_FAMILIES.map((font) => (
+                          <option key={font.id} value={font.id}>
+                            {font.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="block">
+                      <span className="sr-only">字号</span>
+                      <input
+                        aria-label="字号"
+                        type="number"
+                        min={18}
+                        max={180}
+                        value={selectedLayer.fontSize}
+                        onChange={(event) =>
+                          patchSelectedLayer<CoverTextLayer>({
+                            fontSize: Number(event.target.value),
+                          })
+                        }
+                        className="h-12 w-full rounded-lg border-0 bg-zinc-100 px-3 text-center text-sm font-bold outline-none transition focus:bg-white focus:ring-2 focus:ring-zinc-300"
+                      />
+                    </label>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1">
+                    {[
+                      {
+                        label: "加粗",
+                        icon: Bold,
+                        active: selectedLayer.bold,
+                        patch: { bold: !selectedLayer.bold },
+                      },
+                      {
+                        label: "斜体",
+                        icon: Italic,
+                        active: selectedLayer.italic,
+                        patch: { italic: !selectedLayer.italic },
+                      },
+                      {
+                        label: "下划线",
+                        icon: Underline,
+                        active: selectedLayer.underline,
+                        patch: { underline: !selectedLayer.underline },
+                      },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          aria-label={item.label}
+                          aria-pressed={item.active}
+                          title={item.label}
+                          onClick={() => patchSelectedLayer<CoverTextLayer>(item.patch)}
+                          className={[
+                            "inline-flex h-10 items-center justify-center rounded-md transition",
+                            item.active
+                              ? "bg-white text-zinc-950 shadow-sm"
+                              : "text-zinc-600 hover:bg-white hover:text-zinc-950",
+                          ].join(" ")}
+                        >
+                          <Icon size={19} aria-hidden="true" strokeWidth={2.2} />
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1">
+                    {[
+                      { label: "左对齐", icon: AlignLeft, align: "left" as const },
+                      { label: "居中", icon: AlignCenter, align: "center" as const },
+                      { label: "右对齐", icon: AlignRight, align: "right" as const },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isActive = selectedLayer.align === item.align;
+                      return (
+                        <button
+                          key={item.label}
+                          type="button"
+                          aria-label={item.label}
+                          aria-pressed={isActive}
+                          title={item.label}
+                          onClick={() =>
+                            patchSelectedLayer<CoverTextLayer>({ align: item.align })
+                          }
+                          className={[
+                            "inline-flex h-10 items-center justify-center rounded-md transition",
+                            isActive
+                              ? "bg-white text-zinc-950 shadow-sm"
+                              : "text-zinc-600 hover:bg-white hover:text-zinc-950",
+                          ].join(" ")}
+                        >
+                          <Icon size={19} aria-hidden="true" strokeWidth={2.2} />
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <label className="flex items-center justify-between gap-3 border-y border-zinc-100 py-4">
+                    <span className="text-sm font-bold">文字颜色</span>
                     <input
                       aria-label="文字颜色"
                       type="color"
@@ -1006,115 +1197,80 @@ export function CoverEditor() {
                       onChange={(event) =>
                         patchSelectedLayer<CoverTextLayer>({ color: event.target.value })
                       }
-                      className="h-11 w-full rounded-lg border border-zinc-200 bg-white p-1"
+                      className="h-11 w-16 rounded-lg border-0 bg-zinc-100 p-1"
+                    />
+                  </label>
+
+                  <div>
+                    <div className="mb-3 flex items-center justify-between">
+                      <h4 className="text-sm font-bold">文字特效</h4>
+                      <span className="text-xs font-semibold text-zinc-400">A</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {TEXT_EFFECTS.map((effect) => {
+                        const isActive = (selectedLayer.textEffect ?? "none") === effect.id;
+                        return (
+                          <button
+                            key={effect.id}
+                            type="button"
+                            aria-label={`${effect.label}文字特效`}
+                            aria-pressed={isActive}
+                            onClick={() =>
+                              patchSelectedLayer<CoverTextLayer>({
+                                textEffect: effect.id,
+                              })
+                            }
+                            className={[
+                              "min-h-[78px] rounded-lg border p-2 text-center transition",
+                              isActive
+                                ? "border-zinc-950 bg-white shadow-sm"
+                                : "border-zinc-100 bg-zinc-100 hover:border-zinc-200 hover:bg-white",
+                            ].join(" ")}
+                          >
+                            <span
+                              className="block text-3xl font-black leading-none"
+                              style={effect.sampleStyle}
+                            >
+                              A
+                            </span>
+                            <span className="mt-2 block text-xs font-bold text-zinc-600">
+                              {effect.label}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedLayer?.type === "icon" && (
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+                    <Type size={20} aria-hidden="true" />
+                    <p className="mt-2 font-bold">{findBrandIcon(selectedLayer.iconId).name}</p>
+                    <p className="mt-1 text-sm font-semibold text-zinc-500">
+                      可拖拽定位。
+                    </p>
+                  </div>
+                  <label>
+                    <span className="mb-2 block text-sm font-bold">图标大小</span>
+                    <input
+                      aria-label="图标大小"
+                      type="range"
+                      min={6}
+                      max={24}
+                      value={selectedLayer.size}
+                      onChange={(event) =>
+                        patchSelectedLayer<CoverIconLayer>({
+                          size: Number(event.target.value),
+                        })
+                      }
+                      className="w-full accent-fuchsia-600"
                     />
                   </label>
                 </div>
-
-                <label className="block">
-                  <span className="mb-2 block text-sm font-bold">字体</span>
-                  <select
-                    aria-label="字体"
-                    value={selectedLayer.fontFamily}
-                    onChange={(event) =>
-                      patchSelectedLayer<CoverTextLayer>({
-                        fontFamily: event.target.value as CoverTextLayer["fontFamily"],
-                      })
-                    }
-                    className="w-full rounded-lg border border-zinc-200 bg-white p-3 font-semibold"
-                  >
-                    {COVER_FONT_FAMILIES.map((font) => (
-                      <option key={font.id} value={font.id}>
-                        {font.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: "加粗", icon: Bold, patch: { bold: !selectedLayer.bold } },
-                    { label: "斜体", icon: Italic, patch: { italic: !selectedLayer.italic } },
-                    {
-                      label: "下划线",
-                      icon: Underline,
-                      patch: { underline: !selectedLayer.underline },
-                    },
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.label}
-                        type="button"
-                        onClick={() => patchSelectedLayer<CoverTextLayer>(item.patch)}
-                        className="inline-flex items-center justify-center gap-1 rounded-lg border border-zinc-200 bg-zinc-50 px-2 py-2 text-sm font-semibold hover:bg-white"
-                      >
-                        <Icon size={15} aria-hidden="true" />
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: "左对齐", icon: AlignLeft, align: "left" as const },
-                    { label: "居中", icon: AlignCenter, align: "center" as const },
-                    { label: "右对齐", icon: AlignRight, align: "right" as const },
-                  ].map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <button
-                        key={item.label}
-                        type="button"
-                        aria-pressed={selectedLayer.align === item.align}
-                        onClick={() =>
-                          patchSelectedLayer<CoverTextLayer>({ align: item.align })
-                        }
-                        className={[
-                          "inline-flex items-center justify-center gap-1 rounded-lg border px-2 py-2 text-sm font-semibold",
-                          selectedLayer.align === item.align
-                            ? "border-zinc-950 bg-zinc-950 text-white"
-                            : "border-zinc-200 bg-zinc-50",
-                        ].join(" ")}
-                      >
-                        <Icon size={15} aria-hidden="true" />
-                        {item.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {selectedLayer?.type === "icon" && (
-              <div className="space-y-4">
-                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
-                  <Type size={20} aria-hidden="true" />
-                  <p className="mt-2 font-bold">{findBrandIcon(selectedLayer.iconId).name}</p>
-                  <p className="mt-1 text-sm font-semibold text-zinc-500">
-                    可拖拽定位。
-                  </p>
-                </div>
-                <label>
-                  <span className="mb-2 block text-sm font-bold">图标大小</span>
-                  <input
-                    aria-label="图标大小"
-                    type="range"
-                    min={6}
-                    max={24}
-                    value={selectedLayer.size}
-                    onChange={(event) =>
-                      patchSelectedLayer<CoverIconLayer>({
-                        size: Number(event.target.value),
-                      })
-                    }
-                    className="w-full accent-fuchsia-600"
-                  />
-                </label>
-              </div>
-            )}
-
+              )}
             </section>
           </aside>
 

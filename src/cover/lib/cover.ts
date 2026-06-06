@@ -38,6 +38,7 @@ export type BrandIconId =
 
 export type TextAlign = "left" | "center" | "right";
 export type CoverFontFamily = "system" | "serif" | "rounded" | "mono";
+export type CoverTextEffect = "none" | "outline" | "shadow" | "glow" | "gradient" | "poster";
 
 export type CoverTextLayer = {
   id: string;
@@ -54,6 +55,7 @@ export type CoverTextLayer = {
   underline: boolean;
   align: TextAlign;
   letterSpacing?: number;
+  textEffect?: CoverTextEffect;
 };
 
 export type CoverIconLayer = {
@@ -384,6 +386,7 @@ export function createTextLayer(text = "双击改标题"): CoverTextLayer {
     italic: false,
     underline: false,
     align: "center",
+    textEffect: "none",
   };
 }
 
