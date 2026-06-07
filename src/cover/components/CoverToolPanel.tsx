@@ -32,6 +32,7 @@ type CoverToolPanelProps = {
   activeToolId: CoverToolId;
   onActiveToolChange: (toolId: CoverToolId) => void;
   templates: CoverTemplate[];
+  customTemplates: CoverTemplate[];
   activeTemplate: CoverTemplate;
   onChooseTemplate: (templateId: string) => void;
   onAddTextLayer: () => void;
@@ -84,13 +85,58 @@ function ToolNavigation({
 
 function TemplatePanel({
   templates,
+  customTemplates,
   activeTemplate,
   onChooseTemplate,
   backgroundImages,
 }: Pick<
   CoverToolPanelProps,
-  "templates" | "activeTemplate" | "onChooseTemplate" | "backgroundImages"
+  | "templates"
+  | "customTemplates"
+  | "activeTemplate"
+  | "onChooseTemplate"
+  | "backgroundImages"
 >) {
+  const presetTemplates = templates.filter(
+    (template) => !customTemplates.some((customTemplate) => customTemplate.id === template.id),
+  );
+  const renderTemplateButton = (template: CoverTemplate) => {
+    const imageBackground = backgroundImages.find(
+      (background) => background.id === template.backgroundImageId,
+    );
+
+    return (
+      <button
+        key={template.id}
+        type="button"
+        aria-pressed={template.id === activeTemplate.id}
+        onClick={() => onChooseTemplate(template.id)}
+        className={[
+          "w-full rounded-lg border p-3 text-left transition",
+          template.id === activeTemplate.id
+            ? "border-zinc-950 bg-zinc-50"
+            : "border-zinc-200 bg-white hover:border-zinc-300",
+        ].join(" ")}
+      >
+        {imageBackground ? (
+          <img
+            src={imageBackground.src}
+            alt=""
+            className="mb-2 block h-20 w-full rounded-md border border-zinc-200 object-cover"
+          />
+        ) : (
+          <span
+            className={["mb-2 block h-20 rounded-md border border-zinc-200", template.backgroundClassName].join(" ")}
+          />
+        )}
+        <span className="block font-semibold">{template.name}</span>
+        <span className="mt-1 block text-xs leading-5 text-zinc-500">
+          {template.description}
+        </span>
+      </button>
+    );
+  };
+
   return (
     <section className="h-full overflow-y-auto pr-1">
       <div className="mb-5 flex items-center justify-between">
@@ -98,42 +144,16 @@ function TemplatePanel({
         <span className="text-sm font-semibold text-zinc-500">{templates.length} 款</span>
       </div>
       <div className="space-y-3">
-        {templates.map((template) => {
-          const imageBackground = backgroundImages.find(
-            (background) => background.id === template.backgroundImageId,
-          );
-
-          return (
-            <button
-              key={template.id}
-              type="button"
-              aria-pressed={template.id === activeTemplate.id}
-              onClick={() => onChooseTemplate(template.id)}
-              className={[
-                "w-full rounded-lg border p-3 text-left transition",
-                template.id === activeTemplate.id
-                  ? "border-zinc-950 bg-zinc-50"
-                  : "border-zinc-200 bg-white hover:border-zinc-300",
-              ].join(" ")}
-            >
-              {imageBackground ? (
-                <img
-                  src={imageBackground.src}
-                  alt=""
-                  className="mb-2 block h-20 w-full rounded-md border border-zinc-200 object-cover"
-                />
-              ) : (
-                <span
-                  className={["mb-2 block h-20 rounded-md border border-zinc-200", template.backgroundClassName].join(" ")}
-                />
-              )}
-              <span className="block font-semibold">{template.name}</span>
-              <span className="mt-1 block text-xs leading-5 text-zinc-500">
-                {template.description}
-              </span>
-            </button>
-          );
-        })}
+        {customTemplates.length > 0 && (
+          <div className="space-y-3">
+            <h3 className="text-sm font-black text-zinc-500">我的模板</h3>
+            {customTemplates.map(renderTemplateButton)}
+          </div>
+        )}
+        <div className="space-y-3">
+          <h3 className="text-sm font-black text-zinc-500">预设模板</h3>
+          {presetTemplates.map(renderTemplateButton)}
+        </div>
       </div>
     </section>
   );

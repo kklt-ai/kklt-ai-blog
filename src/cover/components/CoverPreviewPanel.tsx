@@ -1,3 +1,4 @@
+import { Code2, Save } from "lucide-react";
 import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
@@ -29,6 +30,9 @@ type CoverPreviewPanelProps = {
   onTextLayerChange: (layerId: string, text: string) => void;
   onFinishEditing: () => void;
   onDeleteLayer: (layerId: string) => void;
+  onOpenSaveTemplateDialog: () => void;
+  onCopyTemplateConfig: () => void;
+  templateActionMessage: string;
 };
 
 export function CoverPreviewPanel({
@@ -52,13 +56,43 @@ export function CoverPreviewPanel({
   onTextLayerChange,
   onFinishEditing,
   onDeleteLayer,
+  onOpenSaveTemplateDialog,
+  onCopyTemplateConfig,
+  templateActionMessage,
 }: CoverPreviewPanelProps) {
   return (
     <section
       aria-label="封面预览面板"
       onWheel={onWheel}
-      className="min-w-0 bg-[#f2f3f5] p-6 max-sm:p-3"
+      className="relative min-w-0 bg-[#f2f3f5] p-6 max-sm:p-3"
     >
+      <button
+        type="button"
+        aria-label="保存为模板"
+        title="保存为模板"
+        onClick={onOpenSaveTemplateDialog}
+        className="absolute right-14 top-4 z-20 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white px-3 text-sm font-bold text-zinc-900 shadow-sm ring-1 ring-zinc-200 transition hover:bg-zinc-50"
+      >
+        <Save size={16} aria-hidden="true" />
+        保存为模板
+      </button>
+      <button
+        type="button"
+        aria-label="复制模板配置"
+        title="复制当前模板配置"
+        onClick={onCopyTemplateConfig}
+        className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/80 text-zinc-500 shadow-sm ring-1 ring-zinc-200 transition hover:bg-white hover:text-zinc-900"
+      >
+        <Code2 size={17} aria-hidden="true" />
+      </button>
+      {templateActionMessage && (
+        <div
+          role="status"
+          className="absolute right-4 top-16 z-20 rounded-md bg-zinc-950 px-3 py-2 text-xs font-bold text-white shadow-lg"
+        >
+          {templateActionMessage}
+        </div>
+      )}
       <div className="flex min-h-[calc(100vh-48px)] items-center justify-center overflow-auto p-3 max-xl:min-h-[720px]">
         <div
           className="relative"

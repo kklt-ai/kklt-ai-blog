@@ -10,6 +10,7 @@ vi.mock("@/cover/lib/export", () => ({
 describe("CoverEditor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    localStorage.clear();
   });
 
   it("renders the cover workspace and channel templates", () => {
