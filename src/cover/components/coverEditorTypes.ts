@@ -6,6 +6,13 @@ export type DragState = {
   startClientY: number;
   startX: number;
   startY: number;
+  layerWidth: number;
+  layerHeight: number;
+};
+
+export type CenterGuideState = {
+  vertical: boolean;
+  horizontal: boolean;
 };
 
 export type CoverToolId = "templates" | "text" | "image" | "background";

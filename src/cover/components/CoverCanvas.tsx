@@ -67,6 +67,7 @@ function TextLayerView({
   editing,
   onSelect,
   onDragStart,
+  onDragMove,
   onEditStart,
   onTextChange,
   onFinishEditing,
@@ -78,6 +79,7 @@ function TextLayerView({
   editing?: boolean;
   onSelect?: () => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   onEditStart?: () => void;
   onTextChange?: (text: string) => void;
   onFinishEditing?: () => void;
@@ -163,6 +165,7 @@ function TextLayerView({
         onClick={onSelect}
         onDoubleClick={onEditStart}
         onPointerDown={(event) => onDragStart?.(event, layer)}
+        onPointerMove={onDragMove}
         className={`${className} h-full w-full`}
         style={textStyle}
       >
@@ -182,6 +185,7 @@ function IconLayerView({
   selected,
   onSelect,
   onDragStart,
+  onDragMove,
   onDelete,
   interactive = true,
 }: {
@@ -189,6 +193,7 @@ function IconLayerView({
   selected: boolean;
   onSelect?: () => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   onDelete?: () => void;
   interactive?: boolean;
 }) {
@@ -237,6 +242,7 @@ function IconLayerView({
         data-cover-layer="true"
         onClick={onSelect}
         onPointerDown={(event) => onDragStart?.(event, layer)}
+        onPointerMove={onDragMove}
         className={className}
       >
         {content}
@@ -257,6 +263,7 @@ export function CoverCanvasContent({
   showBackgroundDecorations = true,
   onSelectLayer,
   onDragStart,
+  onDragMove,
   onEditTextLayer,
   onTextLayerChange,
   onFinishEditing,
@@ -269,6 +276,7 @@ export function CoverCanvasContent({
   showBackgroundDecorations?: boolean;
   onSelectLayer?: (layerId: string) => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   onEditTextLayer?: (layerId: string) => void;
   onTextLayerChange?: (layerId: string, text: string) => void;
   onFinishEditing?: () => void;
@@ -289,6 +297,7 @@ export function CoverCanvasContent({
             editing={layer.id === editingLayerId}
             onSelect={() => onSelectLayer?.(layer.id)}
             onDragStart={onDragStart}
+            onDragMove={onDragMove}
             onEditStart={() => onEditTextLayer?.(layer.id)}
             onTextChange={(text) => onTextLayerChange?.(layer.id, text)}
             onFinishEditing={onFinishEditing}
@@ -302,6 +311,7 @@ export function CoverCanvasContent({
             selected={layer.id === selectedLayerId}
             onSelect={() => onSelectLayer?.(layer.id)}
             onDragStart={onDragStart}
+            onDragMove={onDragMove}
             onDelete={() => onDeleteLayer?.(layer.id)}
             interactive={interactive}
           />

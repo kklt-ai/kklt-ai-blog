@@ -6,7 +6,7 @@ import {
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import type { CoverLayer } from "@/cover/lib/cover";
-import type { CoverBackgroundSelection } from "./coverEditorTypes";
+import type { CenterGuideState, CoverBackgroundSelection } from "./coverEditorTypes";
 import { CoverCanvasContent } from "./CoverCanvas";
 
 type CoverPreviewPanelProps = {
@@ -21,8 +21,9 @@ type CoverPreviewPanelProps = {
   layers: CoverLayer[];
   selectedLayerId: string;
   editingLayerId: string | null;
+  centerGuides: CenterGuideState;
   onWheel: (event: ReactWheelEvent<HTMLDivElement>) => void;
-  onPointerMove: (event: ReactPointerEvent<HTMLDivElement>) => void;
+  onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
   onPointerEnd: () => void;
   onSelectLayer: (layerId: string) => void;
   onBeginDrag: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
@@ -47,6 +48,7 @@ export function CoverPreviewPanel({
   layers,
   selectedLayerId,
   editingLayerId,
+  centerGuides,
   onWheel,
   onPointerMove,
   onPointerEnd,
@@ -113,6 +115,18 @@ export function CoverPreviewPanel({
             ].join(" ")}
             style={{ ...canvasStyle, ...selectedBackgroundStyle }}
           >
+            {centerGuides.vertical && (
+              <div
+                aria-label="垂直居中参考线"
+                className="pointer-events-none absolute left-1/2 top-0 z-20 h-full w-px -translate-x-1/2 bg-sky-400 shadow-[0_0_0_1px_rgba(255,255,255,0.85),0_0_18px_rgba(56,189,248,0.75)]"
+              />
+            )}
+            {centerGuides.horizontal && (
+              <div
+                aria-label="水平居中参考线"
+                className="pointer-events-none absolute left-0 top-1/2 z-20 h-px w-full -translate-y-1/2 bg-sky-400 shadow-[0_0_0_1px_rgba(255,255,255,0.85),0_0_18px_rgba(56,189,248,0.75)]"
+              />
+            )}
             <CoverCanvasContent
               layers={layers}
               selectedLayerId={selectedLayerId}
@@ -120,6 +134,7 @@ export function CoverPreviewPanel({
               showBackgroundDecorations={selectedBackground.kind === "color"}
               onSelectLayer={onSelectLayer}
               onDragStart={onBeginDrag}
+              onDragMove={onPointerMove}
               onEditTextLayer={onEditTextLayer}
               onTextLayerChange={onTextLayerChange}
               onFinishEditing={onFinishEditing}

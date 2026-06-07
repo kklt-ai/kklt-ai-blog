@@ -34,6 +34,7 @@ import {
   templateToConfigText,
 } from "@/cover/lib/customTemplates";
 import { downloadCoverNodeAsPng } from "@/cover/lib/export";
+import { snapLayerToCanvasCenter } from "@/cover/lib/snapping";
 import { CoverSettingsPanel } from "./CoverSettingsPanel";
 import { CoverToolPanel } from "./CoverToolPanel";
 import { CoverTopNav } from "./CoverTopNav";
@@ -42,6 +43,7 @@ import type {
   CoverBackgroundSelection,
   CoverBackgroundTabId,
   CoverToolId,
+  CenterGuideState,
   DragState,
 } from "./coverEditorTypes";
 import type { TextEffectCategoryId } from "./textEffectOptions";
@@ -141,6 +143,10 @@ export function CoverEditor() {
   const [activePreviewLayerId, setActivePreviewLayerId] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [centerGuides, setCenterGuides] = useState<CenterGuideState>({
+    vertical: false,
+    horizontal: false,
+  });
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [activeToolId, setActiveToolId] = useState<CoverToolId>("templates");
   const [activeEffectCategoryId, setActiveEffectCategoryId] =
@@ -343,38 +349,63 @@ export function CoverEditor() {
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
+    const canvasRect = canvasRef.current?.getBoundingClientRect();
+    const layerRect = event.currentTarget.getBoundingClientRect();
+    const modelSize = layer.type === "icon" ? layer.size : layer.width;
+    const layerWidth =
+      canvasRect?.width && layerRect.width
+        ? (layerRect.width / canvasRect.width) * 100
+        : modelSize;
+    const layerHeight =
+      canvasRect?.height && layerRect.height
+        ? (layerRect.height / canvasRect.height) * 100
+        : layer.type === "icon"
+          ? layer.size
+          : 0;
     setSelectedLayerId(layer.id);
     setActivePreviewLayerId(layer.id);
     setEditingLayerId(null);
+    setCenterGuides({ vertical: false, horizontal: false });
     setDragState({
       layerId: layer.id,
       startClientX: event.clientX,
       startClientY: event.clientY,
       startX: layer.x,
       startY: layer.y,
+      layerWidth,
+      layerHeight,
     });
   };
 
   const moveDrag = useCallback(
-    (event: ReactPointerEvent<HTMLDivElement>) => {
+    (event: ReactPointerEvent<HTMLElement>) => {
       if (!dragState || !canvasRef.current) return;
       const rect = canvasRef.current.getBoundingClientRect();
       const deltaX = ((event.clientX - dragState.startClientX) / rect.width) * 100;
       const deltaY = ((event.clientY - dragState.startClientY) / rect.height) * 100;
-      const draggedLayer = layers.find((layer) => layer.id === dragState.layerId);
-      const maxX =
-        draggedLayer?.type === "icon"
-          ? 100 - draggedLayer.size
-          : 100 - (draggedLayer?.width ?? 20);
+      const snappedLayer = snapLayerToCanvasCenter({
+        startX: dragState.startX,
+        startY: dragState.startY,
+        deltaX,
+        deltaY,
+        layerWidth: dragState.layerWidth,
+        layerHeight: dragState.layerHeight,
+      });
+      setCenterGuides(snappedLayer.guides);
       setLayers((currentLayers) =>
         updateLayer(currentLayers, dragState.layerId, {
-          x: clamp(dragState.startX + deltaX, 0, Math.max(0, maxX)),
-          y: clamp(dragState.startY + deltaY, 0, 92),
+          x: snappedLayer.x,
+          y: snappedLayer.y,
         }),
       );
     },
-    [dragState, layers],
+    [dragState],
   );
+
+  const endDrag = () => {
+    setDragState(null);
+    setCenterGuides({ vertical: false, horizontal: false });
+  };
 
   const handlePreviewWheel = (event: ReactWheelEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -490,9 +521,10 @@ export function CoverEditor() {
           layers={layers}
           selectedLayerId={activePreviewLayerId}
           editingLayerId={editingLayerId}
+          centerGuides={centerGuides}
           onWheel={handlePreviewWheel}
           onPointerMove={moveDrag}
-          onPointerEnd={() => setDragState(null)}
+          onPointerEnd={endDrag}
           onSelectLayer={(layerId) => {
             setSelectedLayerId(layerId);
             setActivePreviewLayerId(layerId);
