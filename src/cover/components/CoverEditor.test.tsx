@@ -193,11 +193,45 @@ describe("CoverEditor", () => {
     fireEvent.blur(screen.getByLabelText("双击编辑标题 文字编辑框"));
     fireEvent.change(screen.getByLabelText("字号"), { target: { value: "88" } });
     fireEvent.change(screen.getByLabelText("文字颜色"), { target: { value: "#ff0055" } });
+    const lineHeightSlider = screen.getByRole("slider", { name: "行间距" });
+    const letterSpacingSlider = screen.getByRole("slider", { name: "字间距" });
+    expect(lineHeightSlider).toHaveAttribute("aria-valuenow", "1.08");
+    expect(letterSpacingSlider).toHaveAttribute("aria-valuenow", "0");
+
+    fireEvent.mouseDown(lineHeightSlider, {
+      buttons: 1,
+      clientX: 100,
+      pageX: 100,
+    });
+    expect(screen.getByLabelText("向左减少行间距")).toBeInTheDocument();
+    expect(screen.getByLabelText("向右增加行间距")).toBeInTheDocument();
+    fireEvent.mouseMove(lineHeightSlider, {
+      buttons: 1,
+      clientX: 304,
+      pageX: 304,
+    });
+    fireEvent.mouseUp(lineHeightSlider);
+    expect(screen.queryByLabelText("向左减少行间距")).not.toBeInTheDocument();
+
+    fireEvent.mouseDown(letterSpacingSlider, {
+      buttons: 1,
+      clientX: 100,
+      pageX: 100,
+    });
+    expect(screen.getByLabelText("向左减少字间距")).toBeInTheDocument();
+    expect(screen.getByLabelText("向右增加字间距")).toBeInTheDocument();
+    fireEvent.mouseMove(letterSpacingSlider, {
+      buttons: 1,
+      clientX: 244,
+      pageX: 244,
+    });
+    fireEvent.mouseUp(letterSpacingSlider);
     fireEvent.click(screen.getByRole("button", { name: "斜体" }));
 
     const layer = screen.getByRole("button", { name: "双击编辑标题 文字图层" });
     expect(layer).toHaveStyle({ color: "rgb(255, 0, 85)", fontSize: "88px" });
     expect(layer).toHaveStyle("font-style: italic");
+    expect(layer).toHaveStyle({ lineHeight: "1.25", letterSpacing: "12px" });
   });
 
   it("uses icon-only text operation buttons and applies text effects", () => {
@@ -206,34 +240,131 @@ describe("CoverEditor", () => {
     const italicButton = screen.getByRole("button", { name: "斜体" });
     expect(italicButton.textContent).toBe("");
 
-    const effectPanel = screen.getByRole("region", { name: "文字特效" });
+    const textDecorationGroup = screen.getByRole("group", { name: "文字装饰" });
+    expect(
+      within(textDecorationGroup)
+        .getAllByRole("button")
+        .map((button) => button.getAttribute("aria-label")),
+    ).toEqual(["划重点", "文字特效"]);
+
+    const textEffectButton = screen.getByRole("button", { name: "文字特效" });
+    expect(textEffectButton).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("dialog", { name: "文字特效样式" })).not.toBeInTheDocument();
+
+    fireEvent.click(textEffectButton);
+
+    const effectPanel = screen.getByRole("dialog", { name: "文字特效样式" });
+    expect(textEffectButton).toHaveAttribute("aria-expanded", "true");
     const effectCategories = within(effectPanel).getByRole("group", { name: "文字特效分类" });
     expect(
       within(effectCategories).getAllByRole("button").map((button) => button.textContent),
     ).toEqual(["描边", "投影", "纹理", "渐变", "发光", "3D"]);
+    expect(within(effectPanel).getByLabelText("文字特效样式列表")).toHaveClass(
+      "max-h-[280px]",
+      "overflow-y-auto",
+      "overscroll-contain",
+    );
     expect(within(effectPanel).getAllByRole("button", { name: /文字特效$/ })).toHaveLength(7);
 
     fireEvent.click(screen.getByRole("button", { name: "描边文字特效" }));
 
     const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
     expect(layer.style.textShadow).toContain("#111111");
-    expect(screen.getByRole("button", { name: "描边文字特效" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
+    expect(screen.queryByRole("dialog", { name: "文字特效样式" })).not.toBeInTheDocument();
+    expect(textEffectButton).toHaveAttribute("aria-expanded", "false");
 
-    fireEvent.click(within(effectCategories).getByRole("button", { name: "渐变" }));
+    fireEvent.click(textEffectButton);
+    const reopenedEffectPanel = screen.getByRole("dialog", { name: "文字特效样式" });
+    const reopenedEffectCategories = within(reopenedEffectPanel).getByRole("group", {
+      name: "文字特效分类",
+    });
+    fireEvent.click(within(reopenedEffectCategories).getByRole("button", { name: "渐变" }));
     fireEvent.click(screen.getByRole("button", { name: "银灰渐变文字特效" }));
 
     expect(layer.style.color).toBe("transparent");
     expect(layer.style.backgroundImage).toContain("linear-gradient");
-    expect(screen.getByRole("button", { name: "银灰渐变文字特效" })).toHaveAttribute(
+    expect(screen.queryByRole("dialog", { name: "文字特效样式" })).not.toBeInTheDocument();
+  });
+
+  it("opens an independent highlight picker and applies a highlight effect", () => {
+    render(<CoverEditor />);
+
+    const highlightButton = screen.getByRole("button", { name: "划重点" });
+    expect(highlightButton).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(highlightButton);
+
+    const highlightPanel = screen.getByRole("dialog", { name: "划重点样式" });
+    expect(highlightButton).toHaveAttribute("aria-expanded", "true");
+    expect(within(highlightPanel).getByLabelText("划重点样式列表")).toHaveClass(
+      "max-h-[280px]",
+      "overflow-y-auto",
+      "overscroll-contain",
+    );
+    expect(
+      within(highlightPanel).getAllByRole("button", { name: /划重点样式$/ }),
+    ).toHaveLength(12);
+    expect(within(highlightPanel).getByRole("button", { name: "无划重点样式" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
+
+    fireEvent.click(within(highlightPanel).getByRole("button", { name: "黄色马克笔划重点样式" }));
+
+    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    expect(screen.queryByRole("dialog", { name: "划重点样式" })).not.toBeInTheDocument();
+    expect(highlightButton).toHaveAttribute("aria-expanded", "false");
+    expect(within(layer).getByText("AI 工具 效率翻倍")).toHaveStyle({
+      backgroundColor: "rgb(254, 240, 138)",
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "文字特效" }));
+    const effectPanel = screen.getByRole("dialog", { name: "文字特效样式" });
+    const effectCategories = within(effectPanel).getByRole("group", { name: "文字特效分类" });
+    expect(
+      within(effectCategories).getAllByRole("button").map((button) => button.textContent),
+    ).toEqual(["描边", "投影", "纹理", "渐变", "发光", "3D"]);
   });
 
-  it("keeps the preview layer selected after leaving text edit focus", () => {
+  it("closes the highlight picker when it loses focus", () => {
+    render(<CoverEditor />);
+
+    const highlightButton = screen.getByRole("button", { name: "划重点" });
+
+    fireEvent.click(highlightButton);
+    expect(screen.getByRole("dialog", { name: "划重点样式" })).toBeInTheDocument();
+
+    fireEvent.blur(highlightButton, { relatedTarget: screen.getByLabelText("字号") });
+    fireEvent.focus(screen.getByLabelText("字号"));
+
+    expect(screen.queryByRole("dialog", { name: "划重点样式" })).not.toBeInTheDocument();
+    expect(highlightButton).toHaveAttribute("aria-expanded", "false");
+  });
+
+  it("clears preview text and image active states after focus leaves the preview layer", () => {
+    render(<CoverEditor />);
+
+    const textLayer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    expect(textLayer).not.toHaveClass("border-sky-400");
+
+    fireEvent.click(textLayer);
+    expect(textLayer).toHaveClass("border-sky-400");
+
+    fireEvent.focus(screen.getByLabelText("字号"));
+
+    expect(textLayer).not.toHaveClass("border-sky-400");
+    expect(screen.getByLabelText("字号")).toHaveValue(108);
+
+    const iconLayer = screen.getByRole("button", { name: "Codex 图标图层" });
+    fireEvent.click(iconLayer);
+    expect(iconLayer).toHaveClass("border-sky-300");
+
+    fireEvent.focus(screen.getByRole("button", { name: "文字" }));
+
+    expect(iconLayer).not.toHaveClass("border-sky-300");
+  });
+
+  it("finishes text editing after leaving text edit focus", () => {
     render(<CoverEditor />);
 
     fireEvent.doubleClick(screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" }));
@@ -243,10 +374,8 @@ describe("CoverEditor", () => {
     fireEvent.click(screen.getByLabelText("字号"));
 
     const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
-    expect(layer).toHaveClass("border-sky-400");
-    expect(screen.getByRole("button", { name: "删除 AI 工具 效率翻倍 图层" })).toHaveClass(
-      "opacity-100",
-    );
+    expect(layer).not.toHaveClass("border-sky-400");
+    expect(screen.queryByLabelText("AI 工具 效率翻倍 文字编辑框")).not.toBeInTheDocument();
   });
 
   it("adds a brand icon from the library", () => {

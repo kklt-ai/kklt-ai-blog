@@ -77,6 +77,20 @@ export type CoverTextEffect =
   | "three-d-wire"
   | "three-d-yellow";
 
+export type CoverTextHighlightEffect =
+  | "none"
+  | "highlight-ring-yellow"
+  | "highlight-ring-pink"
+  | "highlight-diamond-red"
+  | "highlight-marker-yellow"
+  | "highlight-pill-cyan"
+  | "highlight-bubble-pink"
+  | "highlight-bubble-blue"
+  | "highlight-block-green"
+  | "highlight-bottom-yellow"
+  | "highlight-bottom-pill"
+  | "highlight-strike-orange";
+
 export type CoverTextLayer = {
   id: string;
   type: "text";
@@ -91,8 +105,10 @@ export type CoverTextLayer = {
   italic: boolean;
   underline: boolean;
   align: TextAlign;
-  letterSpacing?: number;
+  lineHeight: number;
+  letterSpacing: number;
   textEffect?: CoverTextEffect;
+  highlightEffect?: CoverTextHighlightEffect;
 };
 
 export type CoverIconLayer = {
@@ -423,7 +439,10 @@ export function createTextLayer(text = "双击改标题"): CoverTextLayer {
     italic: false,
     underline: false,
     align: "center",
+    lineHeight: 1.08,
+    letterSpacing: 0,
     textEffect: "none",
+    highlightEffect: "none",
   };
 }
 

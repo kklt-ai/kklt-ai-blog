@@ -63,6 +63,7 @@ export function CoverEditor() {
   );
   const [layers, setLayers] = useState<CoverLayer[]>(() => cloneTemplateLayers(activeTemplate));
   const [selectedLayerId, setSelectedLayerId] = useState(layers[0]?.id ?? "");
+  const [activePreviewLayerId, setActivePreviewLayerId] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
@@ -100,6 +101,7 @@ export function CoverEditor() {
     setTemplateId(nextTemplate.id);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
+    setActivePreviewLayerId("");
     setSelectedBackground({
       kind: "color",
       id: nextTemplate.id,
@@ -131,18 +133,21 @@ export function CoverEditor() {
     const layer = createTextLayer("新的封面标题");
     setLayers((currentLayers) => [...currentLayers, layer]);
     setSelectedLayerId(layer.id);
+    setActivePreviewLayerId(layer.id);
   };
 
   const addIconLayer = (iconId: BrandIconId) => {
     const layer = createIconLayer(iconId);
     setLayers((currentLayers) => [...currentLayers, layer]);
     setSelectedLayerId(layer.id);
+    setActivePreviewLayerId(layer.id);
   };
 
   const deleteLayer = (layerId: string) => {
     setLayers((currentLayers) => {
       const nextLayers = currentLayers.filter((layer) => layer.id !== layerId);
       setSelectedLayerId(nextLayers[0]?.id ?? "");
+      setActivePreviewLayerId("");
       return nextLayers;
     });
     setEditingLayerId(null);
@@ -152,6 +157,7 @@ export function CoverEditor() {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     setSelectedLayerId(layer.id);
+    setActivePreviewLayerId(layer.id);
     setEditingLayerId(null);
     setDragState({
       layerId: layer.id,
@@ -213,12 +219,20 @@ export function CoverEditor() {
     setEditingLayerId(null);
   };
 
+  const clearPreviewActiveLayerIfOutsideLayer = (target: EventTarget | null) => {
+    if (!(target instanceof HTMLElement)) return;
+    if (target.closest("[data-cover-layer='true']")) return;
+    setActivePreviewLayerId("");
+  };
+
   const handlePointerDownCapture = (event: ReactPointerEvent<HTMLElement>) => {
     finishEditingIfOutsideTextEditor(event.target);
+    clearPreviewActiveLayerIfOutsideLayer(event.target);
   };
 
   const handleFocusCapture = (event: ReactFocusEvent<HTMLElement>) => {
     finishEditingIfOutsideTextEditor(event.target);
+    clearPreviewActiveLayerIfOutsideLayer(event.target);
   };
 
   const canvasStyle: CSSProperties = {
@@ -286,15 +300,19 @@ export function CoverEditor() {
           selectedBackgroundClassName={selectedBackgroundClassName}
           selectedBackgroundStyle={selectedBackgroundStyle}
           layers={layers}
-          selectedLayerId={selectedLayerId}
+          selectedLayerId={activePreviewLayerId}
           editingLayerId={editingLayerId}
           onWheel={handlePreviewWheel}
           onPointerMove={moveDrag}
           onPointerEnd={() => setDragState(null)}
-          onSelectLayer={setSelectedLayerId}
+          onSelectLayer={(layerId) => {
+            setSelectedLayerId(layerId);
+            setActivePreviewLayerId(layerId);
+          }}
           onBeginDrag={beginDrag}
           onEditTextLayer={(layerId) => {
             setSelectedLayerId(layerId);
+            setActivePreviewLayerId(layerId);
             setEditingLayerId(layerId);
           }}
           onTextLayerChange={(layerId, text) => patchLayer<CoverTextLayer>(layerId, { text })}

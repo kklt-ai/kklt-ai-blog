@@ -2,11 +2,19 @@ import {
   AlignCenter,
   AlignLeft,
   AlignRight,
+  ArrowLeft,
+  ArrowRight,
   Bold,
   Italic,
   Type,
   Underline,
 } from "lucide-react";
+import {
+  type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent as ReactMouseEvent,
+  type PointerEvent as ReactPointerEvent,
+  useState,
+} from "react";
 import {
   COVER_FONT_FAMILIES,
   type CoverIconLayer,
@@ -16,6 +24,7 @@ import {
 } from "@/cover/lib/cover";
 import type { PatchSelectedLayer } from "./coverEditorTypes";
 import { TextEffectPicker } from "./TextEffectPicker";
+import { TextHighlightPicker } from "./TextHighlightPicker";
 import type { TextEffectCategoryId } from "./textEffectOptions";
 
 type CoverSettingsPanelProps = {
@@ -24,6 +33,132 @@ type CoverSettingsPanelProps = {
   onActiveEffectCategoryChange: (categoryId: TextEffectCategoryId) => void;
   patchSelectedLayer: PatchSelectedLayer;
 };
+
+const DRAG_PIXELS_PER_STEP = 12;
+
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function decimalPlaces(step: number) {
+  const [, decimals = ""] = step.toString().split(".");
+  return decimals.length;
+}
+
+function roundToStep(value: number, step: number) {
+  return Number(value.toFixed(decimalPlaces(step)));
+}
+
+function getDragClientX(
+  event: ReactMouseEvent<HTMLDivElement> | ReactPointerEvent<HTMLDivElement>,
+) {
+  const nativeEvent = event.nativeEvent as PointerEvent & { pageX?: number };
+  const coordinates = [event.clientX, nativeEvent.clientX, nativeEvent.pageX];
+  return coordinates.find(
+    (coordinate): coordinate is number =>
+      typeof coordinate === "number" && Number.isFinite(coordinate),
+  );
+}
+
+function SpacingDragControl({
+  label,
+  value,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  step: number;
+  onChange: (value: number) => void;
+}) {
+  const [dragStart, setDragStart] = useState<{ x: number; value: number } | null>(null);
+  const dragging = Boolean(dragStart);
+
+  const applyValue = (nextValue: number) => {
+    if (!Number.isFinite(nextValue)) return;
+    onChange(roundToStep(clamp(nextValue, min, max), step));
+  };
+
+  const beginDrag = (
+    event: ReactMouseEvent<HTMLDivElement> | ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    const clientX = getDragClientX(event);
+    if (clientX === undefined) return;
+    event.preventDefault();
+    setDragStart({ x: clientX, value });
+  };
+
+  const moveDrag = (
+    event: ReactMouseEvent<HTMLDivElement> | ReactPointerEvent<HTMLDivElement>,
+  ) => {
+    if (!dragStart) return;
+    const clientX = getDragClientX(event);
+    if (clientX === undefined) return;
+    const steps = Math.round((clientX - dragStart.x) / DRAG_PIXELS_PER_STEP);
+    applyValue(dragStart.value + steps * step);
+  };
+
+  const beginPointerDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    beginDrag(event);
+  };
+
+  const endPointerDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    setDragStart(null);
+  };
+
+  const handleKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      applyValue(value - step);
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      applyValue(value + step);
+    }
+  };
+
+  return (
+    <div
+      role="slider"
+      tabIndex={0}
+      aria-label={label}
+      aria-valuemin={min}
+      aria-valuemax={max}
+      aria-valuenow={value}
+      aria-valuetext={`${value}`}
+      onPointerDown={beginPointerDrag}
+      onPointerMove={moveDrag}
+      onPointerUp={endPointerDrag}
+      onPointerCancel={endPointerDrag}
+      onMouseDown={beginDrag}
+      onMouseMove={moveDrag}
+      onMouseUp={() => setDragStart(null)}
+      onMouseLeave={() => setDragStart(null)}
+      onKeyDown={handleKeyDown}
+      className={[
+        "grid h-12 cursor-ew-resize select-none grid-cols-[1fr_auto_1fr] items-center rounded-lg bg-zinc-100 px-3 text-sm font-bold outline-none transition focus:ring-2 focus:ring-zinc-300",
+        dragging ? "bg-white shadow-sm ring-2 ring-blue-600" : "hover:bg-zinc-50",
+      ].join(" ")}
+    >
+      <span className="justify-self-start text-zinc-500">{label}</span>
+      <span className="min-w-12 justify-self-center text-center text-zinc-950">{value}</span>
+      <span className="flex min-w-10 items-center justify-end gap-1 text-zinc-500">
+        {dragging && (
+          <>
+            <ArrowLeft size={15} aria-label={`向左减少${label}`} strokeWidth={2.4} />
+            <ArrowRight size={15} aria-label={`向右增加${label}`} strokeWidth={2.4} />
+          </>
+        )}
+      </span>
+    </div>
+  );
+}
 
 function TextStyleButton({
   label,
@@ -139,6 +274,25 @@ function TextLayerSettings({
         ))}
       </div>
 
+      <div className="grid grid-cols-2 gap-2">
+        <SpacingDragControl
+          label="行间距"
+          value={layer.lineHeight}
+          min={0.8}
+          max={2}
+          step={0.01}
+          onChange={(lineHeight) => patchSelectedLayer<CoverTextLayer>({ lineHeight })}
+        />
+        <SpacingDragControl
+          label="字间距"
+          value={layer.letterSpacing}
+          min={-20}
+          max={60}
+          step={1}
+          onChange={(letterSpacing) => patchSelectedLayer<CoverTextLayer>({ letterSpacing })}
+        />
+      </div>
+
       <label className="flex items-center justify-between gap-3 border-y border-zinc-100 py-4">
         <span className="text-sm font-bold">文字颜色</span>
         <input
@@ -150,12 +304,21 @@ function TextLayerSettings({
         />
       </label>
 
-      <TextEffectPicker
-        activeCategoryId={activeEffectCategoryId}
-        activeEffect={layer.textEffect ?? "none"}
-        onCategoryChange={onActiveEffectCategoryChange}
-        onEffectChange={(textEffect) => patchSelectedLayer<CoverTextLayer>({ textEffect })}
-      />
+      <div role="group" aria-label="文字装饰" className="flex flex-wrap items-center gap-2">
+        <TextHighlightPicker
+          activeEffect={layer.highlightEffect ?? "none"}
+          onEffectChange={(highlightEffect) =>
+            patchSelectedLayer<CoverTextLayer>({ highlightEffect })
+          }
+        />
+
+        <TextEffectPicker
+          activeCategoryId={activeEffectCategoryId}
+          activeEffect={layer.textEffect ?? "none"}
+          onCategoryChange={onActiveEffectCategoryChange}
+          onEffectChange={(textEffect) => patchSelectedLayer<CoverTextLayer>({ textEffect })}
+        />
+      </div>
     </div>
   );
 }

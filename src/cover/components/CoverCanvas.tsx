@@ -13,6 +13,7 @@ import {
   findBrandIcon,
   fontFamilyCss,
 } from "@/cover/lib/cover";
+import { findTextHighlight } from "./textHighlightOptions";
 import { findTextEffect } from "./textEffectOptions";
 
 function layerKey(layer: CoverLayer) {
@@ -22,6 +23,11 @@ function layerKey(layer: CoverLayer) {
 function textEffectStyle(layer: CoverTextLayer): CSSProperties {
   if (!layer.textEffect || layer.textEffect === "none") return {};
   return findTextEffect(layer.textEffect).style;
+}
+
+function textHighlightStyle(layer: CoverTextLayer): CSSProperties {
+  if (!layer.highlightEffect || layer.highlightEffect === "none") return {};
+  return findTextHighlight(layer.highlightEffect).style;
 }
 
 function LayerDeleteButton({
@@ -42,6 +48,7 @@ function LayerDeleteButton({
     <button
       type="button"
       aria-label={label}
+      data-cover-layer="true"
       onClick={handleClick}
       onPointerDown={(event) => event.stopPropagation()}
       className={[
@@ -102,10 +109,19 @@ function TextLayerView({
     fontStyle: layer.italic ? "italic" : "normal",
     textDecoration: layer.underline ? "underline" : "none",
     textAlign: layer.align,
-    lineHeight: 1.08,
+    lineHeight: layer.lineHeight,
     letterSpacing: layer.letterSpacing ? `${layer.letterSpacing}px` : undefined,
     ...textEffectStyle(layer),
   };
+  const hasHighlight = Boolean(layer.highlightEffect && layer.highlightEffect !== "none");
+  const highlightStyle = hasHighlight ? textHighlightStyle(layer) : undefined;
+  const textContent = highlightStyle ? (
+    <span className="inline leading-none" style={highlightStyle}>
+      {layer.text}
+    </span>
+  ) : (
+    layer.text
+  );
 
   useEffect(() => {
     if (!editing) return;
@@ -116,7 +132,7 @@ function TextLayerView({
   if (!interactive) {
     return (
       <div className={`absolute ${className}`} style={{ ...positionStyle, ...textStyle }}>
-        {layer.text}
+        {textContent}
       </div>
     );
   }
@@ -131,6 +147,7 @@ function TextLayerView({
         onBlur={onFinishEditing}
         onPointerDown={(event) => event.stopPropagation()}
         data-cover-text-editor="true"
+        data-cover-layer="true"
         className={`absolute ${className} resize-none`}
         style={{ ...positionStyle, ...textStyle }}
       />
@@ -142,13 +159,14 @@ function TextLayerView({
       <button
         type="button"
         aria-label={`${layer.text.replace(/\s+/g, " ")} 文字图层`}
+        data-cover-layer="true"
         onClick={onSelect}
         onDoubleClick={onEditStart}
         onPointerDown={(event) => onDragStart?.(event, layer)}
         className={`${className} h-full w-full`}
         style={textStyle}
       >
-        {layer.text}
+        {textContent}
       </button>
       <LayerDeleteButton
         label={`删除 ${layer.text.replace(/\s+/g, " ")} 图层`}
@@ -216,6 +234,7 @@ function IconLayerView({
       <button
         type="button"
         aria-label={`${icon.name} 图标图层`}
+        data-cover-layer="true"
         onClick={onSelect}
         onPointerDown={(event) => onDragStart?.(event, layer)}
         className={className}

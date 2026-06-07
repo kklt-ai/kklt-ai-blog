@@ -1,8 +1,16 @@
+import { Sparkles } from "lucide-react";
+import {
+  type FocusEvent as ReactFocusEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import type { CoverTextEffect } from "@/cover/lib/cover";
 import {
   TEXT_EFFECT_GROUPS,
   type TextEffectCategoryId,
   type TextEffectOption,
+  findTextEffect,
 } from "./textEffectOptions";
 
 type TextEffectPickerProps = {
@@ -51,50 +59,97 @@ export function TextEffectPicker({
   onCategoryChange,
   onEffectChange,
 }: TextEffectPickerProps) {
+  const [open, setOpen] = useState(false);
+  const pickerRef = useRef<HTMLDivElement>(null);
   const activeGroup =
     TEXT_EFFECT_GROUPS.find((group) => group.id === activeCategoryId) ??
     TEXT_EFFECT_GROUPS[0];
+  const activeTextEffect = findTextEffect(activeEffect);
+
+  const chooseEffect = (effectId: CoverTextEffect) => {
+    onEffectChange(effectId);
+    setOpen(false);
+  };
+
+  const closeIfFocusLeavesPicker = (event: ReactFocusEvent<HTMLDivElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (nextTarget instanceof Node && event.currentTarget.contains(nextTarget)) return;
+    setOpen(false);
+  };
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeIfPointerStartsOutside = (event: PointerEvent) => {
+      if (!(event.target instanceof Node)) return;
+      if (pickerRef.current?.contains(event.target)) return;
+      setOpen(false);
+    };
+    document.addEventListener("pointerdown", closeIfPointerStartsOutside);
+    return () => document.removeEventListener("pointerdown", closeIfPointerStartsOutside);
+  }, [open]);
 
   return (
-    <section aria-label="文字特效" className="rounded-2xl border border-zinc-100 bg-white">
-      <div className="flex items-center justify-between border-b border-zinc-100 px-4 py-3">
-        <h4 className="text-base font-black">文字特效</h4>
-        <span className="text-xs font-semibold text-zinc-400">A</span>
-      </div>
-      <div className="grid grid-cols-[70px_minmax(0,1fr)] gap-3 p-3">
-        <div role="group" aria-label="文字特效分类" className="flex flex-col gap-2">
-          {TEXT_EFFECT_GROUPS.map((group) => {
-            const active = activeGroup.id === group.id;
-            return (
-              <button
-                key={group.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => onCategoryChange(group.id)}
-                className={[
-                  "min-h-11 rounded-xl px-3 text-left text-base font-black transition",
-                  active
-                    ? "bg-zinc-100 text-zinc-950"
-                    : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
-                ].join(" ")}
-              >
-                {group.label}
-              </button>
-            );
-          })}
-        </div>
+    <div ref={pickerRef} className="relative" onBlur={closeIfFocusLeavesPicker}>
+      <button
+        type="button"
+        aria-label="文字特效"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        onClick={() => setOpen((currentOpen) => !currentOpen)}
+        className="inline-flex h-14 items-center gap-3 rounded-2xl bg-zinc-100 px-4 text-base font-black text-zinc-900 transition hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
+      >
+        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-zinc-700 shadow-sm">
+          <Sparkles size={22} aria-hidden="true" strokeWidth={2.2} />
+        </span>
+        <span>文字特效</span>
+        <span className="sr-only">{activeTextEffect.label}</span>
+      </button>
 
-        <div className="grid max-h-[430px] grid-cols-3 gap-3 overflow-y-auto pr-1">
-          {activeGroup.effects.map((effect) => (
-            <EffectCard
-              key={`${activeGroup.id}-${effect.id}`}
-              effect={effect}
-              active={activeEffect === effect.id}
-              onSelect={() => onEffectChange(effect.id)}
-            />
-          ))}
+      {open && (
+        <div
+          role="dialog"
+          aria-label="文字特效样式"
+          className="absolute right-0 z-20 mt-3 w-[360px] rounded-[28px] bg-white p-3 shadow-[0_18px_55px_rgba(15,23,42,0.2)] ring-1 ring-zinc-200"
+        >
+          <div className="grid grid-cols-[70px_minmax(0,1fr)] gap-3">
+            <div role="group" aria-label="文字特效分类" className="flex flex-col gap-2">
+              {TEXT_EFFECT_GROUPS.map((group) => {
+                const active = activeGroup.id === group.id;
+                return (
+                  <button
+                    key={group.id}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => onCategoryChange(group.id)}
+                    className={[
+                      "min-h-11 rounded-xl px-3 text-left text-base font-black transition",
+                      active
+                        ? "bg-zinc-100 text-zinc-950"
+                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
+                    ].join(" ")}
+                  >
+                    {group.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <div
+              aria-label="文字特效样式列表"
+              className="grid max-h-[280px] grid-cols-3 gap-3 overflow-y-auto overscroll-contain p-1 pr-2"
+            >
+              {activeGroup.effects.map((effect) => (
+                <EffectCard
+                  key={`${activeGroup.id}-${effect.id}`}
+                  effect={effect}
+                  active={activeEffect === effect.id}
+                  onSelect={() => chooseEffect(effect.id)}
+                />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      )}
+    </div>
   );
 }

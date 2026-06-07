@@ -43,6 +43,9 @@ describe("cover editor model", () => {
       italic: false,
       underline: false,
       align: "center",
+      lineHeight: 1.08,
+      letterSpacing: 0,
+      highlightEffect: "none",
     });
     expect(layer.x).toBeGreaterThanOrEqual(0);
     expect(layer.y).toBeGreaterThanOrEqual(0);
