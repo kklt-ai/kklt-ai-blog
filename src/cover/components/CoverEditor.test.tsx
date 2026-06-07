@@ -468,6 +468,63 @@ describe("CoverEditor", () => {
     expect(screen.queryByRole("button", { name: "AI 工具 效率翻倍 文字图层" })).not.toBeInTheDocument();
   });
 
+  it("deletes the selected text layer with the Delete key", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" }));
+    fireEvent.keyDown(window, { key: "Delete" });
+
+    expect(screen.queryByRole("button", { name: "这个网站的作者是谁？ 文字图层" })).not.toBeInTheDocument();
+  });
+
+  it("copies and pastes the selected text layer with its style and a lower position", async () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "文字" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加文字" }));
+
+    const originalLayer = screen.getByRole("button", { name: "新的封面标题 文字图层" });
+    fireEvent.click(originalLayer);
+    fireEvent.change(screen.getByLabelText("字号"), { target: { value: "88" } });
+    fireEvent.change(screen.getByLabelText("文字颜色"), { target: { value: "#ff0055" } });
+    fireEvent.click(screen.getByRole("button", { name: "斜体" }));
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "新的封面标题 文字图层" })).toHaveStyle({
+        color: "rgb(255, 0, 85)",
+        fontSize: "88px",
+      }),
+    );
+
+    const styledOriginalLayer = screen.getByRole("button", { name: "新的封面标题 文字图层" });
+    const originalTop = parseFloat(styledOriginalLayer.parentElement?.style.top ?? "0");
+    fireEvent.keyDown(window, { key: "c", metaKey: true });
+    fireEvent.keyDown(window, { key: "v", metaKey: true });
+
+    const pastedLayers = screen.getAllByRole("button", { name: "新的封面标题 文字图层" });
+    const pastedLayer = pastedLayers[1];
+    const pastedTop = parseFloat(pastedLayer.parentElement?.style.top ?? "0");
+
+    expect(pastedLayers).toHaveLength(2);
+    expect(pastedLayer).toHaveStyle({ color: "rgb(255, 0, 85)", fontSize: "88px" });
+    expect(pastedLayer).toHaveStyle("font-style: italic");
+    expect(pastedTop).toBeGreaterThan(originalTop);
+    expect(pastedLayer).toHaveClass("border-sky-400");
+  });
+
+  it("keeps text editing shortcuts inside the text editor", () => {
+    render(<CoverEditor />);
+
+    fireEvent.doubleClick(screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" }));
+    const editor = screen.getByLabelText("这个网站的作者是谁？ 文字编辑框");
+
+    fireEvent.keyDown(editor, { key: "Delete" });
+    fireEvent.keyDown(editor, { key: "v", metaKey: true });
+
+    expect(screen.getByLabelText("这个网站的作者是谁？ 文字编辑框")).toBeInTheDocument();
+    expect(screen.queryAllByRole("button", { name: "这个网站的作者是谁？ 文字图层" })).toHaveLength(0);
+  });
+
   it("starts with a larger preview and zooms the canvas with the mouse wheel", () => {
     render(<CoverEditor />);
 

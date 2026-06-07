@@ -6,6 +6,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
   useCallback,
+  useEffect,
   useMemo,
   useRef,
   useState,
@@ -48,6 +49,7 @@ import type { TextEffectCategoryId } from "./textEffectOptions";
 const CANVAS_ZOOM_STEP = 0.04;
 const MIN_CANVAS_SCALE = 0.2;
 const MAX_CANVAS_SCALE = 0.8;
+const PASTED_TEXT_LAYER_OFFSET_Y = 4;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -81,6 +83,13 @@ function backgroundSelectionForTemplate(template: CoverTemplate): CoverBackgroun
 function loadBrowserCustomTemplates() {
   if (typeof window === "undefined") return [];
   return loadCustomTemplates(window.localStorage);
+}
+
+function isEditableKeyboardTarget(target: EventTarget | null) {
+  if (!(target instanceof HTMLElement)) return false;
+  if (target.closest("[data-cover-text-editor='true']")) return true;
+  if (target.isContentEditable) return true;
+  return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
 }
 
 function copyTextWithFallback(text: string) {
@@ -149,8 +158,16 @@ export function CoverEditor() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const exportCanvasRef = useRef<HTMLDivElement>(null);
   const logoSearchInputRef = useRef<HTMLInputElement>(null);
+  const copiedTextLayerRef = useRef<CoverTextLayer | null>(null);
+  const layersRef = useRef<CoverLayer[]>(layers);
+  const selectedLayerIdRef = useRef(selectedLayerId);
+  const editingLayerIdRef = useRef(editingLayerId);
+  const pastedLayerCounterRef = useRef(0);
   const channel = getChannel(channelId);
   const selectedLayer = layers.find((layer) => layer.id === selectedLayerId) ?? null;
+  layersRef.current = layers;
+  selectedLayerIdRef.current = selectedLayerId;
+  editingLayerIdRef.current = editingLayerId;
   const filteredBrandIcons = useMemo(() => {
     const keyword = logoSearchQuery.trim().toLowerCase();
     if (!keyword) return BRAND_ICONS;
@@ -250,7 +267,7 @@ export function CoverEditor() {
     setActivePreviewLayerId(layer.id);
   };
 
-  const deleteLayer = (layerId: string) => {
+  const deleteLayer = useCallback((layerId: string) => {
     setLayers((currentLayers) => {
       const nextLayers = currentLayers.filter((layer) => layer.id !== layerId);
       setSelectedLayerId(nextLayers[0]?.id ?? "");
@@ -258,7 +275,70 @@ export function CoverEditor() {
       return nextLayers;
     });
     setEditingLayerId(null);
-  };
+  }, []);
+
+  const copySelectedTextLayer = useCallback(() => {
+    const currentSelectedLayer = layersRef.current.find(
+      (layer) => layer.id === selectedLayerIdRef.current,
+    );
+    if (currentSelectedLayer?.type !== "text") return false;
+    copiedTextLayerRef.current = { ...currentSelectedLayer };
+    return true;
+  }, []);
+
+  const pasteCopiedTextLayer = useCallback(() => {
+    const copiedLayer = copiedTextLayerRef.current;
+    if (!copiedLayer) return false;
+
+    pastedLayerCounterRef.current += 1;
+    const pastedLayer: CoverTextLayer = {
+      ...copiedLayer,
+      id: `text-copy-${Date.now().toString(36)}-${pastedLayerCounterRef.current}`,
+      y: clamp(copiedLayer.y + PASTED_TEXT_LAYER_OFFSET_Y, 0, 92),
+    };
+
+    setLayers((currentLayers) => [...currentLayers, pastedLayer]);
+    setSelectedLayerId(pastedLayer.id);
+    setActivePreviewLayerId(pastedLayer.id);
+    setEditingLayerId(null);
+    return true;
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || editingLayerIdRef.current) return;
+      if (isEditableKeyboardTarget(event.target)) return;
+
+      if (event.key === "Delete" || event.key === "Backspace") {
+        const currentSelectedLayer = layersRef.current.find(
+          (layer) => layer.id === selectedLayerIdRef.current,
+        );
+        if (currentSelectedLayer?.type !== "text") return;
+        event.preventDefault();
+        deleteLayer(currentSelectedLayer.id);
+        return;
+      }
+
+      if (!(event.metaKey || event.ctrlKey) || event.altKey) return;
+
+      const key = event.key.toLowerCase();
+      if (key === "c" && copySelectedTextLayer()) {
+        event.preventDefault();
+        return;
+      }
+
+      if (key === "v" && pasteCopiedTextLayer()) {
+        event.preventDefault();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [
+    copySelectedTextLayer,
+    deleteLayer,
+    pasteCopiedTextLayer,
+  ]);
 
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => {
     event.preventDefault();
