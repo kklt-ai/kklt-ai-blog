@@ -6,7 +6,9 @@ import {
   type CoverBackgroundImage,
   type CoverChannelId,
   type CoverTemplate,
+  getChannel,
 } from "@/cover/lib/cover";
+import { CoverCanvasContent } from "./CoverCanvas";
 import type {
   CoverBackgroundSelection,
   CoverBackgroundTabId,
@@ -26,6 +28,10 @@ const COVER_TOOLS: Array<{
 
 function backgroundPreviewAspectClassName(channelId: CoverChannelId) {
   return channelId === "wechat" ? "aspect-[1200/628]" : "aspect-[3/4]";
+}
+
+function templatePreviewScale(channelId: CoverChannelId) {
+  return channelId === "wechat" ? 0.19 : 0.15;
 }
 
 type CoverToolPanelProps = {
@@ -48,6 +54,54 @@ type CoverToolPanelProps = {
   selectedBackground: CoverBackgroundSelection;
   onSelectedBackgroundChange: (background: CoverBackgroundSelection) => void;
 };
+
+function TemplateThumbnail({
+  template,
+  imageBackground,
+}: {
+  template: CoverTemplate;
+  imageBackground?: CoverBackgroundImage;
+}) {
+  const channel = getChannel(template.channel);
+  const previewScale = templatePreviewScale(template.channel);
+  const backgroundStyle = imageBackground
+    ? {
+        backgroundImage: `url("${imageBackground.src}")`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }
+    : undefined;
+
+  return (
+    <span
+      role="img"
+      aria-label={`${template.name}模板预览`}
+      className="mb-3 block overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm"
+      style={{
+        width: `${channel.width * previewScale}px`,
+        maxWidth: "100%",
+        aspectRatio: `${channel.width} / ${channel.height}`,
+      }}
+    >
+      <span
+        className={["relative block overflow-hidden", template.backgroundClassName].join(" ")}
+        style={{
+          width: `${channel.width}px`,
+          height: `${channel.height}px`,
+          transform: `scale(${previewScale})`,
+          transformOrigin: "left top",
+          ...backgroundStyle,
+        }}
+      >
+        <CoverCanvasContent
+          layers={template.layers}
+          interactive={false}
+          showBackgroundDecorations={!imageBackground}
+        />
+      </span>
+    </span>
+  );
+}
 
 function ToolNavigation({
   activeToolId,
@@ -118,17 +172,7 @@ function TemplatePanel({
             : "border-zinc-200 bg-white hover:border-zinc-300",
         ].join(" ")}
       >
-        {imageBackground ? (
-          <img
-            src={imageBackground.src}
-            alt=""
-            className="mb-2 block h-20 w-full rounded-md border border-zinc-200 object-cover"
-          />
-        ) : (
-          <span
-            className={["mb-2 block h-20 rounded-md border border-zinc-200", template.backgroundClassName].join(" ")}
-          />
-        )}
+        <TemplateThumbnail template={template} imageBackground={imageBackground} />
         <span className="block font-semibold">{template.name}</span>
         <span className="mt-1 block text-xs leading-5 text-zinc-500">
           {template.description}

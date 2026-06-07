@@ -127,6 +127,31 @@ describe("CoverEditor", () => {
     );
   });
 
+  it("shows full template previews in the active platform shape", () => {
+    render(<CoverEditor />);
+
+    const xiaohongshuTemplateButton = screen.getByRole("button", { name: /猫狗问答卡/ });
+    const xiaohongshuPreview = within(xiaohongshuTemplateButton).getByRole("img", {
+      name: "猫狗问答卡模板预览",
+    });
+    expect(xiaohongshuPreview).toHaveStyle({
+      aspectRatio: "1242 / 1660",
+    });
+    expect(within(xiaohongshuPreview).getByText("这个网站的作者是谁？")).toBeInTheDocument();
+    expect(within(xiaohongshuPreview).getByText("卡卡罗特AI")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
+
+    const wechatTemplateButton = screen.getByRole("button", { name: /公众号深度文章/ });
+    const wechatPreview = within(wechatTemplateButton).getByRole("img", {
+      name: "公众号深度文章模板预览",
+    });
+    expect(wechatPreview).toHaveStyle({
+      aspectRatio: "1200 / 628",
+    });
+    expect(within(wechatPreview).getByText(/大模型时代的\s+产品判断/)).toBeInTheDocument();
+  });
+
   it("uses cover-shaped background thumbnails for image and color backgrounds", () => {
     render(<CoverEditor />);
 
