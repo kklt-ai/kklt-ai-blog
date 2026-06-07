@@ -1,0 +1,10 @@
+import { WECHAT_COVER_BACKGROUND_IMAGES } from "./wechat";
+import { XIAOHONGSHU_COVER_BACKGROUND_IMAGES } from "./xiaohongshu";
+
+export { WECHAT_COVER_BACKGROUND_IMAGES } from "./wechat";
+export { XIAOHONGSHU_COVER_BACKGROUND_IMAGES } from "./xiaohongshu";
+
+export const COVER_BACKGROUND_IMAGES = [
+  ...XIAOHONGSHU_COVER_BACKGROUND_IMAGES,
+  ...WECHAT_COVER_BACKGROUND_IMAGES,
+];
