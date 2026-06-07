@@ -88,6 +88,7 @@ export type CoverTextHighlightEffect =
   | "highlight-bubble-blue"
   | "highlight-block-green"
   | "highlight-bottom-yellow"
+  | "highlight-bottom-green"
   | "highlight-bottom-pill"
   | "highlight-strike-orange";
 
@@ -128,6 +129,7 @@ export type CoverTemplate = {
   channel: CoverChannelId;
   description: string;
   backgroundClassName: string;
+  backgroundImageId?: string;
   layers: CoverLayer[];
 };
 
@@ -392,6 +394,12 @@ export const COVER_BACKGROUND_IMAGES: CoverBackgroundImage[] = [
     src: "/cover/template/xiaohongshu/3.jpeg",
   },
   {
+    id: "xhs-dog-and-cat",
+    name: "猫狗问答纸",
+    channel: "xiaohongshu",
+    src: "/cover/template/xiaohongshu/xhs_dog_and_cat.png",
+  },
+  {
     id: "wechat-wide-1",
     name: "公众号横版 1",
     channel: "wechat",
@@ -558,6 +566,36 @@ export const COVER_TEMPLATES: CoverTemplate[] = [
         color: "#ffffff",
       }),
       templateIconLayer("xhs-black-gold-icon", "anthropic", { x: 73, y: 11, size: 13 }),
+    ],
+  },
+  {
+    id: "xhs-dog-and-cat-qa",
+    name: "猫狗问答卡",
+    channel: "xiaohongshu",
+    description: "可爱网格纸背景，适合问答、作者介绍和轻松观点。",
+    backgroundClassName: "bg-[#fff7d7]",
+    backgroundImageId: "xhs-dog-and-cat",
+    layers: [
+      templateTextLayer("xhs-dog-and-cat-qa-title", "这个网站的作者是谁？", {
+        x: 10,
+        y: 20,
+        width: 80,
+        fontSize: 92,
+        color: "#1f1308",
+        fontFamily: "rounded",
+        bold: true,
+        textEffect: "shadow-yellow",
+      }),
+      templateTextLayer("xhs-dog-and-cat-qa-subtitle", "卡卡罗特AI", {
+        x: 20,
+        y: 33,
+        width: 60,
+        fontSize: 74,
+        color: "#1b1b1b",
+        fontFamily: "rounded",
+        bold: true,
+        highlightEffect: "highlight-bottom-green",
+      }),
     ],
   },
   {

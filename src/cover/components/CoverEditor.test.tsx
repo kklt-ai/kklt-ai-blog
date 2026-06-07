@@ -103,6 +103,29 @@ describe("CoverEditor", () => {
     expect(screen.queryByRole("img", { name: "窗口卡片背景预览" })).not.toBeInTheDocument();
   });
 
+  it("applies the dog and cat image background when choosing its template", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: /猫狗问答卡/ }));
+
+    expect(screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "卡卡罗特AI 文字图层" })).toBeInTheDocument();
+    expect(screen.getByLabelText("封面画布").style.backgroundImage).toBe(
+      'url("/cover/template/xiaohongshu/xhs_dog_and_cat.png")',
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+
+    expect(screen.getByRole("img", { name: "猫狗问答纸背景预览" })).toHaveAttribute(
+      "src",
+      "/cover/template/xiaohongshu/xhs_dog_and_cat.png",
+    );
+    expect(screen.getByRole("button", { name: "使用 猫狗问答纸 背景" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   it("uses cover-shaped background thumbnails for image and color backgrounds", () => {
     render(<CoverEditor />);
 
@@ -303,7 +326,7 @@ describe("CoverEditor", () => {
     );
     expect(
       within(highlightPanel).getAllByRole("button", { name: /划重点样式$/ }),
-    ).toHaveLength(12);
+    ).toHaveLength(13);
     expect(within(highlightPanel).getByRole("button", { name: "无划重点样式" })).toHaveAttribute(
       "aria-pressed",
       "true",

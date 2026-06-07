@@ -15,6 +15,7 @@ import {
   type BrandIconId,
   type CoverChannelId,
   type CoverLayer,
+  type CoverTemplate,
   type CoverTextLayer,
   cloneTemplateLayers,
   createIconLayer,
@@ -49,6 +50,27 @@ function defaultCanvasScale(channelId: CoverChannelId) {
   return channelId === "wechat" ? 0.56 : 0.36;
 }
 
+function backgroundSelectionForTemplate(template: CoverTemplate): CoverBackgroundSelection {
+  if (template.backgroundImageId) {
+    const image = getBackgroundImagesByChannel(template.channel).find(
+      (background) => background.id === template.backgroundImageId,
+    );
+    if (image) {
+      return {
+        kind: "image",
+        id: image.id,
+        src: image.src,
+      };
+    }
+  }
+
+  return {
+    kind: "color",
+    id: template.id,
+    className: template.backgroundClassName,
+  };
+}
+
 export function CoverEditor() {
   const [channelId, setChannelId] = useState<CoverChannelId>("xiaohongshu");
   const templates = useMemo(() => getTemplatesByChannel(channelId), [channelId]);
@@ -73,9 +95,7 @@ export function CoverEditor() {
   const [backgroundTabId, setBackgroundTabId] = useState<CoverBackgroundTabId>("image");
   const [logoSearchQuery, setLogoSearchQuery] = useState("");
   const [selectedBackground, setSelectedBackground] = useState<CoverBackgroundSelection>(() => ({
-    kind: "color",
-    id: activeTemplate.id,
-    className: activeTemplate.backgroundClassName,
+    ...backgroundSelectionForTemplate(activeTemplate),
   }));
   const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
 
@@ -102,11 +122,7 @@ export function CoverEditor() {
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
     setActivePreviewLayerId("");
-    setSelectedBackground({
-      kind: "color",
-      id: nextTemplate.id,
-      className: nextTemplate.backgroundClassName,
-    });
+    setSelectedBackground(backgroundSelectionForTemplate(nextTemplate));
   };
 
   const chooseChannel = (nextChannelId: CoverChannelId) => {

@@ -22,12 +22,45 @@ describe("cover editor model", () => {
     const xiaohongshuImages = getBackgroundImagesByChannel("xiaohongshu");
     const wechatImages = getBackgroundImagesByChannel("wechat");
 
-    expect(xiaohongshuImages.length).toBeGreaterThanOrEqual(3);
+    expect(xiaohongshuImages.length).toBeGreaterThanOrEqual(4);
     expect(wechatImages.length).toBeGreaterThanOrEqual(4);
     expect(xiaohongshuImages.every((image) => image.channel === "xiaohongshu")).toBe(true);
     expect(wechatImages.every((image) => image.channel === "wechat")).toBe(true);
     expect(xiaohongshuImages[0].src).toContain("/cover/template/xiaohongshu/");
     expect(wechatImages[0].src).toContain("/cover/template/wechat/");
+    expect(xiaohongshuImages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "xhs-dog-and-cat",
+          name: "猫狗问答纸",
+          src: "/cover/template/xiaohongshu/xhs_dog_and_cat.png",
+        }),
+      ]),
+    );
+  });
+
+  it("includes a dog and cat Xiaohongshu Q&A cover template", () => {
+    const template = COVER_TEMPLATES.find((item) => item.id === "xhs-dog-and-cat-qa");
+
+    expect(template).toMatchObject({
+      name: "猫狗问答卡",
+      channel: "xiaohongshu",
+      backgroundImageId: "xhs-dog-and-cat",
+    });
+    expect(template?.layers).toHaveLength(2);
+    expect(template?.layers[0]).toMatchObject({
+      id: "xhs-dog-and-cat-qa-title",
+      type: "text",
+      text: "这个网站的作者是谁？",
+      fontFamily: "rounded",
+      textEffect: "shadow-yellow",
+    });
+    expect(template?.layers[1]).toMatchObject({
+      id: "xhs-dog-and-cat-qa-subtitle",
+      type: "text",
+      text: "卡卡罗特AI",
+      highlightEffect: "highlight-bottom-green",
+    });
   });
 
   it("creates a default text layer with editable typography", () => {

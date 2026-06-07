@@ -115,6 +115,16 @@ export const TEXT_HIGHLIGHT_OPTIONS: TextHighlightOption[] = [
     },
   },
   {
+    id: "highlight-bottom-green",
+    label: "绿色底线",
+    style: {
+      backgroundImage: "linear-gradient(transparent 72%,#4ade80 72%)",
+      padding: "0 0.08em",
+      boxDecorationBreak: "clone",
+      WebkitBoxDecorationBreak: "clone",
+    },
+  },
+  {
     id: "highlight-bottom-pill",
     label: "圆角底线",
     style: {
