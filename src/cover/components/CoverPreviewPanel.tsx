@@ -66,36 +66,41 @@ export function CoverPreviewPanel({
     <section
       aria-label="封面预览面板"
       onWheel={onWheel}
-      className="relative min-w-0 bg-[#f2f3f5] p-6 max-sm:p-3"
+      className="relative min-w-0 bg-[#fff8e0] p-6 max-sm:p-3"
     >
-      <button
-        type="button"
-        aria-label="保存为模板"
-        title="保存为模板"
-        onClick={onOpenSaveTemplateDialog}
-        className="absolute right-14 top-4 z-20 inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white px-3 text-sm font-bold text-zinc-900 shadow-sm ring-1 ring-zinc-200 transition hover:bg-zinc-50"
+      <div
+        data-cover-preview-toolbar="true"
+        className="absolute right-5 top-5 z-20 flex items-center gap-2 rounded-lg border border-[#e6d5a8] bg-white/95 p-1 shadow-[0_4px_12px_rgba(0,0,0,0.06)] backdrop-blur"
       >
-        <Save size={16} aria-hidden="true" />
-        保存为模板
-      </button>
-      <button
-        type="button"
-        aria-label="复制模板配置"
-        title="复制当前模板配置"
-        onClick={onCopyTemplateConfig}
-        className="absolute right-4 top-4 z-20 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-white/80 text-zinc-500 shadow-sm ring-1 ring-zinc-200 transition hover:bg-white hover:text-zinc-900"
-      >
-        <Code2 size={17} aria-hidden="true" />
-      </button>
+        <button
+          type="button"
+          aria-label="保存为模板"
+          title="保存为模板"
+          onClick={onOpenSaveTemplateDialog}
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-md bg-[#1f1f1f] px-3 text-sm font-semibold text-white transition hover:bg-[#3d3d3d]"
+        >
+          <Save size={16} aria-hidden="true" />
+          保存为模板
+        </button>
+        <button
+          type="button"
+          aria-label="复制模板配置"
+          title="复制当前模板配置"
+          onClick={onCopyTemplateConfig}
+          className="inline-flex h-10 w-10 items-center justify-center rounded-md text-[#6a6a6a] transition hover:bg-[#fffaeb] hover:text-[#1f1f1f]"
+        >
+          <Code2 size={17} aria-hidden="true" />
+        </button>
+      </div>
       {templateActionMessage && (
         <div
           role="status"
-          className="absolute right-4 top-16 z-20 rounded-md bg-zinc-950 px-3 py-2 text-xs font-bold text-white shadow-lg"
+          className="absolute right-5 top-20 z-20 rounded-md bg-[#1f1f1f] px-3 py-2 text-xs font-semibold text-white shadow-lg"
         >
           {templateActionMessage}
         </div>
       )}
-      <div className="flex min-h-[calc(100vh-48px)] items-center justify-center overflow-auto p-3 max-xl:min-h-[720px]">
+      <div className="flex min-h-[calc(100vh-48px)] items-center justify-center overflow-auto rounded-xl border border-[#e6d5a8]/70 bg-[linear-gradient(rgba(230,213,168,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(230,213,168,0.28)_1px,transparent_1px)] bg-[size:24px_24px] p-3 max-xl:min-h-[720px]">
         <div
           className="relative"
           style={{
@@ -110,7 +115,7 @@ export function CoverPreviewPanel({
             onPointerUp={onPointerEnd}
             onPointerCancel={onPointerEnd}
             className={[
-              "absolute left-0 top-0 overflow-hidden shadow-[0_18px_50px_rgba(15,23,42,0.18)]",
+              "absolute left-0 top-0 overflow-hidden shadow-[0_18px_42px_rgba(31,31,31,0.16)] ring-1 ring-[#1f1f1f]/10",
               selectedBackgroundClassName,
             ].join(" ")}
             style={{ ...canvasStyle, ...selectedBackgroundStyle }}
@@ -118,13 +123,13 @@ export function CoverPreviewPanel({
             {centerGuides.vertical && (
               <div
                 aria-label="垂直居中参考线"
-                className="pointer-events-none absolute left-1/2 top-0 z-20 h-full w-px -translate-x-1/2 bg-sky-400 shadow-[0_0_0_1px_rgba(255,255,255,0.85),0_0_18px_rgba(56,189,248,0.75)]"
+                className="pointer-events-none absolute left-1/2 top-0 z-20 h-full w-px -translate-x-1/2 bg-[#fa520f] shadow-[0_0_0_1px_rgba(255,255,255,0.9),0_0_18px_rgba(250,82,15,0.55)]"
               />
             )}
             {centerGuides.horizontal && (
               <div
                 aria-label="水平居中参考线"
-                className="pointer-events-none absolute left-0 top-1/2 z-20 h-px w-full -translate-y-1/2 bg-sky-400 shadow-[0_0_0_1px_rgba(255,255,255,0.85),0_0_18px_rgba(56,189,248,0.75)]"
+                className="pointer-events-none absolute left-0 top-1/2 z-20 h-px w-full -translate-y-1/2 bg-[#fa520f] shadow-[0_0_0_1px_rgba(255,255,255,0.9),0_0_18px_rgba(250,82,15,0.55)]"
               />
             )}
             <CoverCanvasContent
