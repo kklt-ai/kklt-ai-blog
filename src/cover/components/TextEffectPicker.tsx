@@ -36,10 +36,10 @@ function EffectCard({
       aria-pressed={active}
       onClick={onSelect}
       className={[
-        "relative min-h-[96px] rounded-2xl bg-zinc-100 p-2 text-center transition",
+        "relative min-h-[96px] rounded-lg border bg-[#fff8e0] p-2 text-center transition",
         active
-          ? "ring-2 ring-blue-600 ring-offset-2 ring-offset-white"
-          : "hover:bg-zinc-50 hover:ring-1 hover:ring-zinc-200",
+          ? "border-[#fa520f] bg-white ring-2 ring-[#fa520f]/25"
+          : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-white",
       ].join(" ")}
     >
       <span
@@ -96,9 +96,9 @@ export function TextEffectPicker({
         aria-haspopup="dialog"
         aria-expanded={open}
         onClick={() => setOpen((currentOpen) => !currentOpen)}
-        className="inline-flex h-14 items-center gap-3 rounded-2xl bg-zinc-100 px-4 text-base font-black text-zinc-900 transition hover:bg-zinc-50 focus:outline-none focus:ring-2 focus:ring-blue-600"
+        className="inline-flex h-12 items-center gap-3 rounded-md border border-[#e6d5a8] bg-[#fff8e0] px-3 text-sm font-semibold text-[#1f1f1f] transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#fa520f]/20"
       >
-        <span className="grid h-10 w-10 place-items-center rounded-xl bg-white text-zinc-700 shadow-sm">
+        <span className="grid h-8 w-8 place-items-center rounded-md bg-white text-[#6a6a6a] shadow-sm">
           <Sparkles size={22} aria-hidden="true" strokeWidth={2.2} />
         </span>
         <span>文字特效</span>
@@ -109,7 +109,7 @@ export function TextEffectPicker({
         <div
           role="dialog"
           aria-label="文字特效样式"
-          className="absolute right-0 z-20 mt-3 w-[360px] rounded-[28px] bg-white p-3 shadow-[0_18px_55px_rgba(15,23,42,0.2)] ring-1 ring-zinc-200"
+          className="absolute right-0 z-20 mt-3 w-[360px] rounded-xl border border-[#e6d5a8] bg-white p-3 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.18)]"
         >
           <div className="grid grid-cols-[70px_minmax(0,1fr)] gap-3">
             <div role="group" aria-label="文字特效分类" className="flex flex-col gap-2">
@@ -122,10 +122,10 @@ export function TextEffectPicker({
                     aria-pressed={active}
                     onClick={() => onCategoryChange(group.id)}
                     className={[
-                      "min-h-11 rounded-xl px-3 text-left text-base font-black transition",
+                      "min-h-11 rounded-md px-3 text-left text-sm font-semibold transition",
                       active
-                        ? "bg-zinc-100 text-zinc-950"
-                        : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
+                        ? "bg-[#fff8e0] text-[#1f1f1f]"
+                        : "text-[#6a6a6a] hover:bg-[#fffaeb] hover:text-[#1f1f1f]",
                     ].join(" ")}
                   >
                     {group.label}
