@@ -28,7 +28,7 @@ describe("CoverEditor", () => {
     ]);
     expect(screen.getByRole("button", { name: /小红书/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /公众号/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /AI 爆款封面/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /猫狗问答卡/ })).toBeInTheDocument();
     expect(screen.queryByText("画板")).not.toBeInTheDocument();
     expect(screen.queryByText("1242 × 1660 px")).not.toBeInTheDocument();
     expect(screen.getByLabelText("封面画布")).toBeInTheDocument();
@@ -175,7 +175,7 @@ describe("CoverEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "颜色背景" }));
 
-    expect(screen.getByRole("img", { name: "AI 爆款封面背景预览" })).toHaveClass(
+    expect(screen.getByRole("img", { name: "猫狗问答卡背景预览" })).toHaveClass(
       "aspect-[3/4]",
     );
   });
@@ -329,7 +329,7 @@ describe("CoverEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "描边文字特效" }));
 
-    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    const layer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
     expect(layer.style.textShadow).toContain("#111111");
     expect(screen.queryByRole("dialog", { name: "文字特效样式" })).not.toBeInTheDocument();
     expect(textEffectButton).toHaveAttribute("aria-expanded", "false");
@@ -372,10 +372,10 @@ describe("CoverEditor", () => {
 
     fireEvent.click(within(highlightPanel).getByRole("button", { name: "黄色马克笔划重点样式" }));
 
-    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    const layer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
     expect(screen.queryByRole("dialog", { name: "划重点样式" })).not.toBeInTheDocument();
     expect(highlightButton).toHaveAttribute("aria-expanded", "false");
-    expect(within(layer).getByText("AI 工具 效率翻倍")).toHaveStyle({
+    expect(within(layer).getByText("这个网站的作者是谁？")).toHaveStyle({
       backgroundColor: "rgb(254, 240, 138)",
     });
 
@@ -405,7 +405,7 @@ describe("CoverEditor", () => {
   it("clears preview text and image active states after focus leaves the preview layer", () => {
     render(<CoverEditor />);
 
-    const textLayer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    const textLayer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
     expect(textLayer).not.toHaveClass("border-sky-400");
 
     fireEvent.click(textLayer);
@@ -414,9 +414,12 @@ describe("CoverEditor", () => {
     fireEvent.focus(screen.getByLabelText("字号"));
 
     expect(textLayer).not.toHaveClass("border-sky-400");
-    expect(screen.getByLabelText("字号")).toHaveValue(108);
+    expect(screen.getByLabelText("字号")).toHaveValue(92);
 
-    const iconLayer = screen.getByRole("button", { name: "Codex 图标图层" });
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加 OpenAI 图标" }));
+
+    const iconLayer = screen.getByRole("button", { name: "OpenAI 图标图层" });
     fireEvent.click(iconLayer);
     expect(iconLayer).toHaveClass("border-sky-300");
 
@@ -428,15 +431,15 @@ describe("CoverEditor", () => {
   it("finishes text editing after leaving text edit focus", () => {
     render(<CoverEditor />);
 
-    fireEvent.doubleClick(screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" }));
-    expect(screen.getByLabelText("AI 工具 效率翻倍 文字编辑框")).toBeInTheDocument();
+    fireEvent.doubleClick(screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" }));
+    expect(screen.getByLabelText("这个网站的作者是谁？ 文字编辑框")).toBeInTheDocument();
 
     fireEvent.pointerDown(screen.getByLabelText("字号"));
     fireEvent.click(screen.getByLabelText("字号"));
 
-    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    const layer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
     expect(layer).not.toHaveClass("border-sky-400");
-    expect(screen.queryByLabelText("AI 工具 效率翻倍 文字编辑框")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("这个网站的作者是谁？ 文字编辑框")).not.toBeInTheDocument();
   });
 
   it("adds a brand icon from the library", () => {
@@ -496,13 +499,13 @@ describe("CoverEditor", () => {
   it("deletes the selected layer from the preview canvas", () => {
     render(<CoverEditor />);
 
-    const layer = screen.getByRole("button", { name: "AI 工具 效率翻倍 文字图层" });
+    const layer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
     fireEvent.click(layer);
 
     expect(screen.queryByRole("button", { name: "删除当前图层" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "删除 AI 工具 效率翻倍 图层" }));
+    fireEvent.click(screen.getByRole("button", { name: "删除 这个网站的作者是谁？ 图层" }));
 
-    expect(screen.queryByRole("button", { name: "AI 工具 效率翻倍 文字图层" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "这个网站的作者是谁？ 文字图层" })).not.toBeInTheDocument();
   });
 
   it("deletes the selected text layer with the Delete key", () => {
