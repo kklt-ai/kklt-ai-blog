@@ -23,14 +23,14 @@ export function CoverTopNav({
   onExportCover,
 }: CoverTopNavProps) {
   return (
-    <header className="relative z-30 shrink-0 border-b border-zinc-200 bg-white/95 shadow-[0_8px_30px_rgba(15,23,42,0.06)] backdrop-blur">
+    <header className="relative z-30 shrink-0 border-b border-[#e6d5a8] bg-white/95 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur">
       <nav
         aria-label="封面顶部导航"
-        className="grid min-h-[76px] grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)] items-center gap-4 px-5 py-3 max-lg:grid max-lg:grid-cols-[1fr_auto] max-sm:gap-3 max-sm:px-3"
+        className="grid min-h-[72px] grid-cols-[minmax(180px,1fr)_auto_minmax(180px,1fr)] items-center gap-4 px-5 py-3 max-lg:grid max-lg:grid-cols-[1fr_auto] max-sm:gap-3 max-sm:px-3"
       >
         <div className="min-w-0">
-          <p className="truncate text-lg font-black tracking-tight">封面设计</p>
-          <p className="truncate text-xs font-semibold text-zinc-500 max-sm:hidden">
+          <p className="truncate text-lg font-semibold tracking-normal text-[#1f1f1f]">封面设计</p>
+          <p className="truncate text-xs font-medium text-[#6a6a6a] max-sm:hidden">
             {channel.name}封面 · {channel.width}×{channel.height}px
           </p>
         </div>
@@ -38,7 +38,7 @@ export function CoverTopNav({
         <div
           role="group"
           aria-label="平台切换"
-          className="grid min-h-11 w-[240px] grid-cols-2 rounded-xl bg-zinc-100 p-1 justify-self-center max-sm:order-3 max-sm:col-span-2 max-sm:w-full"
+          className="grid min-h-11 w-[240px] grid-cols-2 rounded-md border border-[#e6d5a8] bg-[#fff8e0] p-1 justify-self-center max-sm:order-3 max-sm:col-span-2 max-sm:w-full"
         >
           {COVER_CHANNELS.map((item) => (
             <button
@@ -53,10 +53,10 @@ export function CoverTopNav({
                 } as CSSProperties
               }
               className={[
-                "truncate rounded-lg px-3 py-2 text-sm font-bold transition",
+                "truncate rounded-md px-3 py-2 text-sm font-semibold transition",
                 item.id === channelId
-                  ? "bg-[var(--channel-color)] text-[var(--channel-ink)] shadow-sm"
-                  : "text-zinc-500 hover:bg-white hover:text-zinc-950",
+                  ? "bg-[#1f1f1f] text-white shadow-sm"
+                  : "text-[#6a6a6a] hover:bg-white hover:text-[#1f1f1f]",
               ].join(" ")}
             >
               {item.name}
@@ -67,7 +67,7 @@ export function CoverTopNav({
         <div className="flex items-center justify-end gap-2 justify-self-end">
           <Link
             href="/"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 text-sm font-bold text-zinc-700 shadow-sm transition hover:border-zinc-300 hover:bg-zinc-50 hover:text-zinc-950 max-[420px]:px-3"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-[#c7c7c7] bg-white px-4 text-sm font-semibold text-[#3d3d3d] shadow-sm transition hover:border-[#8a8a8a] hover:bg-[#fffaeb] hover:text-[#1f1f1f] max-[420px]:px-3"
           >
             MD 申请卡片
           </Link>
@@ -76,7 +76,7 @@ export function CoverTopNav({
             aria-label="导出 PNG"
             onClick={onExportCover}
             disabled={isExporting}
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-[#2551f4] px-4 text-sm font-bold text-white shadow-sm transition hover:bg-[#1d43d1] disabled:opacity-60 max-[420px]:px-3"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-[#fa520f] px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-[#cc3a05] disabled:opacity-60 max-[420px]:px-3"
           >
             <Download size={17} aria-hidden="true" />
             {isExporting ? (

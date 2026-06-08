@@ -476,7 +476,7 @@ export function CoverEditor() {
 
   return (
     <main
-      className="flex min-h-screen flex-col bg-[#f2f3f5] text-zinc-950 xl:h-screen xl:overflow-hidden"
+      className="flex min-h-screen flex-col bg-[#fff8e0] text-[#1f1f1f] xl:h-screen xl:overflow-hidden"
       style={pageStyle}
       onPointerDownCapture={handlePointerDownCapture}
       onFocusCapture={handleFocusCapture}
@@ -488,7 +488,7 @@ export function CoverEditor() {
         onChooseChannel={chooseChannel}
         onExportCover={exportCover}
       />
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(360px,430px)_minmax(420px,1fr)_minmax(380px,420px)] max-xl:grid-cols-1">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(360px,400px)] border-t border-[#e6d5a8]/70 max-xl:grid-cols-1">
         <CoverToolPanel
           activeToolId={activeToolId}
           onActiveToolChange={setActiveToolId}
@@ -563,17 +563,17 @@ export function CoverEditor() {
           role="dialog"
           aria-modal="true"
           aria-label="保存为模板"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-zinc-950/40 px-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f1f1f]/45 px-4"
         >
-          <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-2xl">
-            <h2 className="text-lg font-black text-zinc-950">保存为模板</h2>
-            <div className="mt-3 space-y-2 text-sm font-medium leading-6 text-zinc-600">
+          <div className="w-full max-w-md rounded-xl border border-[#e6d5a8] bg-white p-6 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.18)]">
+            <h2 className="text-lg font-semibold text-[#1f1f1f]">保存为模板</h2>
+            <div className="mt-3 space-y-2 text-sm font-medium leading-6 text-[#4a4a4a]">
               <p>这个功能会把当前封面的文字、图标、背景和特效保存到浏览器里。</p>
               <p>保存后会出现在“我的模板”，下次打开这个浏览器也能继续复用。</p>
               <p>如果当前模板已经保存过，系统会提示并避免重复添加。</p>
             </div>
             {saveTemplateMessage && (
-              <p role="alert" className="mt-4 rounded-md bg-amber-50 px-3 py-2 text-sm font-bold text-amber-700">
+              <p role="alert" className="mt-4 rounded-md border border-[#e6d5a8] bg-[#fff8e0] px-3 py-2 text-sm font-semibold text-[#cc3a05]">
                 {saveTemplateMessage}
               </p>
             )}
@@ -581,14 +581,14 @@ export function CoverEditor() {
               <button
                 type="button"
                 onClick={() => setSaveTemplateDialogOpen(false)}
-                className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-sm font-bold text-zinc-600 transition hover:bg-zinc-50 hover:text-zinc-950"
+                className="rounded-md border border-[#c7c7c7] bg-white px-4 py-2 text-sm font-semibold text-[#3d3d3d] transition hover:border-[#8a8a8a] hover:bg-[#fffaeb] hover:text-[#1f1f1f]"
               >
                 取消
               </button>
               <button
                 type="button"
                 onClick={saveCurrentAsTemplate}
-                className="rounded-lg bg-zinc-950 px-4 py-2 text-sm font-bold text-white transition hover:bg-zinc-800"
+                className="rounded-md bg-[#fa520f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#cc3a05]"
               >
                 确认保存
               </button>
