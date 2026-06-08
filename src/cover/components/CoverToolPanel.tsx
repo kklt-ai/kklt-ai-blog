@@ -76,7 +76,7 @@ function TemplateThumbnail({
       role="img"
       aria-label={`${template.name}模板预览`}
       className={[
-        "mx-auto mb-2 block overflow-hidden rounded-md border border-zinc-100 bg-white bg-cover bg-center",
+        "mx-auto mb-2 block overflow-hidden rounded-md border border-[#ededed] bg-white bg-cover bg-center",
         template.backgroundClassName,
       ].join(" ")}
       style={{
@@ -96,7 +96,7 @@ function ToolNavigation({
   return (
     <nav
       aria-label="封面功能栏"
-      className="flex w-[88px] shrink-0 flex-col gap-2 border-r border-zinc-200 px-3 py-5 max-sm:w-full max-sm:flex-row max-sm:border-b max-sm:border-r-0"
+      className="flex w-[76px] shrink-0 flex-col gap-2 border-r border-[#e5e5e5] bg-[#fffaeb] px-2 py-4 max-sm:w-full max-sm:flex-row max-sm:border-b max-sm:border-r-0"
     >
       {COVER_TOOLS.map((tool) => {
         const Icon = tool.icon;
@@ -108,10 +108,10 @@ function ToolNavigation({
             aria-pressed={active}
             onClick={() => onActiveToolChange(tool.id)}
             className={[
-              "flex h-[72px] flex-col items-center justify-center gap-1 rounded-lg text-sm font-semibold transition max-sm:h-14 max-sm:flex-1",
+              "flex h-[66px] flex-col items-center justify-center gap-1 rounded-md border text-xs font-semibold transition max-sm:h-14 max-sm:flex-1",
               active
-                ? "bg-zinc-100 text-zinc-950"
-                : "bg-white text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950",
+                ? "border-[#fa520f] bg-white text-[#1f1f1f] shadow-sm"
+                : "border-transparent text-[#6a6a6a] hover:border-[#e6d5a8] hover:bg-white hover:text-[#1f1f1f]",
             ].join(" ")}
           >
             <Icon size={23} aria-hidden="true" strokeWidth={2.1} />
@@ -152,10 +152,10 @@ function TemplatePanel({
         aria-pressed={template.id === activeTemplate.id}
         onClick={() => onChooseTemplate(template.id)}
         className={[
-          "w-full rounded-md border p-2 text-center transition",
+          "w-full rounded-lg border p-2 text-center transition",
           template.id === activeTemplate.id
-            ? "border-zinc-300 bg-zinc-50 ring-1 ring-zinc-200"
-            : "border-zinc-100 bg-white hover:border-zinc-300 hover:bg-zinc-50",
+            ? "border-[#fa520f] bg-[#fffaeb] ring-1 ring-[#fa520f]/25"
+            : "border-[#ededed] bg-white hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
         ].join(" ")}
       >
         <TemplateThumbnail template={template} imageBackground={imageBackground} />
@@ -167,18 +167,18 @@ function TemplatePanel({
   return (
     <section className="h-full overflow-y-auto pr-1">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-xl font-bold">模板</h2>
-        <span className="text-sm font-semibold text-zinc-500">{templates.length} 款</span>
+        <h2 className="text-lg font-semibold text-[#1f1f1f]">模板</h2>
+        <span className="text-sm font-medium text-[#6a6a6a]">{templates.length} 款</span>
       </div>
       <div className="space-y-3">
         {customTemplates.length > 0 && (
           <div className="grid grid-cols-2 gap-3">
-            <h3 className="col-span-full text-sm font-black text-zinc-500">我的模板</h3>
+            <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">我的模板</h3>
             {customTemplates.map(renderTemplateButton)}
           </div>
         )}
         <div className="grid grid-cols-2 gap-3">
-          <h3 className="col-span-full text-sm font-black text-zinc-500">预设模板</h3>
+          <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">预设模板</h3>
           {presetTemplates.map(renderTemplateButton)}
         </div>
       </div>
@@ -189,16 +189,16 @@ function TemplatePanel({
 function TextPanel({ onAddTextLayer }: Pick<CoverToolPanelProps, "onAddTextLayer">) {
   return (
     <section className="h-full overflow-y-auto pr-1">
-      <h2 className="mb-5 text-xl font-bold">文字</h2>
+      <h2 className="mb-5 text-lg font-semibold text-[#1f1f1f]">文字</h2>
       <button
         type="button"
         onClick={onAddTextLayer}
-        className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zinc-950 px-3 py-3 font-semibold text-white transition hover:bg-zinc-800"
+        className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#1f1f1f] px-3 py-3 font-semibold text-white transition hover:bg-[#3d3d3d]"
       >
         <Plus size={18} aria-hidden="true" />
         添加文字
       </button>
-      <div className="grid grid-cols-2 gap-3 rounded-lg bg-zinc-100 p-3">
+      <div className="grid grid-cols-2 gap-3 rounded-lg border border-[#e6d5a8] bg-[#fff8e0] p-3">
         {[
           { label: "标题", sample: "H1" },
           { label: "副标题", sample: "H2" },
@@ -209,9 +209,9 @@ function TextPanel({ onAddTextLayer }: Pick<CoverToolPanelProps, "onAddTextLayer
             key={item.label}
             type="button"
             onClick={onAddTextLayer}
-            className="rounded-md bg-white px-3 py-4 text-center text-sm font-semibold text-zinc-600 transition hover:text-zinc-950"
+            className="rounded-md border border-[#ededed] bg-white px-3 py-4 text-center text-sm font-semibold text-[#6a6a6a] transition hover:border-[#e6d5a8] hover:text-[#1f1f1f]"
           >
-            <span className="mb-2 block text-2xl font-bold text-zinc-950">{item.sample}</span>
+            <span className="mb-2 block text-2xl font-bold text-[#1f1f1f]">{item.sample}</span>
             {item.label}
           </button>
         ))}
@@ -237,14 +237,14 @@ function ImagePanel({
   return (
     <section className="flex h-full min-h-0 flex-col">
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-bold">图片素材</h2>
+        <h2 className="text-lg font-semibold text-[#1f1f1f]">图片素材</h2>
         <a
           href="https://icons.lobehub.com/"
           target="_blank"
           rel="noreferrer"
           title="Logo下载网站"
           aria-label="前往 LobeHub Icons 下载 Logo"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-200 bg-zinc-50 text-zinc-600 transition hover:border-zinc-300 hover:bg-white hover:text-zinc-950"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#e5e5e5] bg-white text-[#6a6a6a] transition hover:border-[#c7c7c7] hover:bg-[#fffaeb] hover:text-[#1f1f1f]"
         >
           <ExternalLink size={18} aria-hidden="true" />
         </a>
@@ -256,7 +256,7 @@ function ImagePanel({
         value={logoSearchQuery}
         onChange={(event) => onLogoSearchQueryChange(event.target.value)}
         placeholder="搜索 Logo"
-        className="mb-4 w-full rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2 text-sm font-semibold outline-none transition focus:border-zinc-400 focus:bg-white"
+        className="mb-4 h-11 w-full rounded-md border border-[#c7c7c7] bg-white px-3 text-sm font-medium text-[#1f1f1f] outline-none transition placeholder:text-[#a8a8a8] focus:border-[#fa520f] focus:ring-2 focus:ring-[#fa520f]/15"
       />
       <div
         aria-label="Logo 素材列表"
@@ -268,11 +268,11 @@ function ImagePanel({
             type="button"
             aria-label={`添加 ${icon.name} 图标`}
             onClick={() => onAddIconLayer(icon.id)}
-            className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-sm font-semibold transition hover:border-zinc-300 hover:bg-white"
+            className="rounded-lg border border-[#ededed] bg-white p-3 text-sm font-semibold text-[#3d3d3d] transition hover:border-[#e6d5a8] hover:bg-[#fffaeb]"
           >
             <span
               className={[
-                "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-lg border border-zinc-200 text-xs",
+                "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-md border border-[#e5e5e5] text-xs",
                 icon.className,
               ].join(" ")}
             >
@@ -312,8 +312,8 @@ function BackgroundPanel({
 
   return (
     <section className="h-full overflow-y-auto pr-1">
-      <h2 className="mb-5 text-xl font-bold">背景样式</h2>
-      <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-zinc-100 p-1">
+      <h2 className="mb-5 text-lg font-semibold text-[#1f1f1f]">背景样式</h2>
+      <div className="mb-4 grid grid-cols-2 gap-2 rounded-md border border-[#e6d5a8] bg-[#fff8e0] p-1">
         {[
           { id: "image" as const, label: "图片背景" },
           { id: "color" as const, label: "颜色背景" },
@@ -324,10 +324,10 @@ function BackgroundPanel({
             aria-pressed={backgroundTabId === tab.id}
             onClick={() => onBackgroundTabChange(tab.id)}
             className={[
-              "rounded-md px-3 py-2 text-sm font-bold transition",
+              "rounded-md px-3 py-2 text-sm font-semibold transition",
               backgroundTabId === tab.id
-                ? "bg-white text-zinc-950 shadow-sm"
-                : "text-zinc-500 hover:text-zinc-950",
+                ? "bg-white text-[#1f1f1f] shadow-sm"
+                : "text-[#6a6a6a] hover:text-[#1f1f1f]",
             ].join(" ")}
           >
             {tab.label}
@@ -352,8 +352,8 @@ function BackgroundPanel({
               className={[
                 "rounded-lg border bg-white p-2 text-left transition",
                 selectedBackground.kind === "image" && selectedBackground.id === background.id
-                  ? "border-zinc-950"
-                  : "border-zinc-200 hover:border-zinc-300",
+                  ? "border-[#fa520f] ring-1 ring-[#fa520f]/25"
+                  : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
               ].join(" ")}
             >
               <img
@@ -381,8 +381,8 @@ function BackgroundPanel({
               className={[
                 "rounded-lg border bg-white p-2 text-left transition",
                 selectedBackground.kind === "color" && selectedBackground.id === template.id
-                  ? "border-zinc-950"
-                  : "border-zinc-200 hover:border-zinc-300",
+                  ? "border-[#fa520f] ring-1 ring-[#fa520f]/25"
+                  : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
               ].join(" ")}
             >
               <span
@@ -400,7 +400,7 @@ function BackgroundPanel({
 
 export function CoverToolPanel(props: CoverToolPanelProps) {
   return (
-    <aside className="flex min-h-0 border-r border-zinc-200 bg-white max-xl:min-h-[520px] max-sm:flex-col xl:h-full">
+    <aside className="flex min-h-0 border-r border-[#e5e5e5] bg-white max-xl:min-h-[520px] max-sm:flex-col xl:h-full">
       <ToolNavigation
         activeToolId={props.activeToolId}
         onActiveToolChange={props.onActiveToolChange}
