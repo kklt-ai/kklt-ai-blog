@@ -27,7 +27,12 @@ describe("CoverEditor custom templates", () => {
     const copyButton = within(previewPanel).getByRole("button", { name: "复制模板配置" });
 
     expect(within(leftPanel).queryByRole("button", { name: "保存为模板" })).not.toBeInTheDocument();
-    expect(saveButton).toHaveClass("absolute", "right-14", "top-4");
+    expect(saveButton).toHaveClass("inline-flex", "h-10", "rounded-md");
+    expect(saveButton.closest("[data-cover-preview-toolbar='true']")).toHaveClass(
+      "absolute",
+      "right-5",
+      "top-5",
+    );
     expect(copyButton).toHaveAttribute("title", "复制当前模板配置");
     expect(copyButton.textContent).toBe("");
 
