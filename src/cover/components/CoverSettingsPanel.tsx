@@ -142,13 +142,13 @@ function SpacingDragControl({
       onMouseLeave={() => setDragStart(null)}
       onKeyDown={handleKeyDown}
       className={[
-        "grid h-12 cursor-ew-resize select-none grid-cols-[1fr_auto_1fr] items-center rounded-lg bg-zinc-100 px-3 text-sm font-bold outline-none transition focus:ring-2 focus:ring-zinc-300",
-        dragging ? "bg-white shadow-sm ring-2 ring-blue-600" : "hover:bg-zinc-50",
+        "grid h-12 cursor-ew-resize select-none grid-cols-[1fr_auto_1fr] items-center rounded-md border border-[#e6d5a8] bg-[#fff8e0] px-3 text-sm font-semibold outline-none transition focus:ring-2 focus:ring-[#fa520f]/20",
+        dragging ? "bg-white shadow-sm ring-2 ring-[#fa520f]" : "hover:bg-white",
       ].join(" ")}
     >
-      <span className="justify-self-start text-zinc-500">{label}</span>
-      <span className="min-w-12 justify-self-center text-center text-zinc-950">{value}</span>
-      <span className="flex min-w-10 items-center justify-end gap-1 text-zinc-500">
+      <span className="justify-self-start text-[#6a6a6a]">{label}</span>
+      <span className="min-w-12 justify-self-center text-center text-[#1f1f1f]">{value}</span>
+      <span className="flex min-w-10 items-center justify-end gap-1 text-[#6a6a6a]">
         {dragging && (
           <>
             <ArrowLeft size={15} aria-label={`向左减少${label}`} strokeWidth={2.4} />
@@ -180,11 +180,19 @@ function TextStyleButton({
       onClick={onClick}
       className={[
         "inline-flex h-10 items-center justify-center rounded-md transition",
-        active ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-600 hover:bg-white hover:text-zinc-950",
+        active ? "bg-white text-[#1f1f1f] shadow-sm" : "text-[#6a6a6a] hover:bg-white hover:text-[#1f1f1f]",
       ].join(" ")}
     >
       <Icon size={19} aria-hidden="true" strokeWidth={2.2} />
     </button>
+  );
+}
+
+function SettingSectionLabel({ children }: { children: string }) {
+  return (
+    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">
+      {children}
+    </p>
   );
 }
 
@@ -201,123 +209,138 @@ function TextLayerSettings({
 }) {
   return (
     <div className="space-y-5">
-      <div className="grid grid-cols-[1fr_86px] gap-2">
-        <label className="block">
-          <span className="sr-only">字体</span>
-          <select
-            aria-label="字体"
-            value={layer.fontFamily}
-            onChange={(event) =>
-              patchSelectedLayer<CoverTextLayer>({
-                fontFamily: event.target.value as CoverTextLayer["fontFamily"],
-              })
-            }
-            className="h-12 w-full rounded-lg border-0 bg-zinc-100 px-3 text-sm font-bold outline-none transition focus:bg-white focus:ring-2 focus:ring-zinc-300"
-          >
-            {COVER_FONT_FAMILIES.map((font) => (
-              <option key={font.id} value={font.id}>
-                {font.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="block">
-          <span className="sr-only">字号</span>
-          <input
-            aria-label="字号"
-            type="number"
-            min={18}
-            max={180}
-            value={layer.fontSize}
-            onChange={(event) =>
-              patchSelectedLayer<CoverTextLayer>({ fontSize: Number(event.target.value) })
-            }
-            className="h-12 w-full rounded-lg border-0 bg-zinc-100 px-3 text-center text-sm font-bold outline-none transition focus:bg-white focus:ring-2 focus:ring-zinc-300"
-          />
-        </label>
+      <div>
+        <SettingSectionLabel>Typography</SettingSectionLabel>
+        <div className="grid grid-cols-[1fr_86px] gap-2">
+          <label className="block">
+            <span className="sr-only">字体</span>
+            <select
+              aria-label="字体"
+              value={layer.fontFamily}
+              onChange={(event) =>
+                patchSelectedLayer<CoverTextLayer>({
+                  fontFamily: event.target.value as CoverTextLayer["fontFamily"],
+                })
+              }
+              className="h-12 w-full rounded-md border border-[#c7c7c7] bg-white px-3 text-sm font-semibold text-[#1f1f1f] outline-none transition focus:border-[#fa520f] focus:ring-2 focus:ring-[#fa520f]/15"
+            >
+              {COVER_FONT_FAMILIES.map((font) => (
+                <option key={font.id} value={font.id}>
+                  {font.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="sr-only">字号</span>
+            <input
+              aria-label="字号"
+              type="number"
+              min={18}
+              max={180}
+              value={layer.fontSize}
+              onChange={(event) =>
+                patchSelectedLayer<CoverTextLayer>({ fontSize: Number(event.target.value) })
+              }
+              className="h-12 w-full rounded-md border border-[#c7c7c7] bg-white px-3 text-center text-sm font-semibold text-[#1f1f1f] outline-none transition focus:border-[#fa520f] focus:ring-2 focus:ring-[#fa520f]/15"
+            />
+          </label>
+        </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1">
-        <TextStyleButton
-          label="加粗"
-          icon={Bold}
-          active={layer.bold}
-          onClick={() => patchSelectedLayer<CoverTextLayer>({ bold: !layer.bold })}
-        />
-        <TextStyleButton
-          label="斜体"
-          icon={Italic}
-          active={layer.italic}
-          onClick={() => patchSelectedLayer<CoverTextLayer>({ italic: !layer.italic })}
-        />
-        <TextStyleButton
-          label="下划线"
-          icon={Underline}
-          active={layer.underline}
-          onClick={() => patchSelectedLayer<CoverTextLayer>({ underline: !layer.underline })}
-        />
-      </div>
-
-      <div className="grid grid-cols-3 gap-1 rounded-lg bg-zinc-100 p-1">
-        {[
-          { label: "左对齐", icon: AlignLeft, align: "left" as const },
-          { label: "居中", icon: AlignCenter, align: "center" as const },
-          { label: "右对齐", icon: AlignRight, align: "right" as const },
-        ].map((item) => (
+      <div>
+        <SettingSectionLabel>Style</SettingSectionLabel>
+        <div className="grid grid-cols-3 gap-1 rounded-md border border-[#e6d5a8] bg-[#fff8e0] p-1">
           <TextStyleButton
-            key={item.label}
-            label={item.label}
-            icon={item.icon}
-            active={layer.align === item.align}
-            onClick={() => patchSelectedLayer<CoverTextLayer>({ align: item.align })}
+            label="加粗"
+            icon={Bold}
+            active={layer.bold}
+            onClick={() => patchSelectedLayer<CoverTextLayer>({ bold: !layer.bold })}
           />
-        ))}
+          <TextStyleButton
+            label="斜体"
+            icon={Italic}
+            active={layer.italic}
+            onClick={() => patchSelectedLayer<CoverTextLayer>({ italic: !layer.italic })}
+          />
+          <TextStyleButton
+            label="下划线"
+            icon={Underline}
+            active={layer.underline}
+            onClick={() => patchSelectedLayer<CoverTextLayer>({ underline: !layer.underline })}
+          />
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
-        <SpacingDragControl
-          label="行间距"
-          value={layer.lineHeight}
-          min={0.8}
-          max={2}
-          step={0.01}
-          onChange={(lineHeight) => patchSelectedLayer<CoverTextLayer>({ lineHeight })}
-        />
-        <SpacingDragControl
-          label="字间距"
-          value={layer.letterSpacing}
-          min={-20}
-          max={60}
-          step={1}
-          onChange={(letterSpacing) => patchSelectedLayer<CoverTextLayer>({ letterSpacing })}
-        />
+      <div>
+        <SettingSectionLabel>Align</SettingSectionLabel>
+        <div className="grid grid-cols-3 gap-1 rounded-md border border-[#e6d5a8] bg-[#fff8e0] p-1">
+          {[
+            { label: "左对齐", icon: AlignLeft, align: "left" as const },
+            { label: "居中", icon: AlignCenter, align: "center" as const },
+            { label: "右对齐", icon: AlignRight, align: "right" as const },
+          ].map((item) => (
+            <TextStyleButton
+              key={item.label}
+              label={item.label}
+              icon={item.icon}
+              active={layer.align === item.align}
+              onClick={() => patchSelectedLayer<CoverTextLayer>({ align: item.align })}
+            />
+          ))}
+        </div>
       </div>
 
-      <label className="flex items-center justify-between gap-3 border-y border-zinc-100 py-4">
-        <span className="text-sm font-bold">文字颜色</span>
+      <div>
+        <SettingSectionLabel>Spacing</SettingSectionLabel>
+        <div className="grid grid-cols-2 gap-2">
+          <SpacingDragControl
+            label="行间距"
+            value={layer.lineHeight}
+            min={0.8}
+            max={2}
+            step={0.01}
+            onChange={(lineHeight) => patchSelectedLayer<CoverTextLayer>({ lineHeight })}
+          />
+          <SpacingDragControl
+            label="字间距"
+            value={layer.letterSpacing}
+            min={-20}
+            max={60}
+            step={1}
+            onChange={(letterSpacing) => patchSelectedLayer<CoverTextLayer>({ letterSpacing })}
+          />
+        </div>
+      </div>
+
+      <label className="flex items-center justify-between gap-3 border-y border-[#ededed] py-4">
+        <span className="text-sm font-semibold text-[#1f1f1f]">文字颜色</span>
         <input
           aria-label="文字颜色"
           type="color"
           value={layer.color}
           onChange={(event) => patchSelectedLayer<CoverTextLayer>({ color: event.target.value })}
-          className="h-11 w-16 rounded-lg border-0 bg-zinc-100 p-1"
+          className="h-11 w-16 rounded-md border border-[#e5e5e5] bg-white p-1"
         />
       </label>
 
-      <div role="group" aria-label="文字装饰" className="flex flex-wrap items-center gap-2">
-        <TextHighlightPicker
-          activeEffect={layer.highlightEffect ?? "none"}
-          onEffectChange={(highlightEffect) =>
-            patchSelectedLayer<CoverTextLayer>({ highlightEffect })
-          }
-        />
+      <div>
+        <SettingSectionLabel>Effects</SettingSectionLabel>
+        <div role="group" aria-label="文字装饰" className="flex flex-wrap items-center gap-2">
+          <TextHighlightPicker
+            activeEffect={layer.highlightEffect ?? "none"}
+            onEffectChange={(highlightEffect) =>
+              patchSelectedLayer<CoverTextLayer>({ highlightEffect })
+            }
+          />
 
-        <TextEffectPicker
-          activeCategoryId={activeEffectCategoryId}
-          activeEffect={layer.textEffect ?? "none"}
-          onCategoryChange={onActiveEffectCategoryChange}
-          onEffectChange={(textEffect) => patchSelectedLayer<CoverTextLayer>({ textEffect })}
-        />
+          <TextEffectPicker
+            activeCategoryId={activeEffectCategoryId}
+            activeEffect={layer.textEffect ?? "none"}
+            onCategoryChange={onActiveEffectCategoryChange}
+            onEffectChange={(textEffect) => patchSelectedLayer<CoverTextLayer>({ textEffect })}
+          />
+        </div>
       </div>
     </div>
   );
@@ -332,10 +355,10 @@ function IconLayerSettings({
 }) {
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-4">
+      <div className="rounded-lg border border-[#e6d5a8] bg-[#fff8e0] p-4">
         <Type size={20} aria-hidden="true" />
         <p className="mt-2 font-bold">{findBrandIcon(layer.iconId).name}</p>
-        <p className="mt-1 text-sm font-semibold text-zinc-500">可拖拽定位。</p>
+        <p className="mt-1 text-sm font-medium text-[#6a6a6a]">可拖拽定位。</p>
       </div>
       <label>
         <span className="mb-2 block text-sm font-bold">图标大小</span>
@@ -348,7 +371,7 @@ function IconLayerSettings({
           onChange={(event) =>
             patchSelectedLayer<CoverIconLayer>({ size: Number(event.target.value) })
           }
-          className="w-full accent-fuchsia-600"
+          className="w-full accent-[#fa520f]"
         />
       </label>
     </div>
@@ -364,11 +387,11 @@ export function CoverSettingsPanel({
   return (
     <aside
       aria-label="封面设置"
-      className="border-l border-zinc-200 bg-white px-5 py-5 max-xl:border-l-0 max-xl:border-t"
+      className="border-l border-[#e5e5e5] bg-white px-5 py-5 max-xl:border-l-0 max-xl:border-t"
     >
       <section aria-label="图层编辑">
         {!selectedLayer && (
-          <div className="rounded-lg bg-zinc-100 p-4 text-center text-sm font-semibold text-zinc-500">
+          <div className="rounded-lg border border-[#e6d5a8] bg-[#fff8e0] p-4 text-center text-sm font-semibold text-[#6a6a6a]">
             未选择图层
           </div>
         )}
