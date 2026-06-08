@@ -127,7 +127,7 @@ describe("CoverEditor", () => {
     );
   });
 
-  it("shows full template previews in the active platform shape", () => {
+  it("shows clean template previews in the active platform shape", () => {
     render(<CoverEditor />);
 
     const xiaohongshuTemplateButton = screen.getByRole("button", { name: /猫狗问答卡/ });
@@ -136,9 +136,15 @@ describe("CoverEditor", () => {
     });
     expect(xiaohongshuPreview).toHaveStyle({
       aspectRatio: "1242 / 1660",
+      width: "111.78px",
     });
-    expect(within(xiaohongshuPreview).getByText("这个网站的作者是谁？")).toBeInTheDocument();
-    expect(within(xiaohongshuPreview).getByText("卡卡罗特AI")).toBeInTheDocument();
+    expect(xiaohongshuPreview).toHaveClass("mx-auto");
+    expect(xiaohongshuTemplateButton).toHaveClass("text-center");
+    expect(xiaohongshuTemplateButton).not.toHaveClass("border-zinc-950");
+    expect(within(xiaohongshuPreview).queryByText("这个网站的作者是谁？")).not.toBeInTheDocument();
+    expect(within(xiaohongshuPreview).queryByText("卡卡罗特AI")).not.toBeInTheDocument();
+    expect(within(xiaohongshuTemplateButton).queryByText(/可爱网格纸背景/)).not.toBeInTheDocument();
+    expect(screen.getByText("预设模板").parentElement).toHaveClass("grid-cols-2");
 
     fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
 
@@ -148,8 +154,14 @@ describe("CoverEditor", () => {
     });
     expect(wechatPreview).toHaveStyle({
       aspectRatio: "1200 / 628",
+      width: "150px",
     });
-    expect(within(wechatPreview).getByText(/大模型时代的\s+产品判断/)).toBeInTheDocument();
+    expect(wechatPreview).toHaveClass("mx-auto");
+    expect(wechatTemplateButton).toHaveClass("text-center");
+    expect(wechatTemplateButton).not.toHaveClass("border-zinc-950");
+    expect(within(wechatPreview).queryByText(/大模型时代的\s+产品判断/)).not.toBeInTheDocument();
+    expect(within(wechatPreview).queryByRole("img", { name: "Anthropic logo" })).not.toBeInTheDocument();
+    expect(within(wechatTemplateButton).queryByText(/横版首图/)).not.toBeInTheDocument();
   });
 
   it("uses cover-shaped background thumbnails for image and color backgrounds", () => {

@@ -8,7 +8,6 @@ import {
   type CoverTemplate,
   getChannel,
 } from "@/cover/lib/cover";
-import { CoverCanvasContent } from "./CoverCanvas";
 import type {
   CoverBackgroundSelection,
   CoverBackgroundTabId,
@@ -31,7 +30,7 @@ function backgroundPreviewAspectClassName(channelId: CoverChannelId) {
 }
 
 function templatePreviewScale(channelId: CoverChannelId) {
-  return channelId === "wechat" ? 0.19 : 0.15;
+  return channelId === "wechat" ? 0.125 : 0.09;
 }
 
 type CoverToolPanelProps = {
@@ -76,30 +75,17 @@ function TemplateThumbnail({
     <span
       role="img"
       aria-label={`${template.name}模板预览`}
-      className="mb-3 block overflow-hidden rounded-md border border-zinc-200 bg-white shadow-sm"
+      className={[
+        "mx-auto mb-2 block overflow-hidden rounded-md border border-zinc-100 bg-white bg-cover bg-center",
+        template.backgroundClassName,
+      ].join(" ")}
       style={{
         width: `${channel.width * previewScale}px`,
         maxWidth: "100%",
         aspectRatio: `${channel.width} / ${channel.height}`,
+        ...backgroundStyle,
       }}
-    >
-      <span
-        className={["relative block overflow-hidden", template.backgroundClassName].join(" ")}
-        style={{
-          width: `${channel.width}px`,
-          height: `${channel.height}px`,
-          transform: `scale(${previewScale})`,
-          transformOrigin: "left top",
-          ...backgroundStyle,
-        }}
-      >
-        <CoverCanvasContent
-          layers={template.layers}
-          interactive={false}
-          showBackgroundDecorations={!imageBackground}
-        />
-      </span>
-    </span>
+    />
   );
 }
 
@@ -166,17 +152,14 @@ function TemplatePanel({
         aria-pressed={template.id === activeTemplate.id}
         onClick={() => onChooseTemplate(template.id)}
         className={[
-          "w-full rounded-lg border p-3 text-left transition",
+          "w-full rounded-md border p-2 text-center transition",
           template.id === activeTemplate.id
-            ? "border-zinc-950 bg-zinc-50"
-            : "border-zinc-200 bg-white hover:border-zinc-300",
+            ? "border-zinc-300 bg-zinc-50 ring-1 ring-zinc-200"
+            : "border-zinc-100 bg-white hover:border-zinc-300 hover:bg-zinc-50",
         ].join(" ")}
       >
         <TemplateThumbnail template={template} imageBackground={imageBackground} />
-        <span className="block font-semibold">{template.name}</span>
-        <span className="mt-1 block text-xs leading-5 text-zinc-500">
-          {template.description}
-        </span>
+        <span className="block text-sm font-semibold">{template.name}</span>
       </button>
     );
   };
@@ -189,13 +172,13 @@ function TemplatePanel({
       </div>
       <div className="space-y-3">
         {customTemplates.length > 0 && (
-          <div className="space-y-3">
-            <h3 className="text-sm font-black text-zinc-500">我的模板</h3>
+          <div className="grid grid-cols-2 gap-3">
+            <h3 className="col-span-full text-sm font-black text-zinc-500">我的模板</h3>
             {customTemplates.map(renderTemplateButton)}
           </div>
         )}
-        <div className="space-y-3">
-          <h3 className="text-sm font-black text-zinc-500">预设模板</h3>
+        <div className="grid grid-cols-2 gap-3">
+          <h3 className="col-span-full text-sm font-black text-zinc-500">预设模板</h3>
           {presetTemplates.map(renderTemplateButton)}
         </div>
       </div>
