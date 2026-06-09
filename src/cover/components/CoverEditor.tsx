@@ -23,22 +23,17 @@ import {
   createTextLayer,
   getBackgroundImagesByChannel,
   getChannel,
-  getTemplatesByChannel,
   updateLayer,
 } from "@/cover/lib/cover";
-import {
-  createCustomTemplateFromCover,
-  findDuplicateTemplate,
-  loadCustomTemplates,
-  saveCustomTemplate,
-  templateToConfigText,
-} from "@/cover/lib/customTemplates";
+import { templateToConfigText } from "@/cover/lib/customTemplates";
 import { downloadCoverNodeAsPng } from "@/cover/lib/export";
 import { snapLayerToCanvasCenter } from "@/cover/lib/snapping";
 import { CoverSettingsPanel } from "./CoverSettingsPanel";
 import { CoverToolPanel } from "./CoverToolPanel";
 import { CoverTopNav } from "./CoverTopNav";
 import { CoverExportCanvas, CoverPreviewPanel } from "./CoverPreviewPanel";
+import { SaveTemplateDialog } from "./SaveTemplateDialog";
+import { useCoverAssetLibrary } from "./useCoverAssetLibrary";
 import type {
   CoverBackgroundSelection,
   CoverBackgroundTabId,
@@ -62,9 +57,12 @@ function defaultCanvasScale(channelId: CoverChannelId) {
   return channelId === "wechat" ? 0.56 : 0.36;
 }
 
-function backgroundSelectionForTemplate(template: CoverTemplate): CoverBackgroundSelection {
+function backgroundSelectionForTemplate(
+  template: CoverTemplate,
+  backgroundImages = getBackgroundImagesByChannel(template.channel),
+): CoverBackgroundSelection {
   if (template.backgroundImageId) {
-    const image = getBackgroundImagesByChannel(template.channel).find(
+    const image = backgroundImages.find(
       (background) => background.id === template.backgroundImageId,
     );
     if (image) {
@@ -81,11 +79,6 @@ function backgroundSelectionForTemplate(template: CoverTemplate): CoverBackgroun
     id: template.id,
     className: template.backgroundClassName,
   };
-}
-
-function loadBrowserCustomTemplates() {
-  if (typeof window === "undefined") return [];
-  return loadCustomTemplates(window.localStorage);
 }
 
 function isEditableKeyboardTarget(target: EventTarget | null) {
@@ -121,19 +114,25 @@ function copyTextWithFallback(text: string) {
 
 export function CoverEditor() {
   const [channelId, setChannelId] = useState<CoverChannelId>("xiaohongshu");
-  const [customTemplates, setCustomTemplates] = useState<CoverTemplate[]>(loadBrowserCustomTemplates);
-  const presetTemplates = useMemo(() => getTemplatesByChannel(channelId), [channelId]);
-  const templates = useMemo(
-    () => [
-      ...presetTemplates,
-      ...customTemplates.filter((template) => template.channel === channelId),
-    ],
-    [channelId, customTemplates, presetTemplates],
-  );
-  const backgroundImages = useMemo(
-    () => getBackgroundImagesByChannel(channelId),
-    [channelId],
-  );
+  const {
+    templates,
+    customTemplates,
+    customTemplatesForChannel,
+    templateFavoriteTimes,
+    backgroundImages,
+    customBackgroundImagesForChannel,
+    backgroundFavoriteTimes,
+    createCurrentTemplateSnapshot: createTemplateSnapshot,
+    findDuplicateTemplate,
+    getTemplatesForChannel,
+    getBackgroundsForChannel,
+    saveTemplate,
+    removeTemplate,
+    toggleTemplateFavorite,
+    toggleBackgroundFavorite,
+    removeBackground,
+    saveUploadedBackground,
+  } = useCoverAssetLibrary(channelId);
   const [templateId, setTemplateId] = useState(templates[0].id);
   const activeTemplate = useMemo(
     () => templates.find((template) => template.id === templateId) ?? templates[0],
@@ -158,7 +157,7 @@ export function CoverEditor() {
   const [saveTemplateMessage, setSaveTemplateMessage] = useState("");
   const [templateActionMessage, setTemplateActionMessage] = useState("");
   const [selectedBackground, setSelectedBackground] = useState<CoverBackgroundSelection>(() => ({
-    ...backgroundSelectionForTemplate(activeTemplate),
+    ...backgroundSelectionForTemplate(activeTemplate, backgroundImages),
   }));
   const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
 
@@ -184,21 +183,22 @@ export function CoverEditor() {
   }, [logoSearchQuery]);
 
   const resetToTemplate = (nextChannelId: CoverChannelId, nextTemplateId: string) => {
-    const nextTemplate = [
-      ...getTemplatesByChannel(nextChannelId),
-      ...customTemplates.filter((template) => template.channel === nextChannelId),
-    ].find((template) => template.id === nextTemplateId);
+    const nextTemplate = getTemplatesForChannel(nextChannelId).find(
+      (template) => template.id === nextTemplateId,
+    );
     if (!nextTemplate) return;
     const nextLayers = cloneTemplateLayers(nextTemplate);
     setTemplateId(nextTemplate.id);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
     setActivePreviewLayerId("");
-    setSelectedBackground(backgroundSelectionForTemplate(nextTemplate));
+    setSelectedBackground(
+      backgroundSelectionForTemplate(nextTemplate, getBackgroundsForChannel(nextChannelId)),
+    );
   };
 
   const chooseChannel = (nextChannelId: CoverChannelId) => {
-    const nextTemplate = getTemplatesByChannel(nextChannelId)[0];
+    const nextTemplate = getTemplatesForChannel(nextChannelId)[0];
     setChannelId(nextChannelId);
     resetToTemplate(nextChannelId, nextTemplate.id);
     setCanvasScale(defaultCanvasScale(nextChannelId));
@@ -209,11 +209,10 @@ export function CoverEditor() {
   };
 
   const createCurrentTemplateSnapshot = () =>
-    createCustomTemplateFromCover({
+    createTemplateSnapshot({
       channelId,
       layers,
       selectedBackground,
-      templateNumber: customTemplates.length + 1,
     });
 
   const openSaveTemplateDialog = () => {
@@ -229,17 +228,41 @@ export function CoverEditor() {
       return;
     }
 
-    if (typeof window !== "undefined") {
-      saveCustomTemplate(window.localStorage, template);
-    }
-    setCustomTemplates((currentTemplates) => [...currentTemplates, template]);
+    saveTemplate(template);
     const nextLayers = cloneTemplateLayers(template);
     setTemplateId(template.id);
     setLayers(nextLayers);
     setSelectedLayerId(nextLayers[0]?.id ?? "");
     setActivePreviewLayerId("");
-    setSelectedBackground(backgroundSelectionForTemplate(template));
+    setSelectedBackground(backgroundSelectionForTemplate(template, backgroundImages));
     setSaveTemplateDialogOpen(false);
+  };
+
+  const deleteSavedTemplate = (nextTemplateId: string) => {
+    const { nextCustomTemplates, nextFavoriteTimes } = removeTemplate(nextTemplateId);
+    if (templateId !== nextTemplateId) return;
+    const nextTemplates = getTemplatesForChannel(channelId, nextCustomTemplates, nextFavoriteTimes);
+    if (nextTemplates[0]) resetToTemplate(channelId, nextTemplates[0].id);
+  };
+
+  const deleteSavedBackground = (backgroundId: string) => {
+    const { nextCustomBackgroundImages, nextFavoriteTimes } = removeBackground(backgroundId);
+    if (selectedBackground.kind !== "image" || selectedBackground.id !== backgroundId) return;
+    const nextBackground = getBackgroundsForChannel(
+      channelId,
+      nextCustomBackgroundImages,
+      nextFavoriteTimes,
+    )[0];
+    if (nextBackground) {
+      setSelectedBackground({ kind: "image", id: nextBackground.id, src: nextBackground.src });
+    }
+  };
+
+  const uploadBackground = (file: File) => {
+    saveUploadedBackground(file, (background) => {
+      setSelectedBackground({ kind: "image", id: background.id, src: background.src });
+      setBackgroundTabId("image");
+    });
   };
 
   const copyTemplateConfig = async () => {
@@ -497,14 +520,17 @@ export function CoverEditor() {
         onChooseChannel={chooseChannel}
         onExportCover={exportCover}
       />
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(280px,312px)] border-t border-[#e6d5a8]/70 max-xl:grid-cols-1">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)] border-t border-[#e6d5a8]/70 max-xl:grid-cols-1">
         <CoverToolPanel
           activeToolId={activeToolId}
           onActiveToolChange={setActiveToolId}
           templates={templates}
-          customTemplates={customTemplates.filter((template) => template.channel === channelId)}
+          customTemplates={customTemplatesForChannel}
+          templateFavoriteTimes={templateFavoriteTimes}
           activeTemplate={activeTemplate}
           onChooseTemplate={chooseTemplate}
+          onToggleTemplateFavorite={toggleTemplateFavorite}
+          onDeleteCustomTemplate={deleteSavedTemplate}
           onAddTextLayer={addTextLayer}
           logoSearchInputRef={logoSearchInputRef}
           logoSearchQuery={logoSearchQuery}
@@ -515,8 +541,13 @@ export function CoverEditor() {
           backgroundTabId={backgroundTabId}
           onBackgroundTabChange={setBackgroundTabId}
           backgroundImages={backgroundImages}
+          customBackgroundImages={customBackgroundImagesForChannel}
+          backgroundFavoriteTimes={backgroundFavoriteTimes}
           selectedBackground={selectedBackground}
           onSelectedBackgroundChange={setSelectedBackground}
+          onToggleBackgroundFavorite={toggleBackgroundFavorite}
+          onDeleteCustomBackground={deleteSavedBackground}
+          onUploadBackground={uploadBackground}
         />
         <CoverPreviewPanel
           canvasRef={canvasRef}
@@ -568,42 +599,11 @@ export function CoverEditor() {
         />
       </div>
       {saveTemplateDialogOpen && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="保存为模板"
-          className="fixed inset-0 z-50 flex items-center justify-center bg-[#1f1f1f]/45 px-4"
-        >
-          <div className="w-full max-w-md rounded-xl border border-[#e6d5a8] bg-white p-6 shadow-[0_16px_48px_-8px_rgba(0,0,0,0.18)]">
-            <h2 className="text-lg font-semibold text-[#1f1f1f]">保存为模板</h2>
-            <div className="mt-3 space-y-2 text-sm font-medium leading-6 text-[#4a4a4a]">
-              <p>这个功能会把当前封面的文字、图标、背景和特效保存到浏览器里。</p>
-              <p>保存后会出现在“我的模板”，下次打开这个浏览器也能继续复用。</p>
-              <p>如果当前模板已经保存过，系统会提示并避免重复添加。</p>
-            </div>
-            {saveTemplateMessage && (
-              <p role="alert" className="mt-4 rounded-md border border-[#e6d5a8] bg-[#fff8e0] px-3 py-2 text-sm font-semibold text-[#cc3a05]">
-                {saveTemplateMessage}
-              </p>
-            )}
-            <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setSaveTemplateDialogOpen(false)}
-                className="rounded-md border border-[#c7c7c7] bg-white px-4 py-2 text-sm font-semibold text-[#3d3d3d] transition hover:border-[#8a8a8a] hover:bg-[#fffaeb] hover:text-[#1f1f1f]"
-              >
-                取消
-              </button>
-              <button
-                type="button"
-                onClick={saveCurrentAsTemplate}
-                className="rounded-md bg-[#fa520f] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#cc3a05]"
-              >
-                确认保存
-              </button>
-            </div>
-          </div>
-        </div>
+        <SaveTemplateDialog
+          message={saveTemplateMessage}
+          onCancel={() => setSaveTemplateDialogOpen(false)}
+          onConfirm={saveCurrentAsTemplate}
+        />
       )}
     </main>
   );

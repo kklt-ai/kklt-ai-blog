@@ -1,4 +1,14 @@
-import { ExternalLink, Image as ImageIcon, LayoutTemplate, Paintbrush, Plus, Type } from "lucide-react";
+import {
+  ExternalLink,
+  Image as ImageIcon,
+  LayoutTemplate,
+  Paintbrush,
+  Plus,
+  Star,
+  Trash2,
+  Type,
+  Upload,
+} from "lucide-react";
 import type { RefObject } from "react";
 import {
   type BrandIcon,
@@ -8,6 +18,7 @@ import {
   type CoverTemplate,
   getChannel,
 } from "@/cover/lib/cover";
+import type { CustomCoverBackgroundImage, FavoriteTimes } from "@/cover/lib/coverPreferences";
 import type {
   CoverBackgroundSelection,
   CoverBackgroundTabId,
@@ -38,8 +49,11 @@ type CoverToolPanelProps = {
   onActiveToolChange: (toolId: CoverToolId) => void;
   templates: CoverTemplate[];
   customTemplates: CoverTemplate[];
+  templateFavoriteTimes: FavoriteTimes;
   activeTemplate: CoverTemplate;
   onChooseTemplate: (templateId: string) => void;
+  onToggleTemplateFavorite: (templateId: string) => void;
+  onDeleteCustomTemplate: (templateId: string) => void;
   onAddTextLayer: () => void;
   logoSearchInputRef: RefObject<HTMLInputElement>;
   logoSearchQuery: string;
@@ -50,8 +64,13 @@ type CoverToolPanelProps = {
   backgroundTabId: CoverBackgroundTabId;
   onBackgroundTabChange: (tabId: CoverBackgroundTabId) => void;
   backgroundImages: CoverBackgroundImage[];
+  customBackgroundImages: CustomCoverBackgroundImage[];
+  backgroundFavoriteTimes: FavoriteTimes;
   selectedBackground: CoverBackgroundSelection;
   onSelectedBackgroundChange: (background: CoverBackgroundSelection) => void;
+  onToggleBackgroundFavorite: (backgroundId: string) => void;
+  onDeleteCustomBackground: (backgroundId: string) => void;
+  onUploadBackground: (file: File) => void;
 };
 
 function TemplateThumbnail({
@@ -126,29 +145,44 @@ function ToolNavigation({
 function TemplatePanel({
   templates,
   customTemplates,
+  templateFavoriteTimes,
   activeTemplate,
   onChooseTemplate,
+  onToggleTemplateFavorite,
+  onDeleteCustomTemplate,
   backgroundImages,
 }: Pick<
   CoverToolPanelProps,
   | "templates"
   | "customTemplates"
+  | "templateFavoriteTimes"
   | "activeTemplate"
   | "onChooseTemplate"
+  | "onToggleTemplateFavorite"
+  | "onDeleteCustomTemplate"
   | "backgroundImages"
 >) {
+  const customTemplateIds = new Set(customTemplates.map((template) => template.id));
+  const favoriteTemplates = templates.filter((template) => templateFavoriteTimes[template.id]);
+  const regularCustomTemplates = customTemplates.filter(
+    (template) => !templateFavoriteTimes[template.id],
+  );
   const presetTemplates = templates.filter(
-    (template) => !customTemplates.some((customTemplate) => customTemplate.id === template.id),
+    (template) => !customTemplateIds.has(template.id) && !templateFavoriteTimes[template.id],
   );
   const renderTemplateButton = (template: CoverTemplate) => {
     const imageBackground = backgroundImages.find(
       (background) => background.id === template.backgroundImageId,
     );
+    const isFavorite = Boolean(templateFavoriteTimes[template.id]);
+    const isCustom = customTemplateIds.has(template.id);
 
     return (
+      <div key={template.id} className="group relative">
       <button
         key={template.id}
         type="button"
+        aria-label={`选择 ${template.name} 模板`}
         aria-pressed={template.id === activeTemplate.id}
         onClick={() => onChooseTemplate(template.id)}
         className={[
@@ -161,8 +195,43 @@ function TemplatePanel({
         <TemplateThumbnail template={template} imageBackground={imageBackground} />
         <span className="block text-sm font-semibold">{template.name}</span>
       </button>
+      <div className="absolute right-2 top-2 flex gap-1">
+        <button
+          type="button"
+          aria-label={`${isFavorite ? "取消收藏" : "收藏"} ${template.name} 模板`}
+          title={`${isFavorite ? "取消收藏" : "收藏"}模板`}
+          onClick={() => onToggleTemplateFavorite(template.id)}
+          className={[
+            "inline-flex h-8 w-8 items-center justify-center rounded-md border bg-white/95 shadow-sm transition",
+            isFavorite
+              ? "border-[#fa520f] text-[#fa520f]"
+              : "border-[#ededed] text-[#8a8a8a] opacity-0 hover:text-[#1f1f1f] group-hover:opacity-100 group-focus-within:opacity-100",
+          ].join(" ")}
+        >
+          <Star size={16} aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
+        </button>
+        {isCustom && (
+          <button
+            type="button"
+            aria-label={`删除 ${template.name} 模板`}
+            title="删除自定义模板"
+            onClick={() => onDeleteCustomTemplate(template.id)}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#ededed] bg-white/95 text-[#8a8a8a] opacity-0 shadow-sm transition hover:border-[#fca5a5] hover:text-[#dc2626] group-hover:opacity-100 group-focus-within:opacity-100"
+          >
+            <Trash2 size={15} aria-hidden="true" />
+          </button>
+        )}
+      </div>
+      </div>
     );
   };
+  const renderTemplateSection = (label: string, sectionTemplates: CoverTemplate[]) =>
+    sectionTemplates.length > 0 && (
+      <div className="grid grid-cols-2 gap-3">
+        <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">{label}</h3>
+        {sectionTemplates.map(renderTemplateButton)}
+      </div>
+    );
 
   return (
     <section className="h-full overflow-y-auto pr-1">
@@ -171,16 +240,9 @@ function TemplatePanel({
         <span className="text-sm font-medium text-[#6a6a6a]">{templates.length} 款</span>
       </div>
       <div className="space-y-3">
-        {customTemplates.length > 0 && (
-          <div className="grid grid-cols-2 gap-3">
-            <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">我的模板</h3>
-            {customTemplates.map(renderTemplateButton)}
-          </div>
-        )}
-        <div className="grid grid-cols-2 gap-3">
-          <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">预设模板</h3>
-          {presetTemplates.map(renderTemplateButton)}
-        </div>
+        {renderTemplateSection("收藏模板", favoriteTemplates)}
+        {renderTemplateSection("我的模板", regularCustomTemplates)}
+        {renderTemplateSection("预设模板", presetTemplates)}
       </div>
     </section>
   );
@@ -295,8 +357,13 @@ function BackgroundPanel({
   backgroundTabId,
   onBackgroundTabChange,
   backgroundImages,
+  customBackgroundImages,
+  backgroundFavoriteTimes,
   selectedBackground,
   onSelectedBackgroundChange,
+  onToggleBackgroundFavorite,
+  onDeleteCustomBackground,
+  onUploadBackground,
   templates,
 }: Pick<
   CoverToolPanelProps,
@@ -304,11 +371,94 @@ function BackgroundPanel({
   | "backgroundTabId"
   | "onBackgroundTabChange"
   | "backgroundImages"
+  | "customBackgroundImages"
+  | "backgroundFavoriteTimes"
   | "selectedBackground"
   | "onSelectedBackgroundChange"
+  | "onToggleBackgroundFavorite"
+  | "onDeleteCustomBackground"
+  | "onUploadBackground"
   | "templates"
 >) {
   const aspectClassName = backgroundPreviewAspectClassName(channelId);
+  const customBackgroundIds = new Set(customBackgroundImages.map((background) => background.id));
+  const favoriteBackgrounds = backgroundImages.filter(
+    (background) => backgroundFavoriteTimes[background.id],
+  );
+  const regularBackgrounds = backgroundImages.filter(
+    (background) => !backgroundFavoriteTimes[background.id],
+  );
+  const renderImageBackgroundButton = (background: CoverBackgroundImage) => {
+    const isFavorite = Boolean(backgroundFavoriteTimes[background.id]);
+    const isCustom = customBackgroundIds.has(background.id);
+
+    return (
+      <div key={background.id} className="group relative">
+        <button
+          type="button"
+          aria-label={`使用 ${background.name} 背景`}
+          aria-pressed={selectedBackground.kind === "image" && selectedBackground.id === background.id}
+          onClick={() =>
+            onSelectedBackgroundChange({
+              kind: "image",
+              id: background.id,
+              src: background.src,
+            })
+          }
+          className={[
+            "w-full rounded-lg border bg-white p-2 text-left transition",
+            selectedBackground.kind === "image" && selectedBackground.id === background.id
+              ? "border-[#fa520f] ring-1 ring-[#fa520f]/25"
+              : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
+          ].join(" ")}
+        >
+          <img
+            src={background.src}
+            alt={`${background.name}背景预览`}
+            className={["block w-full rounded-md object-cover", aspectClassName].join(" ")}
+          />
+          <span className="mt-2 block truncate text-sm font-semibold">{background.name}</span>
+        </button>
+        <div className="absolute right-2 top-2 flex gap-1">
+          <button
+            type="button"
+            aria-label={`${isFavorite ? "取消收藏" : "收藏"} ${background.name} 背景`}
+            title={`${isFavorite ? "取消收藏" : "收藏"}背景`}
+            onClick={() => onToggleBackgroundFavorite(background.id)}
+            className={[
+              "inline-flex h-8 w-8 items-center justify-center rounded-md border bg-white/95 shadow-sm transition",
+              isFavorite
+                ? "border-[#fa520f] text-[#fa520f]"
+                : "border-[#ededed] text-[#8a8a8a] opacity-0 hover:text-[#1f1f1f] group-hover:opacity-100 group-focus-within:opacity-100",
+            ].join(" ")}
+          >
+            <Star size={16} aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
+          </button>
+          {isCustom && (
+            <button
+              type="button"
+              aria-label={`删除 ${background.name} 背景`}
+              title="删除自定义背景"
+              onClick={() => onDeleteCustomBackground(background.id)}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#ededed] bg-white/95 text-[#8a8a8a] opacity-0 shadow-sm transition hover:border-[#fca5a5] hover:text-[#dc2626] group-hover:opacity-100 group-focus-within:opacity-100"
+            >
+              <Trash2 size={15} aria-hidden="true" />
+            </button>
+          )}
+        </div>
+      </div>
+    );
+  };
+  const renderBackgroundSection = (
+    label: string,
+    sectionBackgrounds: CoverBackgroundImage[],
+  ) =>
+    sectionBackgrounds.length > 0 && (
+      <>
+        <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">{label}</h3>
+        {sectionBackgrounds.map(renderImageBackgroundButton)}
+      </>
+    );
 
   return (
     <section className="h-full overflow-y-auto pr-1">
@@ -334,36 +484,27 @@ function BackgroundPanel({
           </button>
         ))}
       </div>
+      {backgroundTabId === "image" && (
+        <label className="mb-4 flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-[#c7c7c7] bg-white px-3 text-sm font-semibold text-[#3d3d3d] transition hover:border-[#fa520f] hover:bg-[#fffaeb]">
+          <Upload size={17} aria-hidden="true" />
+          上传背景图
+          <input
+            type="file"
+            accept="image/*"
+            aria-label="上传自定义背景图"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              onUploadBackground(file);
+              event.target.value = "";
+            }}
+          />
+        </label>
+      )}
       <div className="grid grid-cols-2 gap-3">
-        {backgroundTabId === "image" &&
-          backgroundImages.map((background) => (
-            <button
-              key={background.id}
-              type="button"
-              aria-label={`使用 ${background.name} 背景`}
-              aria-pressed={selectedBackground.kind === "image" && selectedBackground.id === background.id}
-              onClick={() =>
-                onSelectedBackgroundChange({
-                  kind: "image",
-                  id: background.id,
-                  src: background.src,
-                })
-              }
-              className={[
-                "rounded-lg border bg-white p-2 text-left transition",
-                selectedBackground.kind === "image" && selectedBackground.id === background.id
-                  ? "border-[#fa520f] ring-1 ring-[#fa520f]/25"
-                  : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
-              ].join(" ")}
-            >
-              <img
-                src={background.src}
-                alt={`${background.name}背景预览`}
-                className={["block w-full rounded-md object-cover", aspectClassName].join(" ")}
-              />
-              <span className="mt-2 block truncate text-sm font-semibold">{background.name}</span>
-            </button>
-          ))}
+        {backgroundTabId === "image" && renderBackgroundSection("收藏背景", favoriteBackgrounds)}
+        {backgroundTabId === "image" && renderBackgroundSection("图片背景", regularBackgrounds)}
         {backgroundTabId === "color" &&
           templates.map((template) => (
             <button

@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { downloadCoverNodeAsPng } from "@/cover/lib/export";
+import { CUSTOM_COVER_BACKGROUNDS_STORAGE_KEY } from "@/cover/lib/coverPreferences";
 import { CoverEditor } from "./CoverEditor";
 
 vi.mock("@/cover/lib/export", () => ({
@@ -28,7 +29,7 @@ describe("CoverEditor", () => {
     ]);
     expect(screen.getByRole("button", { name: /小红书/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /公众号/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /猫狗问答卡/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "选择 猫狗问答卡 模板" })).toBeInTheDocument();
     expect(screen.queryByText("画板")).not.toBeInTheDocument();
     expect(screen.queryByText("1242 × 1660 px")).not.toBeInTheDocument();
     expect(screen.getByLabelText("封面画布")).toBeInTheDocument();
@@ -104,10 +105,41 @@ describe("CoverEditor", () => {
     expect(screen.queryByRole("img", { name: "窗口卡片背景预览" })).not.toBeInTheDocument();
   });
 
+  it("uploads, favorites, applies, and deletes custom image backgrounds", async () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+    const uploadInput = screen.getByLabelText("上传自定义背景图");
+    const file = new File(["cover"], "my-cover.png", { type: "image/png" });
+
+    fireEvent.change(uploadInput, { target: { files: [file] } });
+
+    const customBackgroundButton = await screen.findByRole("button", {
+      name: "使用 my-cover.png 背景",
+    });
+    expect(localStorage.getItem(CUSTOM_COVER_BACKGROUNDS_STORAGE_KEY)).toContain("my-cover.png");
+    expect(screen.getByRole("button", { name: "收藏 my-cover.png 背景" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "删除 my-cover.png 背景" })).toBeInTheDocument();
+    expect(screen.getByLabelText("封面画布").style.backgroundImage).toContain(
+      "data:image/png;base64",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "收藏 my-cover.png 背景" }));
+    expect(screen.getByText("收藏背景")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "取消收藏 my-cover.png 背景" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "删除 my-cover.png 背景" }));
+
+    expect(customBackgroundButton).not.toBeInTheDocument();
+    expect(localStorage.getItem(CUSTOM_COVER_BACKGROUNDS_STORAGE_KEY)).not.toContain(
+      "my-cover.png",
+    );
+  });
+
   it("applies the dog and cat image background when choosing its template", () => {
     render(<CoverEditor />);
 
-    fireEvent.click(screen.getByRole("button", { name: /猫狗问答卡/ }));
+    fireEvent.click(screen.getByRole("button", { name: "选择 猫狗问答卡 模板" }));
 
     expect(screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "卡卡罗特AI 文字图层" })).toBeInTheDocument();
@@ -130,7 +162,9 @@ describe("CoverEditor", () => {
   it("shows clean template previews in the active platform shape", () => {
     render(<CoverEditor />);
 
-    const xiaohongshuTemplateButton = screen.getByRole("button", { name: /猫狗问答卡/ });
+    const xiaohongshuTemplateButton = screen.getByRole("button", {
+      name: "选择 猫狗问答卡 模板",
+    });
     const xiaohongshuPreview = within(xiaohongshuTemplateButton).getByRole("img", {
       name: "猫狗问答卡模板预览",
     });
@@ -148,7 +182,9 @@ describe("CoverEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
 
-    const wechatTemplateButton = screen.getByRole("button", { name: /公众号深度文章/ });
+    const wechatTemplateButton = screen.getByRole("button", {
+      name: "选择 公众号深度文章 模板",
+    });
     const wechatPreview = within(wechatTemplateButton).getByRole("img", {
       name: "公众号深度文章模板预览",
     });
@@ -247,7 +283,7 @@ describe("CoverEditor", () => {
     const settingsPanel = screen.getByRole("complementary", { name: "封面设置" });
 
     expect(mainLayout).toHaveClass(
-      "grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(280px,312px)]",
+      "grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)]",
     );
     expect(settingsPanel).toHaveClass("px-4", "py-4");
     expect(screen.getByText("行间距")).toHaveClass("whitespace-nowrap");
@@ -599,7 +635,7 @@ describe("CoverEditor", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
 
-    expect(screen.getByRole("button", { name: /公众号深度文章/ })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "选择 公众号深度文章 模板" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );

@@ -54,7 +54,7 @@ describe("CoverEditor custom templates", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "确认保存" }));
 
     expect(screen.getByText("我的模板")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /我的模板 1/ })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: "选择 我的模板 1 模板" })).toHaveAttribute(
       "aria-pressed",
       "true",
     );
@@ -101,7 +101,7 @@ describe("CoverEditor custom templates", () => {
     fireEvent.click(screen.getByRole("button", { name: "确认保存" }));
 
     expect(screen.getByText("这个模板已经在模板库里了，不会重复添加。")).toBeInTheDocument();
-    expect(screen.getAllByRole("button", { name: /我的模板 1/ })).toHaveLength(1);
+    expect(screen.getAllByRole("button", { name: "选择 我的模板 1 模板" })).toHaveLength(1);
     expect(localStorage.getItem(CUSTOM_COVER_TEMPLATES_STORAGE_KEY)).not.toContain("我的模板 2");
   });
 
@@ -159,8 +159,30 @@ describe("CoverEditor custom templates", () => {
     render(<CoverEditor />);
 
     expect(screen.getByText("我的模板")).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /我的模板 9/ }));
+    fireEvent.click(screen.getByRole("button", { name: "选择 我的模板 9 模板" }));
 
     expect(screen.getByRole("button", { name: "本地保存标题 文字图层" })).toBeInTheDocument();
+  });
+
+  it("favorites templates and only allows deleting custom templates", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "收藏 猫狗问答卡 模板" }));
+
+    expect(screen.getByText("收藏模板")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "取消收藏 猫狗问答卡 模板" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "删除 猫狗问答卡 模板" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "保存为模板" }));
+    fireEvent.click(screen.getByRole("button", { name: "确认保存" }));
+
+    const customTemplateButton = screen.getByRole("button", { name: "选择 我的模板 1 模板" });
+    expect(customTemplateButton).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "删除 我的模板 1 模板" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "删除 我的模板 1 模板" }));
+
+    expect(screen.queryByRole("button", { name: "选择 我的模板 1 模板" })).not.toBeInTheDocument();
+    expect(localStorage.getItem(CUSTOM_COVER_TEMPLATES_STORAGE_KEY)).not.toContain("我的模板 1");
   });
 });

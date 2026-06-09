@@ -90,6 +90,12 @@ export function saveCustomTemplate(storage: Storage, template: CoverTemplate) {
   );
 }
 
+export function deleteCustomTemplate(storage: Storage, templateId: string) {
+  const templates = loadCustomTemplates(storage).filter((template) => template.id !== templateId);
+  storage.setItem(CUSTOM_COVER_TEMPLATES_STORAGE_KEY, JSON.stringify(templates));
+  return templates;
+}
+
 export function findDuplicateTemplate(template: CoverTemplate, templates: CoverTemplate[]) {
   const currentFingerprint = templateFingerprint(template);
   return templates.find(
