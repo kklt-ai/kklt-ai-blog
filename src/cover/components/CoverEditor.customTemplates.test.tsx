@@ -1,5 +1,5 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CUSTOM_COVER_TEMPLATES_STORAGE_KEY } from "@/cover/lib/customTemplates";
 import { CoverEditor } from "./CoverEditor";
 
@@ -16,6 +16,10 @@ describe("CoverEditor custom templates", () => {
         writeText: vi.fn().mockResolvedValue(undefined),
       },
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("keeps template actions in the preview panel and confirms before saving", async () => {
@@ -64,6 +68,28 @@ describe("CoverEditor custom templates", () => {
     expect(copiedText).toContain('"name": "我的模板 1"');
     expect(copiedText).toContain('"channel": "xiaohongshu"');
     expect(copiedText).toContain('"layers"');
+  });
+
+  it("hides the template copied message after two seconds", async () => {
+    vi.useFakeTimers();
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "复制模板配置" }));
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("模板代码复制成功");
+
+    act(() => {
+      vi.advanceTimersByTime(1999);
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("模板代码复制成功");
+
+    act(() => {
+      vi.advanceTimersByTime(1);
+    });
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("does not save a duplicate template", () => {

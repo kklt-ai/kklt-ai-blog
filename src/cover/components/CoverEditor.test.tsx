@@ -240,6 +240,20 @@ describe("CoverEditor", () => {
     expect(within(exportButton).getByText("PNG")).toHaveClass("max-[420px]:hidden");
   });
 
+  it("keeps the right settings panel compact so the preview has more room", () => {
+    render(<CoverEditor />);
+
+    const mainLayout = screen.getByRole("main").querySelector(".grid.min-h-0.flex-1");
+    const settingsPanel = screen.getByRole("complementary", { name: "封面设置" });
+
+    expect(mainLayout).toHaveClass(
+      "grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(280px,312px)]",
+    );
+    expect(settingsPanel).toHaveClass("px-4", "py-4");
+    expect(screen.getByText("行间距")).toHaveClass("whitespace-nowrap");
+    expect(screen.getByText("字间距")).toHaveClass("whitespace-nowrap");
+  });
+
   it("adds and edits a text layer from the preview canvas", () => {
     render(<CoverEditor />);
 
@@ -574,7 +588,7 @@ describe("CoverEditor", () => {
     expect(previewCanvas).toHaveStyle({ transform: "scale(0.36)" });
 
     fireEvent.wheel(previewPanel, { deltaY: -100 });
-    expect(previewCanvas).toHaveStyle({ transform: "scale(0.4)" });
+    expect(previewCanvas).toHaveStyle({ transform: "scale(0.38)" });
 
     fireEvent.wheel(previewPanel, { deltaY: 100 });
     expect(previewCanvas).toHaveStyle({ transform: "scale(0.36)" });

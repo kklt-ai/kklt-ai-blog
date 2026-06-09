@@ -142,13 +142,13 @@ function SpacingDragControl({
       onMouseLeave={() => setDragStart(null)}
       onKeyDown={handleKeyDown}
       className={[
-        "grid h-12 cursor-ew-resize select-none grid-cols-[1fr_auto_1fr] items-center rounded-md border border-[#e6d5a8] bg-[#fff8e0] px-3 text-sm font-semibold outline-none transition focus:ring-2 focus:ring-[#fa520f]/20",
+        "grid h-12 cursor-ew-resize select-none grid-cols-[auto_1fr_auto] items-center gap-2 rounded-md border border-[#e6d5a8] bg-[#fff8e0] px-2 text-sm font-semibold outline-none transition focus:ring-2 focus:ring-[#fa520f]/20",
         dragging ? "bg-white shadow-sm ring-2 ring-[#fa520f]" : "hover:bg-white",
       ].join(" ")}
     >
-      <span className="justify-self-start text-[#6a6a6a]">{label}</span>
-      <span className="min-w-12 justify-self-center text-center text-[#1f1f1f]">{value}</span>
-      <span className="flex min-w-10 items-center justify-end gap-1 text-[#6a6a6a]">
+      <span className="justify-self-start whitespace-nowrap text-[#6a6a6a]">{label}</span>
+      <span className="min-w-8 justify-self-center text-center text-[#1f1f1f]">{value}</span>
+      <span className="flex min-w-0 items-center justify-end gap-1 text-[#6a6a6a]">
         {dragging && (
           <>
             <ArrowLeft size={15} aria-label={`向左减少${label}`} strokeWidth={2.4} />
@@ -387,7 +387,7 @@ export function CoverSettingsPanel({
   return (
     <aside
       aria-label="封面设置"
-      className="border-l border-[#e5e5e5] bg-white px-5 py-5 max-xl:border-l-0 max-xl:border-t"
+      className="border-l border-[#e5e5e5] bg-white px-4 py-4 max-xl:border-l-0 max-xl:border-t"
     >
       <section aria-label="图层编辑">
         {!selectedLayer && (

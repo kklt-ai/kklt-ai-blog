@@ -48,7 +48,8 @@ import type {
 } from "./coverEditorTypes";
 import type { TextEffectCategoryId } from "./textEffectOptions";
 
-const CANVAS_ZOOM_STEP = 0.04;
+const CANVAS_ZOOM_STEP = 0.02;
+const TEMPLATE_ACTION_MESSAGE_DURATION_MS = 2000;
 const MIN_CANVAS_SCALE = 0.2;
 const MAX_CANVAS_SCALE = 0.8;
 const PASTED_TEXT_LAYER_OFFSET_Y = 4;
@@ -346,6 +347,14 @@ export function CoverEditor() {
     pasteCopiedTextLayer,
   ]);
 
+  useEffect(() => {
+    if (!templateActionMessage) return;
+    const timeoutId = window.setTimeout(() => {
+      setTemplateActionMessage("");
+    }, TEMPLATE_ACTION_MESSAGE_DURATION_MS);
+    return () => window.clearTimeout(timeoutId);
+  }, [templateActionMessage]);
+
   const beginDrag = (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => {
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
@@ -488,7 +497,7 @@ export function CoverEditor() {
         onChooseChannel={chooseChannel}
         onExportCover={exportCover}
       />
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(360px,400px)] border-t border-[#e6d5a8]/70 max-xl:grid-cols-1">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(280px,312px)] border-t border-[#e6d5a8]/70 max-xl:grid-cols-1">
         <CoverToolPanel
           activeToolId={activeToolId}
           onActiveToolChange={setActiveToolId}
