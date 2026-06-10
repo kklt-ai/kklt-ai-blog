@@ -125,7 +125,8 @@ describe("CoverEditor", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "收藏 my-cover.png 背景" }));
-    expect(screen.getByText("收藏背景")).toBeInTheDocument();
+    expect(screen.queryByText("收藏背景")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "图片背景" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "取消收藏 my-cover.png 背景" })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "删除 my-cover.png 背景" }));

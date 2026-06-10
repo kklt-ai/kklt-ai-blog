@@ -169,7 +169,8 @@ describe("CoverEditor custom templates", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "收藏 猫狗问答卡 模板" }));
 
-    expect(screen.getByText("收藏模板")).toBeInTheDocument();
+    expect(screen.queryByText("收藏模板")).not.toBeInTheDocument();
+    expect(screen.getByText("预设模板")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "取消收藏 猫狗问答卡 模板" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "删除 猫狗问答卡 模板" })).not.toBeInTheDocument();
 
