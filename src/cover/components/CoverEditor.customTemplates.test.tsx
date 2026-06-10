@@ -121,7 +121,7 @@ describe("CoverEditor custom templates", () => {
     expect(document.querySelector("textarea[aria-hidden='true']")).not.toBeInTheDocument();
   });
 
-  it("loads browser-saved templates when the cover editor opens", () => {
+  it("loads browser-saved templates when the cover editor opens", async () => {
     localStorage.setItem(
       CUSTOM_COVER_TEMPLATES_STORAGE_KEY,
       JSON.stringify([
@@ -158,8 +158,13 @@ describe("CoverEditor custom templates", () => {
 
     render(<CoverEditor />);
 
-    expect(screen.getByText("我的模板")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("我的模板")).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "选择 我的模板 9 模板" }));
+    fireEvent.click(
+      within(screen.getByRole("dialog", { name: "选择模板应用方式" })).getByRole("button", {
+        name: "覆盖当前画板",
+      }),
+    );
 
     expect(screen.getByRole("button", { name: "本地保存标题 文字图层" })).toBeInTheDocument();
   });

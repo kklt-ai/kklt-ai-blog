@@ -32,8 +32,18 @@ import { CoverSettingsPanel } from "./CoverSettingsPanel";
 import { CoverToolPanel } from "./CoverToolPanel";
 import { CoverTopNav } from "./CoverTopNav";
 import { CoverExportCanvas, CoverPreviewPanel } from "./CoverPreviewPanel";
+import { CoverBoardStrip } from "./CoverBoardStrip";
 import { SaveTemplateDialog } from "./SaveTemplateDialog";
+import { TemplateApplyDialog } from "./TemplateApplyDialog";
+import { useCoverBoards } from "./useCoverBoards";
 import { useCoverAssetLibrary } from "./useCoverAssetLibrary";
+import {
+  MAX_COVER_BOARDS,
+  type CoverBoard,
+  cloneCoverBackground,
+  cloneCoverLayers,
+  createCoverBoard,
+} from "./coverBoards";
 import type {
   CoverBackgroundSelection,
   CoverBackgroundTabId,
@@ -113,7 +123,17 @@ function copyTextWithFallback(text: string) {
 }
 
 export function CoverEditor() {
-  const [channelId, setChannelId] = useState<CoverChannelId>("xiaohongshu");
+  const initialBoardStateRef = useRef<{
+    boards: CoverBoard[];
+    activeBoardId: string;
+  } | null>(null);
+  const initialBoard =
+    initialBoardStateRef.current?.boards.find(
+      (board) => board.id === initialBoardStateRef.current?.activeBoardId,
+    ) ?? initialBoardStateRef.current?.boards[0];
+  const [channelId, setChannelId] = useState<CoverChannelId>(
+    initialBoard?.channelId ?? "xiaohongshu",
+  );
   const {
     templates,
     customTemplates,
@@ -133,12 +153,25 @@ export function CoverEditor() {
     removeBackground,
     saveUploadedBackground,
   } = useCoverAssetLibrary(channelId);
-  const [templateId, setTemplateId] = useState(templates[0].id);
+  const [templateId, setTemplateId] = useState(initialBoard?.templateId ?? templates[0].id);
   const activeTemplate = useMemo(
     () => templates.find((template) => template.id === templateId) ?? templates[0],
     [templateId, templates],
   );
-  const [layers, setLayers] = useState<CoverLayer[]>(() => cloneTemplateLayers(activeTemplate));
+  const defaultBoardRef = useRef<CoverBoard | null>(null);
+  if (defaultBoardRef.current === null) {
+    defaultBoardRef.current = createCoverBoard({
+      id: "cover-board-default",
+      channelId,
+      templateId: activeTemplate.id,
+      selectedBackground: backgroundSelectionForTemplate(activeTemplate, backgroundImages),
+      layers: cloneTemplateLayers(activeTemplate),
+    });
+  }
+  const initialActiveBoard = initialBoard ?? defaultBoardRef.current;
+  const [layers, setLayers] = useState<CoverLayer[]>(() =>
+    cloneCoverLayers(initialActiveBoard.layers),
+  );
   const [selectedLayerId, setSelectedLayerId] = useState(layers[0]?.id ?? "");
   const [activePreviewLayerId, setActivePreviewLayerId] = useState("");
   const [isExporting, setIsExporting] = useState(false);
@@ -156,10 +189,10 @@ export function CoverEditor() {
   const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
   const [saveTemplateMessage, setSaveTemplateMessage] = useState("");
   const [templateActionMessage, setTemplateActionMessage] = useState("");
-  const [selectedBackground, setSelectedBackground] = useState<CoverBackgroundSelection>(() => ({
-    ...backgroundSelectionForTemplate(activeTemplate, backgroundImages),
-  }));
-  const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale("xiaohongshu"));
+  const [selectedBackground, setSelectedBackground] = useState<CoverBackgroundSelection>(() =>
+    cloneCoverBackground(initialActiveBoard.selectedBackground),
+  );
+  const [canvasScale, setCanvasScale] = useState(() => defaultCanvasScale(channelId));
 
   const canvasRef = useRef<HTMLDivElement>(null);
   const exportCanvasRef = useRef<HTMLDivElement>(null);
@@ -182,30 +215,46 @@ export function CoverEditor() {
     );
   }, [logoSearchQuery]);
 
-  const resetToTemplate = (nextChannelId: CoverChannelId, nextTemplateId: string) => {
-    const nextTemplate = getTemplatesForChannel(nextChannelId).find(
-      (template) => template.id === nextTemplateId,
-    );
-    if (!nextTemplate) return;
-    const nextLayers = cloneTemplateLayers(nextTemplate);
-    setTemplateId(nextTemplate.id);
-    setLayers(nextLayers);
-    setSelectedLayerId(nextLayers[0]?.id ?? "");
-    setActivePreviewLayerId("");
-    setSelectedBackground(
-      backgroundSelectionForTemplate(nextTemplate, getBackgroundsForChannel(nextChannelId)),
-    );
-  };
+  const {
+    boards,
+    activeBoardId,
+    boardActionMessage,
+    pendingTemplate,
+    chooseTemplate,
+    cancelPendingTemplate,
+    selectBoard,
+    addBoardFromCurrent,
+    deleteBoard,
+    createBoardFromPendingTemplate,
+    overwriteCurrentBoardWithPendingTemplate,
+    resetToTemplate,
+  } = useCoverBoards({
+    initialBoardState: initialBoardStateRef.current,
+    defaultBoard: defaultBoardRef.current,
+    channelId,
+    templateId,
+    layers,
+    selectedBackground,
+    templates,
+    getTemplatesForChannel,
+    getBackgroundsForChannel,
+    setChannelId,
+    setTemplateId,
+    setLayers,
+    setSelectedLayerId,
+    setActivePreviewLayerId,
+    setEditingLayerId,
+    setSelectedBackground,
+    setCanvasScale,
+    defaultCanvasScale,
+    backgroundSelectionForTemplate,
+  });
 
   const chooseChannel = (nextChannelId: CoverChannelId) => {
     const nextTemplate = getTemplatesForChannel(nextChannelId)[0];
     setChannelId(nextChannelId);
     resetToTemplate(nextChannelId, nextTemplate.id);
     setCanvasScale(defaultCanvasScale(nextChannelId));
-  };
-
-  const chooseTemplate = (nextTemplateId: string) => {
-    resetToTemplate(channelId, nextTemplateId);
   };
 
   const createCurrentTemplateSnapshot = () =>
@@ -581,6 +630,16 @@ export function CoverEditor() {
           onOpenSaveTemplateDialog={openSaveTemplateDialog}
           onCopyTemplateConfig={copyTemplateConfig}
           templateActionMessage={templateActionMessage}
+          boardStrip={
+            <CoverBoardStrip
+              boards={boards}
+              activeBoardId={activeBoardId}
+              message={boardActionMessage}
+              onSelectBoard={selectBoard}
+              onAddBoard={addBoardFromCurrent}
+              onDeleteBoard={deleteBoard}
+            />
+          }
         />
         <CoverSettingsPanel
           selectedLayer={selectedLayer}
@@ -603,6 +662,15 @@ export function CoverEditor() {
           message={saveTemplateMessage}
           onCancel={() => setSaveTemplateDialogOpen(false)}
           onConfirm={saveCurrentAsTemplate}
+        />
+      )}
+      {pendingTemplate && (
+        <TemplateApplyDialog
+          templateName={pendingTemplate.name}
+          canCreateBoard={boards.length < MAX_COVER_BOARDS}
+          onCreateBoard={createBoardFromPendingTemplate}
+          onOverwriteBoard={overwriteCurrentBoardWithPendingTemplate}
+          onCancel={cancelPendingTemplate}
         />
       )}
     </main>

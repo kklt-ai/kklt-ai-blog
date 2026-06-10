@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type CoverChannelId,
   type CoverTemplate,
@@ -34,32 +34,25 @@ type CreateTemplateOptions = {
   selectedBackground: CoverBackgroundSelection;
 };
 
-function loadBrowserCustomTemplates() {
-  if (typeof window === "undefined") return [];
-  return loadCustomTemplates(window.localStorage);
-}
-
-function loadBrowserCustomBackgroundImages() {
-  if (typeof window === "undefined") return [];
-  return loadCustomBackgroundImages(window.localStorage);
-}
-
-function loadBrowserFavoriteTimes(storageKey: string) {
-  if (typeof window === "undefined") return {};
-  return loadFavoriteTimes(window.localStorage, storageKey);
-}
-
 export function useCoverAssetLibrary(channelId: CoverChannelId) {
-  const [customTemplates, setCustomTemplates] = useState<CoverTemplate[]>(loadBrowserCustomTemplates);
-  const [templateFavoriteTimes, setTemplateFavoriteTimes] = useState<FavoriteTimes>(() =>
-    loadBrowserFavoriteTimes(COVER_TEMPLATE_FAVORITES_STORAGE_KEY),
-  );
-  const [customBackgroundImages, setCustomBackgroundImages] = useState(
-    loadBrowserCustomBackgroundImages,
-  );
-  const [backgroundFavoriteTimes, setBackgroundFavoriteTimes] = useState<FavoriteTimes>(() =>
-    loadBrowserFavoriteTimes(COVER_BACKGROUND_FAVORITES_STORAGE_KEY),
-  );
+  const [customTemplates, setCustomTemplates] = useState<CoverTemplate[]>([]);
+  const [templateFavoriteTimes, setTemplateFavoriteTimes] = useState<FavoriteTimes>({});
+  const [customBackgroundImages, setCustomBackgroundImages] = useState<
+    CustomCoverBackgroundImage[]
+  >([]);
+  const [backgroundFavoriteTimes, setBackgroundFavoriteTimes] = useState<FavoriteTimes>({});
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setCustomTemplates(loadCustomTemplates(window.localStorage));
+    setTemplateFavoriteTimes(
+      loadFavoriteTimes(window.localStorage, COVER_TEMPLATE_FAVORITES_STORAGE_KEY),
+    );
+    setCustomBackgroundImages(loadCustomBackgroundImages(window.localStorage));
+    setBackgroundFavoriteTimes(
+      loadFavoriteTimes(window.localStorage, COVER_BACKGROUND_FAVORITES_STORAGE_KEY),
+    );
+  }, []);
   const presetTemplates = useMemo(() => getTemplatesByChannel(channelId), [channelId]);
   const templates = useMemo(
     () =>

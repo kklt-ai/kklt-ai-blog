@@ -2,6 +2,7 @@ import { Code2, Save } from "lucide-react";
 import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
+  type ReactNode,
   type RefObject,
   type WheelEvent as ReactWheelEvent,
 } from "react";
@@ -34,6 +35,7 @@ type CoverPreviewPanelProps = {
   onOpenSaveTemplateDialog: () => void;
   onCopyTemplateConfig: () => void;
   templateActionMessage: string;
+  boardStrip?: ReactNode;
 };
 
 export function CoverPreviewPanel({
@@ -61,12 +63,13 @@ export function CoverPreviewPanel({
   onOpenSaveTemplateDialog,
   onCopyTemplateConfig,
   templateActionMessage,
+  boardStrip,
 }: CoverPreviewPanelProps) {
   return (
     <section
       aria-label="封面预览面板"
       onWheel={onWheel}
-      className="relative min-w-0 bg-[#fff8e0] p-6 max-sm:p-3"
+      className="relative flex min-w-0 flex-col gap-3 bg-[#fff8e0] p-6 max-sm:p-3"
     >
       <div
         data-cover-preview-toolbar="true"
@@ -100,7 +103,7 @@ export function CoverPreviewPanel({
           {templateActionMessage}
         </div>
       )}
-      <div className="flex min-h-[calc(100vh-48px)] items-center justify-center overflow-auto rounded-xl border border-[#e6d5a8]/70 bg-[linear-gradient(rgba(230,213,168,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(230,213,168,0.28)_1px,transparent_1px)] bg-[size:24px_24px] p-3 max-xl:min-h-[720px]">
+      <div className="flex min-h-[calc(100vh-190px)] flex-1 items-center justify-center overflow-auto rounded-xl border border-[#e6d5a8]/70 bg-[linear-gradient(rgba(230,213,168,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(230,213,168,0.28)_1px,transparent_1px)] bg-[size:24px_24px] p-3 max-xl:min-h-[720px]">
         <div
           className="relative"
           style={{
@@ -148,6 +151,7 @@ export function CoverPreviewPanel({
           </div>
         </div>
       </div>
+      {boardStrip}
     </section>
   );
 }

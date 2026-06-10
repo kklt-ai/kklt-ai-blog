@@ -673,4 +673,82 @@ describe("CoverEditor", () => {
       "top-0",
     );
   });
+
+  it("adds, switches, deletes, and limits cover boards", () => {
+    render(<CoverEditor />);
+
+    expect(screen.getByRole("button", { name: "画板 1/1" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "新增画板" }));
+    expect(screen.getByRole("button", { name: "画板 2/2" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "选择画板 1" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "选择画板 2" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "选择画板 1" }));
+    expect(screen.getByRole("button", { name: "画板 1/2" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "删除画板 2" }));
+    expect(screen.getByRole("button", { name: "画板 1/1" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "删除画板 1" })).not.toBeInTheDocument();
+
+    for (let index = 0; index < 9; index += 1) {
+      fireEvent.click(screen.getByRole("button", { name: "新增画板" }));
+    }
+    expect(screen.getByRole("button", { name: "画板 10/10" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "新增画板" }));
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "最多保留 10 个画板，请删除旧画板后再新增。",
+    );
+  });
+
+  it("persists cover boards in browser storage", async () => {
+    const firstRender = render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "新增画板" }));
+    fireEvent.click(screen.getByRole("button", { name: "文字" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加文字" }));
+
+    firstRender.unmount();
+    render(<CoverEditor />);
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "画板 2/2" })).toBeInTheDocument(),
+    );
+    expect(screen.getByRole("button", { name: "新的封面标题 文字图层" })).toBeInTheDocument();
+    expect(localStorage.getItem("xhs-cover-boards")).toContain("新的封面标题");
+  });
+
+  it("asks whether a template should create a new board or overwrite the current board", () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "文字" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加文字" }));
+
+    fireEvent.click(screen.getByRole("button", { name: "模板" }));
+    fireEvent.click(screen.getByRole("button", { name: "选择 猫狗问答卡 模板" }));
+
+    const dialog = screen.getByRole("dialog", { name: "选择模板应用方式" });
+    expect(within(dialog).getByRole("button", { name: "新增画板使用模板" })).toBeInTheDocument();
+    expect(within(dialog).getByRole("button", { name: "覆盖当前画板" })).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "新增画板使用模板" }));
+    expect(screen.getByRole("button", { name: "画板 2/2" })).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "选择模板应用方式" })).not.toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText("封面画布")).queryByRole("button", {
+        name: "新的封面标题 文字图层",
+      }),
+    ).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "选择画板 1" }));
+    expect(
+      within(screen.getByLabelText("封面画布")).getByRole("button", {
+        name: "新的封面标题 文字图层",
+      }),
+    ).toBeInTheDocument();
+  });
 });
