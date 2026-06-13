@@ -239,15 +239,19 @@ describe("CoverEditor", () => {
     render(<CoverEditor />);
 
     const navbar = screen.getByRole("navigation", { name: "封面顶部导航" });
+    const mainLayout = screen.getByRole("main").querySelector(".grid.min-h-0.flex-1");
     const settingsPanel = screen.getByRole("complementary", { name: "封面设置" });
     const platformSwitch = within(navbar).getByRole("group", { name: "平台切换" });
+    const mdLink = within(navbar).getByRole("link", { name: "MD 申请卡片" });
     const exportButton = within(navbar).getByRole("button", { name: "导出 PNG" });
 
     expect(within(navbar).getByText("封面设计")).toBeInTheDocument();
-    expect(within(navbar).getByRole("link", { name: "MD 申请卡片" })).toHaveAttribute(
-      "href",
-      "/",
-    );
+    expect(navbar).toHaveClass("min-h-[48px]", "py-1.5");
+    expect(platformSwitch).toHaveClass("min-h-8", "w-[204px]");
+    expect(mdLink).toHaveAttribute("href", "/");
+    expect(mdLink).toHaveClass("h-8");
+    expect(exportButton).toHaveClass("h-8");
+    expect(mainLayout).not.toHaveClass("border-t");
     expect(within(platformSwitch).getByRole("button", { name: "小红书" })).toHaveAttribute(
       "aria-pressed",
       "true",

@@ -69,7 +69,7 @@ export function CoverPreviewPanel({
     <section
       aria-label="封面预览面板"
       onWheel={onWheel}
-      className="relative flex min-w-0 flex-col gap-3 bg-[#fff8e0] p-6 max-sm:p-3"
+      className="relative flex min-h-0 min-w-0 flex-col gap-2 overflow-hidden bg-[#fff8e0] px-4 py-3 max-sm:p-2"
     >
       <div
         data-cover-preview-toolbar="true"
@@ -103,7 +103,10 @@ export function CoverPreviewPanel({
           {templateActionMessage}
         </div>
       )}
-      <div className="flex min-h-[calc(100vh-190px)] flex-1 items-center justify-center overflow-auto rounded-xl border border-[#e6d5a8]/70 bg-[linear-gradient(rgba(230,213,168,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(230,213,168,0.28)_1px,transparent_1px)] bg-[size:24px_24px] p-3 max-xl:min-h-[720px]">
+      <div
+        data-cover-preview-surface="true"
+        className="flex min-h-0 flex-1 items-center justify-center overflow-auto rounded-xl border border-[#e6d5a8]/70 bg-[linear-gradient(rgba(230,213,168,0.28)_1px,transparent_1px),linear-gradient(90deg,rgba(230,213,168,0.28)_1px,transparent_1px)] bg-[size:24px_24px] p-2 max-xl:min-h-[620px] max-sm:min-h-[460px]"
+      >
         <div
           className="relative"
           style={{
@@ -151,7 +154,7 @@ export function CoverPreviewPanel({
           </div>
         </div>
       </div>
-      {boardStrip}
+      {boardStrip && <div className="mt-auto shrink-0">{boardStrip}</div>}
     </section>
   );
 }

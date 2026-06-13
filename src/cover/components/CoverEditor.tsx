@@ -569,7 +569,7 @@ export function CoverEditor() {
         onChooseChannel={chooseChannel}
         onExportCover={exportCover}
       />
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)] border-t border-[#e6d5a8]/70 max-xl:grid-cols-1">
+      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)] max-xl:grid-cols-1">
         <CoverToolPanel
           activeToolId={activeToolId}
           onActiveToolChange={setActiveToolId}
