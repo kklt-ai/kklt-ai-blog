@@ -4,6 +4,7 @@
 @import url("https://fontsapi.zeoseven.com/61/main/result.css");
 @import url("https://fontsapi.zeoseven.com/495/main/result.css");
 @import url("https://fontsapi.zeoseven.com/942/main/result.css");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500&family=Questrial&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -43,4 +44,3 @@ button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
 }
-

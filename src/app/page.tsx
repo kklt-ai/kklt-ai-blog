@@ -1,5 +1,5 @@
-import { MarkdownImageApp } from "@/md-image/MarkdownImageApp";
+import { MimoCodeHome } from "@/mimo-code/MimoCodeHome";
 
 export default function Home() {
-  return <MarkdownImageApp />;
+  return <MimoCodeHome />;
 }
