@@ -1,5 +1,5 @@
-import { MimoCodeHome } from "@/mimo-code/MimoCodeHome";
+import { HomePage } from "@/home/HomePage";
 
 export default function Home() {
-  return <MimoCodeHome />;
+  return <HomePage />;
 }
