@@ -10,7 +10,13 @@ export type DragState = {
   layerHeight: number;
 };
 
-export type ResizeHandleCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+export type ResizeHandleCorner =
+  | "top-left"
+  | "top-right"
+  | "left"
+  | "right"
+  | "bottom-left"
+  | "bottom-right";
 
 export type ResizeState = {
   layerId: string;
@@ -19,6 +25,7 @@ export type ResizeState = {
   startClientX: number;
   startClientY: number;
   startX: number;
+  startY: number;
   startWidth: number;
   startFontSize?: number;
 };

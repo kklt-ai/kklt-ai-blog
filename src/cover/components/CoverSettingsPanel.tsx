@@ -360,7 +360,7 @@ function IconLayerSettings({
       <div className="rounded-lg border border-[#979696]/35 bg-[#f3f0ef] p-4">
         <Type size={20} aria-hidden="true" />
         <p className="mt-2 font-bold">{findBrandIcon(layer.iconId).name}</p>
-        <p className="mt-1 text-sm font-medium text-[#504f49]">可拖拽定位。</p>
+        <p className="mt-1 text-sm font-medium text-[#504f49]">可拖拽定位和边角缩放。</p>
       </div>
       <label>
         <span className="mb-2 block text-sm font-bold">图标大小</span>
@@ -392,7 +392,7 @@ function ImageLayerSettings({
       <div className="rounded-lg border border-[#979696]/35 bg-[#f3f0ef] p-4">
         <ImageIcon size={20} aria-hidden="true" />
         <p className="mt-2 break-all font-bold">{layer.alt}</p>
-        <p className="mt-1 text-sm font-medium text-[#504f49]">可拖拽定位和四角缩放。</p>
+        <p className="mt-1 text-sm font-medium text-[#504f49]">可拖拽定位和边角缩放。</p>
       </div>
       <label>
         <span className="mb-2 block text-sm font-bold">图片宽度</span>

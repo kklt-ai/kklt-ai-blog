@@ -32,6 +32,8 @@ function textHighlightStyle(layer: CoverTextLayer): CSSProperties {
   return findTextHighlight(layer.highlightEffect).style;
 }
 
+type ResizableCoverLayer = CoverTextLayer | CoverIconLayer | CoverImageLayer;
+
 function LayerDeleteButton({
   label,
   selected,
@@ -70,14 +72,16 @@ const RESIZE_HANDLES: Array<{
 }> = [
   { corner: "top-left", label: "左上角", className: "-left-2 -top-2 cursor-nwse-resize" },
   { corner: "top-right", label: "右上角", className: "-right-2 -top-2 cursor-nesw-resize" },
+  { corner: "left", label: "左侧", className: "-left-2 top-1/2 -translate-y-1/2 cursor-ew-resize" },
+  { corner: "right", label: "右侧", className: "-right-2 top-1/2 -translate-y-1/2 cursor-ew-resize" },
   { corner: "bottom-left", label: "左下角", className: "-bottom-2 -left-2 cursor-nesw-resize" },
   { corner: "bottom-right", label: "右下角", className: "-bottom-2 -right-2 cursor-nwse-resize" },
 ];
 
-function layerResizeLabel(layer: CoverTextLayer | CoverImageLayer) {
-  return layer.type === "text"
-    ? `${layer.text.replace(/\s+/g, " ")} 文字图层`
-    : `${layer.alt} 图片图层`;
+function layerResizeLabel(layer: ResizableCoverLayer) {
+  if (layer.type === "text") return `${layer.text.replace(/\s+/g, " ")} 文字图层`;
+  if (layer.type === "icon") return `${findBrandIcon(layer.iconId).name} 图标图层`;
+  return `${layer.alt} 图片图层`;
 }
 
 function LayerResizeHandles({
@@ -85,7 +89,7 @@ function LayerResizeHandles({
   selected,
   onResizeStart,
 }: {
-  layer: CoverTextLayer | CoverImageLayer;
+  layer: ResizableCoverLayer;
   selected: boolean;
   onResizeStart?: (
     event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
@@ -321,6 +325,7 @@ function IconLayerView({
   onSelect,
   onDragStart,
   onDragMove,
+  onResizeStart,
   onDelete,
   interactive = true,
 }: {
@@ -329,6 +334,11 @@ function IconLayerView({
   onSelect?: () => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
   onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onResizeStart?: (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => void;
   onDelete?: () => void;
   interactive?: boolean;
 }) {
@@ -387,6 +397,7 @@ function IconLayerView({
         selected={selected}
         onDelete={onDelete}
       />
+      <LayerResizeHandles layer={layer} selected={selected} onResizeStart={onResizeStart} />
     </div>
   );
 }
@@ -454,6 +465,7 @@ export function CoverCanvasContent({
             onSelect={() => onSelectLayer?.(layer.id)}
             onDragStart={onDragStart}
             onDragMove={onDragMove}
+            onResizeStart={onResizeStart}
             onDelete={() => onDeleteLayer?.(layer.id)}
             interactive={interactive}
           />

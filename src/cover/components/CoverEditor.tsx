@@ -16,6 +16,7 @@ import {
   BRAND_ICONS,
   type BrandIconId,
   type CoverChannelId,
+  type CoverIconLayer,
   type CoverLayer,
   type CoverTemplate,
   type CoverTextLayer,
@@ -62,8 +63,12 @@ const TEMPLATE_ACTION_MESSAGE_DURATION_MS = 2000;
 const MIN_CANVAS_SCALE = 0.2;
 const MAX_CANVAS_SCALE = 0.8;
 const PASTED_TEXT_LAYER_OFFSET_Y = 4;
+const MIN_TEXT_LAYER_WIDTH = 16;
+const MAX_TEXT_LAYER_WIDTH = 96;
 const MIN_IMAGE_LAYER_WIDTH = 8;
 const MAX_IMAGE_LAYER_WIDTH = 96;
+const MIN_ICON_LAYER_SIZE = 6;
+const MAX_ICON_LAYER_SIZE = 24;
 const MIN_TEXT_LAYER_FONT_SIZE = 18;
 const MAX_TEXT_LAYER_FONT_SIZE = 220;
 const TEXT_RESIZE_PIXELS_PER_POINT = 4;
@@ -120,6 +125,18 @@ function getPointerCoordinates(
       typeof coordinate === "number" && Number.isFinite(coordinate),
   );
   return x === undefined || y === undefined ? null : { x, y };
+}
+
+function isLeftResizeHandle(corner: ResizeHandleCorner) {
+  return corner === "left" || corner.endsWith("left");
+}
+
+function isRightResizeHandle(corner: ResizeHandleCorner) {
+  return corner === "right" || corner.endsWith("right");
+}
+
+function isSideResizeHandle(corner: ResizeHandleCorner) {
+  return corner === "left" || corner === "right";
 }
 
 function copyTextWithFallback(text: string) {
@@ -513,7 +530,6 @@ export function CoverEditor() {
     layer: CoverLayer,
     corner: ResizeHandleCorner,
   ) => {
-    if (layer.type === "icon") return;
     const pointer = getPointerCoordinates(event);
     if (!pointer) return;
     event.preventDefault();
@@ -532,7 +548,8 @@ export function CoverEditor() {
       startClientX: pointer.x,
       startClientY: pointer.y,
       startX: layer.x,
-      startWidth: layer.type === "text" ? layer.width : layer.width,
+      startY: layer.y,
+      startWidth: layer.type === "icon" ? layer.size : layer.width,
       startFontSize: layer.type === "text" ? layer.fontSize : undefined,
     });
   };
@@ -572,12 +589,34 @@ export function CoverEditor() {
 
       const deltaX = pointer.x - resizeState.startClientX;
       const deltaY = pointer.y - resizeState.startClientY;
-      const growsRight = resizeState.corner.endsWith("right");
+      const growsLeft = isLeftResizeHandle(resizeState.corner);
+      const growsRight = isRightResizeHandle(resizeState.corner);
       const growsDown = resizeState.corner.startsWith("bottom");
-      const horizontalGrowth = growsRight ? deltaX : -deltaX;
+      const horizontalGrowth = growsRight ? deltaX : growsLeft ? -deltaX : 0;
       const verticalGrowth = growsDown ? deltaY : -deltaY;
 
       if (resizeState.layerType === "text") {
+        if (isSideResizeHandle(resizeState.corner)) {
+          const growthPercent = (horizontalGrowth / rect.width) * 100;
+          const width = Number(
+            clamp(
+              resizeState.startWidth + growthPercent,
+              MIN_TEXT_LAYER_WIDTH,
+              MAX_TEXT_LAYER_WIDTH,
+            ).toFixed(2),
+          );
+          const x = growsRight
+            ? resizeState.startX
+            : Number((resizeState.startX + resizeState.startWidth - width).toFixed(2));
+          setLayers((currentLayers) =>
+            updateLayer<CoverTextLayer>(currentLayers, resizeState.layerId, {
+              x: clamp(x, 0, 100 - width),
+              width,
+            }),
+          );
+          return;
+        }
+
         const startFontSize = resizeState.startFontSize ?? MIN_TEXT_LAYER_FONT_SIZE;
         const fontSize = Math.round(
           clamp(
@@ -589,6 +628,33 @@ export function CoverEditor() {
         );
         setLayers((currentLayers) =>
           updateLayer<CoverTextLayer>(currentLayers, resizeState.layerId, { fontSize }),
+        );
+        return;
+      }
+
+      if (resizeState.layerType === "icon") {
+        const growthPixels = isSideResizeHandle(resizeState.corner)
+          ? horizontalGrowth
+          : Math.max(horizontalGrowth, verticalGrowth);
+        const size = Number(
+          clamp(
+            resizeState.startWidth + (growthPixels / rect.width) * 100,
+            MIN_ICON_LAYER_SIZE,
+            MAX_ICON_LAYER_SIZE,
+          ).toFixed(2),
+        );
+        const x = growsRight
+          ? resizeState.startX
+          : Number((resizeState.startX + resizeState.startWidth - size).toFixed(2));
+        const y = growsDown || isSideResizeHandle(resizeState.corner)
+          ? resizeState.startY
+          : Number((resizeState.startY + resizeState.startWidth - size).toFixed(2));
+        setLayers((currentLayers) =>
+          updateLayer<CoverIconLayer>(currentLayers, resizeState.layerId, {
+            x: clamp(x, 0, 100 - size),
+            y: clamp(y, 0, 100 - size),
+            size,
+          }),
         );
         return;
       }

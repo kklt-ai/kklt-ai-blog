@@ -38,6 +38,15 @@ describe("cover editor model", () => {
         }),
       ]),
     );
+    expect(wechatImages).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          id: "wechat-cat-and-dog",
+          name: "公众号猫狗横版",
+          src: "/cover/template/wechat/CatAndDog.png",
+        }),
+      ]),
+    );
   });
 
   it("includes a dog and cat Xiaohongshu Q&A cover template", () => {

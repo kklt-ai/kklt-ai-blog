@@ -788,6 +788,85 @@ describe("CoverEditor", () => {
     });
   });
 
+  it("resizes text, icons, and images from selected layer side handles", async () => {
+    mockUploadedImageReader();
+    render(<CoverEditor />);
+
+    const canvas = screen.getByLabelText("封面画布");
+    vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({
+      width: 1242,
+      height: 1660,
+      left: 0,
+      top: 0,
+      right: 1242,
+      bottom: 1660,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+
+    const textLayer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
+    fireEvent.click(textLayer);
+    const initialTextWidth = parseFloat(textLayer.parentElement?.style.width ?? "0");
+    const textSideHandle = screen.getByRole("button", {
+      name: "右侧调整 这个网站的作者是谁？ 文字图层大小",
+    });
+
+    fireEvent.mouseDown(textSideHandle, { clientX: 100, clientY: 100, pageX: 100, pageY: 100 });
+    fireEvent.mouseMove(canvas, { clientX: 260, clientY: 100, pageX: 260, pageY: 100 });
+    fireEvent.mouseUp(canvas);
+
+    await waitFor(() => {
+      const resizedTextLayer = screen.getByRole("button", {
+        name: "这个网站的作者是谁？ 文字图层",
+      });
+      expect(parseFloat(resizedTextLayer.parentElement?.style.width ?? "0")).toBeGreaterThan(
+        initialTextWidth,
+      );
+    });
+
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+    fireEvent.click(screen.getByRole("button", { name: "添加 OpenAI 图标" }));
+
+    const iconLayer = screen.getByRole("button", { name: "OpenAI 图标图层" });
+    const initialIconSize = parseFloat(iconLayer.parentElement?.style.width ?? "0");
+    const iconSideHandle = screen.getByRole("button", {
+      name: "右侧调整 OpenAI 图标图层大小",
+    });
+
+    fireEvent.mouseDown(iconSideHandle, { clientX: 100, clientY: 100, pageX: 100, pageY: 100 });
+    fireEvent.mouseMove(canvas, { clientX: 260, clientY: 100, pageX: 260, pageY: 100 });
+    fireEvent.mouseUp(canvas);
+
+    await waitFor(() => {
+      const resizedIconLayer = screen.getByRole("button", { name: "OpenAI 图标图层" });
+      expect(parseFloat(resizedIconLayer.parentElement?.style.width ?? "0")).toBeGreaterThan(
+        initialIconSize,
+      );
+    });
+
+    fireEvent.change(screen.getByLabelText("上传图片素材"), {
+      target: { files: [new File(["image"], "my-cover.png", { type: "image/png" })] },
+    });
+
+    const imageLayer = await screen.findByRole("button", { name: "my-cover.png 图片图层" });
+    const initialImageWidth = parseFloat(imageLayer.parentElement?.style.width ?? "0");
+    const imageSideHandle = screen.getByRole("button", {
+      name: "右侧调整 my-cover.png 图片图层大小",
+    });
+
+    fireEvent.mouseDown(imageSideHandle, { clientX: 100, clientY: 100, pageX: 100, pageY: 100 });
+    fireEvent.mouseMove(canvas, { clientX: 260, clientY: 100, pageX: 260, pageY: 100 });
+    fireEvent.mouseUp(canvas);
+
+    await waitFor(() => {
+      const resizedImageLayer = screen.getByRole("button", { name: "my-cover.png 图片图层" });
+      expect(parseFloat(resizedImageLayer.parentElement?.style.width ?? "0")).toBeGreaterThan(
+        initialImageWidth,
+      );
+    });
+  });
+
   it("switches to WeChat templates", () => {
     render(<CoverEditor />);
 
