@@ -46,6 +46,7 @@ function templatePreviewScale(channelId: CoverChannelId) {
 
 type CoverToolPanelProps = {
   activeToolId: CoverToolId;
+  expanded: boolean;
   onActiveToolChange: (toolId: CoverToolId) => void;
   templates: CoverTemplate[];
   customTemplates: CoverTemplate[];
@@ -95,7 +96,7 @@ function TemplateThumbnail({
       role="img"
       aria-label={`${template.name}模板预览`}
       className={[
-        "mx-auto mb-2 block overflow-hidden rounded-md border border-[#ededed] bg-white bg-cover bg-center",
+        "mx-auto mb-2 block overflow-hidden rounded-md border border-[#f3f0ef] bg-white bg-cover bg-center",
         template.backgroundClassName,
       ].join(" ")}
       style={{
@@ -110,27 +111,30 @@ function TemplateThumbnail({
 
 function ToolNavigation({
   activeToolId,
+  expanded,
   onActiveToolChange,
-}: Pick<CoverToolPanelProps, "activeToolId" | "onActiveToolChange">) {
+}: Pick<CoverToolPanelProps, "activeToolId" | "expanded" | "onActiveToolChange">) {
   return (
     <nav
       aria-label="封面功能栏"
-      className="flex w-[76px] shrink-0 flex-col gap-2 border-r border-[#e5e5e5] bg-[#fffaeb] px-2 py-4 max-sm:w-full max-sm:flex-row max-sm:border-b max-sm:border-r-0"
+      className="flex w-[76px] shrink-0 flex-col gap-2 border-r border-[#f3f0ef] bg-[#f3f0ef] px-2 py-4 max-sm:w-full max-sm:flex-row max-sm:border-b max-sm:border-r-0"
     >
       {COVER_TOOLS.map((tool) => {
         const Icon = tool.icon;
         const active = tool.id === activeToolId;
+        const expandedTool = active && expanded;
         return (
           <button
             key={tool.id}
             type="button"
             aria-pressed={active}
+            aria-expanded={expandedTool}
             onClick={() => onActiveToolChange(tool.id)}
             className={[
               "flex h-[66px] flex-col items-center justify-center gap-1 rounded-md border text-xs font-semibold transition max-sm:h-14 max-sm:flex-1",
               active
-                ? "border-[#fa520f] bg-white text-[#1f1f1f] shadow-sm"
-                : "border-transparent text-[#6a6a6a] hover:border-[#e6d5a8] hover:bg-white hover:text-[#1f1f1f]",
+                ? "border-[#26251e] bg-[#fcfaf8] text-[#26251e] shadow-sm"
+                : "border-transparent text-[#504f49] hover:border-[#979696]/45 hover:bg-white/80 hover:text-[#26251e]",
             ].join(" ")}
           >
             <Icon size={23} aria-hidden="true" strokeWidth={2.1} />
@@ -182,8 +186,8 @@ function TemplatePanel({
           className={[
             "w-full rounded-lg border p-2 text-center transition",
             template.id === activeTemplate.id
-              ? "border-[#fa520f] bg-[#fffaeb] ring-1 ring-[#fa520f]/25"
-              : "border-[#ededed] bg-white hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
+              ? "border-[#26251e] bg-[#f6f1ea] ring-1 ring-black/10"
+              : "border-[#f3f0ef] bg-white hover:border-[#979696]/45 hover:bg-[#f6f1ea]",
           ].join(" ")}
         >
           <TemplateThumbnail template={template} imageBackground={imageBackground} />
@@ -198,8 +202,8 @@ function TemplatePanel({
             className={[
               "inline-flex h-8 w-8 items-center justify-center rounded-md border bg-white/95 shadow-sm transition",
               isFavorite
-                ? "border-[#fa520f] text-[#fa520f]"
-                : "border-[#ededed] text-[#8a8a8a] opacity-0 hover:text-[#1f1f1f] group-hover:opacity-100 group-focus-within:opacity-100",
+                ? "border-[#26251e] text-[#26251e]"
+                : "border-[#f3f0ef] text-[#979696] opacity-0 hover:text-[#26251e] group-hover:opacity-100 group-focus-within:opacity-100",
             ].join(" ")}
           >
             <Star size={16} aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
@@ -210,7 +214,7 @@ function TemplatePanel({
               aria-label={`删除 ${template.name} 模板`}
               title="删除自定义模板"
               onClick={() => onDeleteCustomTemplate(template.id)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#ededed] bg-white/95 text-[#8a8a8a] opacity-0 shadow-sm transition hover:border-[#fca5a5] hover:text-[#dc2626] group-hover:opacity-100 group-focus-within:opacity-100"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#f3f0ef] bg-white/95 text-[#979696] opacity-0 shadow-sm transition hover:border-[#fca5a5] hover:text-[#dc2626] group-hover:opacity-100 group-focus-within:opacity-100"
             >
               <Trash2 size={15} aria-hidden="true" />
             </button>
@@ -222,7 +226,7 @@ function TemplatePanel({
   const renderTemplateSection = (label: string, sectionTemplates: CoverTemplate[]) =>
     sectionTemplates.length > 0 && (
       <div className="grid grid-cols-2 gap-3">
-        <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">{label}</h3>
+        <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#504f49]">{label}</h3>
         {sectionTemplates.map(renderTemplateButton)}
       </div>
     );
@@ -230,8 +234,8 @@ function TemplatePanel({
   return (
     <section className="h-full overflow-y-auto pr-1">
       <div className="mb-5 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-[#1f1f1f]">模板</h2>
-        <span className="text-sm font-medium text-[#6a6a6a]">{templates.length} 款</span>
+        <h2 className="text-lg font-semibold text-[#26251e]">模板</h2>
+        <span className="text-sm font-medium text-[#504f49]">{templates.length} 款</span>
       </div>
       <div className="space-y-3">
         {renderTemplateSection("我的模板", customTemplateItems)}
@@ -244,16 +248,16 @@ function TemplatePanel({
 function TextPanel({ onAddTextLayer }: Pick<CoverToolPanelProps, "onAddTextLayer">) {
   return (
     <section className="h-full overflow-y-auto pr-1">
-      <h2 className="mb-5 text-lg font-semibold text-[#1f1f1f]">文字</h2>
+      <h2 className="mb-5 text-lg font-semibold text-[#26251e]">文字</h2>
       <button
         type="button"
         onClick={onAddTextLayer}
-        className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#1f1f1f] px-3 py-3 font-semibold text-white transition hover:bg-[#3d3d3d]"
+        className="mb-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-[#26251e] px-3 py-3 font-semibold text-[#fafafa] transition hover:bg-[#3a3933]"
       >
         <Plus size={18} aria-hidden="true" />
         添加文字
       </button>
-      <div className="grid grid-cols-2 gap-3 rounded-lg border border-[#e6d5a8] bg-[#fff8e0] p-3">
+      <div className="grid grid-cols-2 gap-3 rounded-lg border border-[#979696]/35 bg-[#f3f0ef] p-3">
         {[
           { label: "标题", sample: "H1" },
           { label: "副标题", sample: "H2" },
@@ -264,9 +268,9 @@ function TextPanel({ onAddTextLayer }: Pick<CoverToolPanelProps, "onAddTextLayer
             key={item.label}
             type="button"
             onClick={onAddTextLayer}
-            className="rounded-md border border-[#ededed] bg-white px-3 py-4 text-center text-sm font-semibold text-[#6a6a6a] transition hover:border-[#e6d5a8] hover:text-[#1f1f1f]"
+            className="rounded-md border border-[#f3f0ef] bg-white px-3 py-4 text-center text-sm font-semibold text-[#504f49] transition hover:border-[#979696]/45 hover:text-[#26251e]"
           >
-            <span className="mb-2 block text-2xl font-bold text-[#1f1f1f]">{item.sample}</span>
+            <span className="mb-2 block text-2xl font-bold text-[#26251e]">{item.sample}</span>
             {item.label}
           </button>
         ))}
@@ -292,14 +296,14 @@ function ImagePanel({
   return (
     <section className="flex h-full min-h-0 flex-col">
       <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="text-lg font-semibold text-[#1f1f1f]">图片素材</h2>
+        <h2 className="text-lg font-semibold text-[#26251e]">图片素材</h2>
         <a
           href="https://icons.lobehub.com/"
           target="_blank"
           rel="noreferrer"
           title="Logo下载网站"
           aria-label="前往 LobeHub Icons 下载 Logo"
-          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#e5e5e5] bg-white text-[#6a6a6a] transition hover:border-[#c7c7c7] hover:bg-[#fffaeb] hover:text-[#1f1f1f]"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-[#f3f0ef] bg-white text-[#504f49] transition hover:border-[#979696]/45 hover:bg-[#f6f1ea] hover:text-[#26251e]"
         >
           <ExternalLink size={18} aria-hidden="true" />
         </a>
@@ -311,7 +315,7 @@ function ImagePanel({
         value={logoSearchQuery}
         onChange={(event) => onLogoSearchQueryChange(event.target.value)}
         placeholder="搜索 Logo"
-        className="mb-4 h-11 w-full rounded-md border border-[#c7c7c7] bg-white px-3 text-sm font-medium text-[#1f1f1f] outline-none transition placeholder:text-[#a8a8a8] focus:border-[#fa520f] focus:ring-2 focus:ring-[#fa520f]/15"
+        className="mb-4 h-11 w-full rounded-md border border-[#979696]/55 bg-white px-3 text-sm font-medium text-[#26251e] outline-none transition placeholder:text-[#979696] focus:border-[#26251e] focus:ring-2 focus:ring-black/10"
       />
       <div
         aria-label="Logo 素材列表"
@@ -323,11 +327,11 @@ function ImagePanel({
             type="button"
             aria-label={`添加 ${icon.name} 图标`}
             onClick={() => onAddIconLayer(icon.id)}
-            className="rounded-lg border border-[#ededed] bg-white p-3 text-sm font-semibold text-[#3d3d3d] transition hover:border-[#e6d5a8] hover:bg-[#fffaeb]"
+            className="rounded-lg border border-[#f3f0ef] bg-white p-3 text-sm font-semibold text-[#26251e] transition hover:border-[#979696]/45 hover:bg-[#f6f1ea]"
           >
             <span
               className={[
-                "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-md border border-[#e5e5e5] text-xs",
+                "mx-auto mb-2 flex h-11 w-11 items-center justify-center rounded-md border border-[#f3f0ef] text-xs",
                 icon.className,
               ].join(" ")}
             >
@@ -395,8 +399,8 @@ function BackgroundPanel({
           className={[
             "w-full rounded-lg border bg-white p-2 text-left transition",
             selectedBackground.kind === "image" && selectedBackground.id === background.id
-              ? "border-[#fa520f] ring-1 ring-[#fa520f]/25"
-              : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
+              ? "border-[#26251e] ring-1 ring-black/10"
+              : "border-[#f3f0ef] hover:border-[#979696]/45 hover:bg-[#f6f1ea]",
           ].join(" ")}
         >
           <img
@@ -415,8 +419,8 @@ function BackgroundPanel({
             className={[
               "inline-flex h-8 w-8 items-center justify-center rounded-md border bg-white/95 shadow-sm transition",
               isFavorite
-                ? "border-[#fa520f] text-[#fa520f]"
-                : "border-[#ededed] text-[#8a8a8a] opacity-0 hover:text-[#1f1f1f] group-hover:opacity-100 group-focus-within:opacity-100",
+                ? "border-[#26251e] text-[#26251e]"
+                : "border-[#f3f0ef] text-[#979696] opacity-0 hover:text-[#26251e] group-hover:opacity-100 group-focus-within:opacity-100",
             ].join(" ")}
           >
             <Star size={16} aria-hidden="true" fill={isFavorite ? "currentColor" : "none"} />
@@ -427,7 +431,7 @@ function BackgroundPanel({
               aria-label={`删除 ${background.name} 背景`}
               title="删除自定义背景"
               onClick={() => onDeleteCustomBackground(background.id)}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#ededed] bg-white/95 text-[#8a8a8a] opacity-0 shadow-sm transition hover:border-[#fca5a5] hover:text-[#dc2626] group-hover:opacity-100 group-focus-within:opacity-100"
+              className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-[#f3f0ef] bg-white/95 text-[#979696] opacity-0 shadow-sm transition hover:border-[#fca5a5] hover:text-[#dc2626] group-hover:opacity-100 group-focus-within:opacity-100"
             >
               <Trash2 size={15} aria-hidden="true" />
             </button>
@@ -442,15 +446,15 @@ function BackgroundPanel({
   ) =>
     sectionBackgrounds.length > 0 && (
       <>
-        <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#8a8a8a]">{label}</h3>
+        <h3 className="col-span-full text-xs font-semibold uppercase tracking-[0.08em] text-[#504f49]">{label}</h3>
         {sectionBackgrounds.map(renderImageBackgroundButton)}
       </>
     );
 
   return (
     <section className="h-full overflow-y-auto pr-1">
-      <h2 className="mb-5 text-lg font-semibold text-[#1f1f1f]">背景样式</h2>
-      <div className="mb-4 grid grid-cols-2 gap-2 rounded-md border border-[#e6d5a8] bg-[#fff8e0] p-1">
+      <h2 className="mb-5 text-lg font-semibold text-[#26251e]">背景样式</h2>
+      <div className="mb-4 grid grid-cols-2 gap-2 rounded-md border border-[#979696]/35 bg-[#f3f0ef] p-1">
         {[
           { id: "image" as const, label: "图片背景" },
           { id: "color" as const, label: "颜色背景" },
@@ -463,8 +467,8 @@ function BackgroundPanel({
             className={[
               "rounded-md px-3 py-2 text-sm font-semibold transition",
               backgroundTabId === tab.id
-                ? "bg-white text-[#1f1f1f] shadow-sm"
-                : "text-[#6a6a6a] hover:text-[#1f1f1f]",
+                ? "bg-white text-[#26251e] shadow-sm"
+                : "text-[#504f49] hover:text-[#26251e]",
             ].join(" ")}
           >
             {tab.label}
@@ -472,7 +476,7 @@ function BackgroundPanel({
         ))}
       </div>
       {backgroundTabId === "image" && (
-        <label className="mb-4 flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-[#c7c7c7] bg-white px-3 text-sm font-semibold text-[#3d3d3d] transition hover:border-[#fa520f] hover:bg-[#fffaeb]">
+        <label className="mb-4 flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-[#979696] bg-white px-3 text-sm font-semibold text-[#26251e] transition hover:border-[#26251e] hover:bg-[#f6f1ea]">
           <Upload size={17} aria-hidden="true" />
           上传背景图
           <input
@@ -508,8 +512,8 @@ function BackgroundPanel({
               className={[
                 "rounded-lg border bg-white p-2 text-left transition",
                 selectedBackground.kind === "color" && selectedBackground.id === template.id
-                  ? "border-[#fa520f] ring-1 ring-[#fa520f]/25"
-                  : "border-[#ededed] hover:border-[#e6d5a8] hover:bg-[#fffaeb]",
+                  ? "border-[#26251e] ring-1 ring-black/10"
+                  : "border-[#f3f0ef] hover:border-[#979696]/45 hover:bg-[#f6f1ea]",
               ].join(" ")}
             >
               <span
@@ -527,17 +531,25 @@ function BackgroundPanel({
 
 export function CoverToolPanel(props: CoverToolPanelProps) {
   return (
-    <aside className="flex min-h-0 border-r border-[#e5e5e5] bg-white max-xl:min-h-[520px] max-sm:flex-col xl:h-full">
+    <aside
+      className={[
+        "flex min-h-0 border-r border-[#f3f0ef] bg-[#fcfaf8] max-sm:flex-col xl:h-full",
+        props.expanded ? "max-xl:min-h-[520px]" : "max-xl:min-h-0",
+      ].join(" ")}
+    >
       <ToolNavigation
         activeToolId={props.activeToolId}
+        expanded={props.expanded}
         onActiveToolChange={props.onActiveToolChange}
       />
-      <div className="min-h-0 flex-1 overflow-hidden px-5 py-5">
-        {props.activeToolId === "templates" && <TemplatePanel {...props} />}
-        {props.activeToolId === "text" && <TextPanel {...props} />}
-        {props.activeToolId === "image" && <ImagePanel {...props} />}
-        {props.activeToolId === "background" && <BackgroundPanel {...props} />}
-      </div>
+      {props.expanded && (
+        <div className="min-h-0 flex-1 overflow-hidden px-5 py-5">
+          {props.activeToolId === "templates" && <TemplatePanel {...props} />}
+          {props.activeToolId === "text" && <TextPanel {...props} />}
+          {props.activeToolId === "image" && <ImagePanel {...props} />}
+          {props.activeToolId === "background" && <BackgroundPanel {...props} />}
+        </div>
+      )}
     </aside>
   );
 }

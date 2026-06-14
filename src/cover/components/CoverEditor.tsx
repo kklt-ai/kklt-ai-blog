@@ -182,6 +182,7 @@ export function CoverEditor() {
   });
   const [editingLayerId, setEditingLayerId] = useState<string | null>(null);
   const [activeToolId, setActiveToolId] = useState<CoverToolId>("templates");
+  const [toolPanelExpanded, setToolPanelExpanded] = useState(false);
   const [activeEffectCategoryId, setActiveEffectCategoryId] =
     useState<TextEffectCategoryId>("outline");
   const [backgroundTabId, setBackgroundTabId] = useState<CoverBackgroundTabId>("image");
@@ -257,6 +258,11 @@ export function CoverEditor() {
     setCanvasScale(defaultCanvasScale(nextChannelId));
   };
 
+  const toggleToolPanel = (toolId: CoverToolId) => {
+    setActiveToolId(toolId);
+    setToolPanelExpanded((expanded) => (toolId === activeToolId ? !expanded : true));
+  };
+
   const createCurrentTemplateSnapshot = () =>
     createTemplateSnapshot({
       channelId,
@@ -284,6 +290,8 @@ export function CoverEditor() {
     setSelectedLayerId(nextLayers[0]?.id ?? "");
     setActivePreviewLayerId("");
     setSelectedBackground(backgroundSelectionForTemplate(template, backgroundImages));
+    setActiveToolId("templates");
+    setToolPanelExpanded(true);
     setSaveTemplateDialogOpen(false);
   };
 
@@ -554,10 +562,16 @@ export function CoverEditor() {
     "--cover-accent": channel.brandColor,
     "--cover-accent-ink": channel.brandForeground,
   } as CSSProperties;
+  const workspaceGridClassName = [
+    "grid min-h-0 flex-1 max-xl:grid-cols-1",
+    toolPanelExpanded
+      ? "grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)]"
+      : "grid-cols-[76px_minmax(460px,1fr)_minmax(260px,288px)]",
+  ].join(" ");
 
   return (
     <main
-      className="flex min-h-screen flex-col bg-[#fff8e0] text-[#1f1f1f] xl:h-screen xl:overflow-hidden"
+      className="flex min-h-screen flex-col bg-[#fcfaf8] text-[#26251e] xl:h-screen xl:overflow-hidden"
       style={pageStyle}
       onPointerDownCapture={handlePointerDownCapture}
       onFocusCapture={handleFocusCapture}
@@ -569,10 +583,11 @@ export function CoverEditor() {
         onChooseChannel={chooseChannel}
         onExportCover={exportCover}
       />
-      <div className="grid min-h-0 flex-1 grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)] max-xl:grid-cols-1">
+      <div className={workspaceGridClassName}>
         <CoverToolPanel
           activeToolId={activeToolId}
-          onActiveToolChange={setActiveToolId}
+          expanded={toolPanelExpanded}
+          onActiveToolChange={toggleToolPanel}
           templates={templates}
           customTemplates={customTemplatesForChannel}
           templateFavoriteTimes={templateFavoriteTimes}

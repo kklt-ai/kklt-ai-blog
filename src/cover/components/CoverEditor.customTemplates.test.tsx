@@ -158,6 +158,7 @@ describe("CoverEditor custom templates", () => {
 
     render(<CoverEditor />);
 
+    fireEvent.click(screen.getByRole("button", { name: "模板" }));
     await waitFor(() => expect(screen.getByText("我的模板")).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: "选择 我的模板 9 模板" }));
     fireEvent.click(
@@ -172,6 +173,7 @@ describe("CoverEditor custom templates", () => {
   it("favorites templates and only allows deleting custom templates", () => {
     render(<CoverEditor />);
 
+    fireEvent.click(screen.getByRole("button", { name: "模板" }));
     fireEvent.click(screen.getByRole("button", { name: "收藏 猫狗问答卡 模板" }));
 
     expect(screen.queryByText("收藏模板")).not.toBeInTheDocument();

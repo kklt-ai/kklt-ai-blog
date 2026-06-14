@@ -53,8 +53,14 @@ describe("CoverPreviewPanel", () => {
   it("anchors the board strip at the bottom without reserving extra preview padding", () => {
     renderPreviewPanel();
 
-    expect(screen.getByLabelText("封面预览面板")).toHaveClass("gap-2", "py-3");
+    expect(screen.getByLabelText("封面预览面板")).toHaveClass(
+      "gap-2",
+      "bg-[#fcfaf8]",
+      "py-3",
+    );
     expect(screen.getByLabelText("封面画布").closest("[data-cover-preview-surface='true']")).toHaveClass(
+      "bg-[#efebe3]",
+      "border-[#979696]/35",
       "min-h-0",
       "flex-1",
     );

@@ -29,10 +29,47 @@ describe("CoverEditor", () => {
     ]);
     expect(screen.getByRole("button", { name: /小红书/ })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: /公众号/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "选择 猫狗问答卡 模板" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "模板" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "选择 猫狗问答卡 模板" })).not.toBeInTheDocument();
     expect(screen.queryByText("画板")).not.toBeInTheDocument();
     expect(screen.queryByText("1242 × 1660 px")).not.toBeInTheDocument();
     expect(screen.getByLabelText("封面画布")).toBeInTheDocument();
+  });
+
+  it("starts with the left tool panel collapsed and toggles panels from the toolbar", () => {
+    render(<CoverEditor />);
+
+    const mainLayout = screen.getByRole("main").querySelector(".grid.min-h-0.flex-1");
+    const templateTool = screen.getByRole("button", { name: "模板" });
+    const textTool = screen.getByRole("button", { name: "文字" });
+
+    expect(mainLayout).toHaveClass(
+      "grid-cols-[76px_minmax(460px,1fr)_minmax(260px,288px)]",
+    );
+    expect(templateTool).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("heading", { name: "模板" })).not.toBeInTheDocument();
+
+    fireEvent.click(templateTool);
+
+    expect(mainLayout).toHaveClass(
+      "grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)]",
+    );
+    expect(templateTool).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "选择 猫狗问答卡 模板" })).toBeInTheDocument();
+
+    fireEvent.click(templateTool);
+
+    expect(mainLayout).toHaveClass(
+      "grid-cols-[76px_minmax(460px,1fr)_minmax(260px,288px)]",
+    );
+    expect(templateTool).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("heading", { name: "模板" })).not.toBeInTheDocument();
+
+    fireEvent.click(textTool);
+
+    expect(textTool).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "添加文字" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "模板" })).not.toBeInTheDocument();
   });
 
   it("switches between the retained left toolbar panels", () => {
@@ -96,7 +133,6 @@ describe("CoverEditor", () => {
     expect(screen.queryByRole("img", { name: "公众号横版 1背景预览" })).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
-    fireEvent.click(screen.getByRole("button", { name: "背景" }));
 
     expect(screen.getByRole("img", { name: "公众号横版 1背景预览" })).toHaveAttribute(
       "src",
@@ -140,6 +176,7 @@ describe("CoverEditor", () => {
   it("applies the dog and cat image background when choosing its template", () => {
     render(<CoverEditor />);
 
+    fireEvent.click(screen.getByRole("button", { name: "模板" }));
     fireEvent.click(screen.getByRole("button", { name: "选择 猫狗问答卡 模板" }));
 
     expect(screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" })).toBeInTheDocument();
@@ -163,6 +200,7 @@ describe("CoverEditor", () => {
   it("shows clean template previews in the active platform shape", () => {
     render(<CoverEditor />);
 
+    fireEvent.click(screen.getByRole("button", { name: "模板" }));
     const xiaohongshuTemplateButton = screen.getByRole("button", {
       name: "选择 猫狗问答卡 模板",
     });
@@ -246,11 +284,14 @@ describe("CoverEditor", () => {
     const exportButton = within(navbar).getByRole("button", { name: "导出 PNG" });
 
     expect(within(navbar).getByText("封面设计")).toBeInTheDocument();
-    expect(navbar).toHaveClass("min-h-[48px]", "py-1.5");
+    expect(screen.getByRole("main")).toHaveClass("bg-[#fcfaf8]", "text-[#26251e]");
+    expect(navbar).toHaveClass("min-h-[56px]", "py-2");
+    expect(navbar.closest("header")).toHaveClass("border-[#f3f0ef]", "bg-[#fcfaf8]/95");
     expect(platformSwitch).toHaveClass("min-h-8", "w-[204px]");
+    expect(platformSwitch).toHaveClass("border-[#979696]/45", "bg-[#f3f0ef]");
     expect(mdLink).toHaveAttribute("href", "/");
     expect(mdLink).toHaveClass("h-8");
-    expect(exportButton).toHaveClass("h-8");
+    expect(exportButton).toHaveClass("h-8", "bg-[#26251e]");
     expect(mainLayout).not.toHaveClass("border-t");
     expect(within(platformSwitch).getByRole("button", { name: "小红书" })).toHaveAttribute(
       "aria-pressed",
@@ -288,7 +329,7 @@ describe("CoverEditor", () => {
     const settingsPanel = screen.getByRole("complementary", { name: "封面设置" });
 
     expect(mainLayout).toHaveClass(
-      "grid-cols-[minmax(344px,400px)_minmax(460px,1fr)_minmax(260px,288px)]",
+      "grid-cols-[76px_minmax(460px,1fr)_minmax(260px,288px)]",
     );
     expect(settingsPanel).toHaveClass("px-4", "py-4");
     expect(screen.getByText("行间距")).toHaveClass("whitespace-nowrap");
@@ -639,6 +680,7 @@ describe("CoverEditor", () => {
     render(<CoverEditor />);
 
     fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
+    fireEvent.click(screen.getByRole("button", { name: "模板" }));
 
     expect(screen.getByRole("button", { name: "选择 公众号深度文章 模板" })).toHaveAttribute(
       "aria-pressed",
