@@ -1,7 +1,6 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
-import { HomeCopy, Language } from "../content";
+import { GITHUB_URL, HomeCopy, Language, QR_CODE_SRC } from "../content";
 import { ArrowIcon } from "../icons";
-import { CommandBar } from "./CommandBar";
 import { HeaderNav } from "./HeaderNav";
 
 type HeroSectionProps = {
@@ -40,19 +39,23 @@ export function HeroSection({
   visibleSubtitleCount,
 }: HeroSectionProps) {
   return (
-    <section ref={heroRef} className="group/hero relative isolate h-[592px] overflow-hidden max-[640px]:h-[425px]" id="hero">
+    <section ref={heroRef} className="group/hero relative isolate h-[620px] overflow-hidden max-[640px]:h-[540px]" id="hero">
       <div className="absolute inset-0 z-0 bg-[image:url('/home/assets/flying.png')] bg-[length:1440px_592px] bg-bottom bg-center bg-no-repeat max-[640px]:bottom-auto max-[640px]:top-[67px] max-[640px]:h-[218px] max-[640px]:bg-[length:530px_218px]" aria-hidden="true" />
       <canvas ref={maskRef} className="absolute inset-0 z-[1] block pointer-events-none max-[640px]:hidden motion-reduce:hidden" aria-hidden="true" />
       <HeaderNav copy={copy} language={language} setLanguage={setLanguage} />
 
-      <div className="relative z-[2] mx-auto flex max-w-[809px] flex-col items-center gap-10 pt-[180px] max-[640px]:max-w-none max-[640px]:gap-0 max-[640px]:px-5 max-[640px]:pt-[129px]">
+      <div className="relative z-[2] mx-auto flex max-w-[809px] flex-col items-center gap-10 pt-[150px] max-[640px]:max-w-none max-[640px]:gap-0 max-[640px]:px-5 max-[640px]:pt-[115px]">
         <div className="flex w-full flex-col items-center gap-[30px] text-center max-[640px]:gap-[19px]">
-          <h1 className="m-0 font-[var(--font-display)] text-[50px] font-normal tracking-[0.4px] text-[var(--color-ink)] max-[640px]:text-[30px]">
-            MiMo Code
+          <h1
+            className="m-0 text-[54px] font-medium tracking-[0.4px] text-[var(--color-ink)] max-[640px]:text-[34px]"
+            style={{ fontFamily: "var(--font-mincho)" }}
+          >
+            卡卡罗特AI
           </h1>
           <p
-            className="m-0 min-h-[33px] max-w-[min(940px,94vw)] whitespace-nowrap text-center font-[var(--font-mincho)] text-[22px] font-medium leading-normal tracking-[0.4px] text-[var(--color-ink)] max-[640px]:min-h-0 max-[640px]:whitespace-normal max-[640px]:text-sm max-[640px]:leading-[1.6]"
+            className="m-0 min-h-[33px] max-w-[min(940px,94vw)] whitespace-nowrap text-center text-[22px] font-medium leading-normal tracking-[0.4px] text-[var(--color-ink)] max-[640px]:min-h-0 max-[640px]:whitespace-normal max-[640px]:text-sm max-[640px]:leading-[1.6]"
             aria-label={copy.subtitle}
+            style={{ fontFamily: "var(--font-mincho)" }}
           >
             {subtitleChars.map((char, index) => (
               <span
@@ -69,13 +72,23 @@ export function HeroSection({
           </p>
         </div>
 
-        <CommandBar copiedLabel={copy.copied} />
+        <div id="wechat" className="flex items-center gap-4 rounded-[10px] bg-white/75 px-4 py-3 shadow-[0_12px_34px_rgba(38,37,30,0.08)] backdrop-blur max-[640px]:mt-5 max-[640px]:w-full max-[640px]:max-w-[300px]">
+          <img className="h-[72px] w-[72px] rounded object-cover" src={QR_CODE_SRC} alt="卡卡罗特AI公众号二维码" />
+          <div className="text-left">
+            <p className="m-0 text-base font-medium text-[var(--color-ink)]" style={{ fontFamily: "var(--font-mincho)" }}>
+              {copy.qrTitle}
+            </p>
+            <p className="m-0 mt-1 font-[var(--font-misans)] text-sm leading-[1.45] text-[var(--color-ink-soft)]">
+              {copy.qrBody}
+            </p>
+          </div>
+        </div>
 
         <div className="flex items-center gap-5 max-[640px]:mt-5 max-[640px]:w-full max-[640px]:max-w-[300px] max-[640px]:gap-[13px]">
-          <CtaButton href="https://github.com/XiaomiMiMo/MiMo-Code">GitHub</CtaButton>
-          <CtaButton href="/zh/mimocode/start">{copy.docs}</CtaButton>
-          <CtaButton href="/zh/#blog" primary>
-            Blog
+          <CtaButton href={GITHUB_URL}>{copy.github}</CtaButton>
+          <CtaButton href="#works">{copy.docs}</CtaButton>
+          <CtaButton href="#wechat" primary>
+            公众号
           </CtaButton>
         </div>
       </div>

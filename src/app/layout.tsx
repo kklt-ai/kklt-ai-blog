@@ -3,8 +3,8 @@ import "./globals.css";
 import "@/md-image/styles.css";
 
 export const metadata: Metadata = {
-  title: "小红书 Markdown 排版工具",
-  description: "把 Markdown 转成适合小红书发布的多页图片。",
+  title: "卡卡罗特AI Vibe Coding作品",
+  description: "卡卡罗特AI的 Vibe Coding 工具作品集。",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -31,18 +31,3 @@ export function CaretIcon() {
     </svg>
   );
 }
-
-export function CheckIcon({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 18 18" aria-hidden="true">
-      <path
-        d="M4 9.5 L7.5 13 L14 5.5"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        fill="none"
-      />
-    </svg>
-  );
-}

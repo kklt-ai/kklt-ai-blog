@@ -1,5 +1,5 @@
 import { Dispatch, SetStateAction } from "react";
-import { ASSET_BASE, HomeCopy, Language } from "../content";
+import { ASSET_BASE, GITHUB_URL, HomeCopy, Language } from "../content";
 import { CaretIcon } from "../icons";
 
 type HeaderNavProps = {
@@ -14,8 +14,13 @@ const navLinkClass =
 export function HeaderNav({ copy, language, setLanguage }: HeaderNavProps) {
   return (
     <>
-      <a className="absolute left-8 top-[23px] z-[3] block h-[18px] w-[141px] max-[640px]:left-5 max-[640px]:top-[33px] max-[640px]:h-3.5 max-[640px]:w-[109px]" href="/zh/" aria-label="MiMo">
-        <img className="block h-full w-full" src={`${ASSET_BASE}/logo.png`} alt="Xiaomi MiMo" width="120" />
+      <a
+        className="absolute left-8 top-[21px] z-[3] block text-[22px] font-medium tracking-[0.4px] text-[var(--color-ink)] no-underline max-[640px]:left-5 max-[640px]:top-[29px] max-[640px]:text-lg"
+        href="/"
+        aria-label="卡卡罗特AI"
+        style={{ fontFamily: "var(--font-mincho)" }}
+      >
+        卡卡罗特AI
       </a>
 
       <div className="absolute left-0 right-0 top-[65px] z-[3] h-px bg-[#f3f0ef] max-[640px]:top-[66px]" aria-hidden="true" />
@@ -28,15 +33,15 @@ export function HeaderNav({ copy, language, setLanguage }: HeaderNavProps) {
               <CaretIcon />
             </button>
             <div className="invisible absolute left-1/2 top-full z-10 flex min-w-40 -translate-x-1/2 translate-y-1.5 flex-col rounded-xl border border-black/10 bg-white px-2 py-3 opacity-0 shadow-[0_12px_32px_rgba(0,0,0,0.12)] transition duration-300 group-hover:visible group-hover:translate-y-0.5 group-hover:opacity-100 group-focus-within:visible group-focus-within:translate-y-0.5 group-focus-within:opacity-100" role="menu">
-              <a className="block whitespace-nowrap rounded-lg px-3.5 py-2 font-[var(--font-misans)] text-[15px] font-normal text-black no-underline transition-colors hover:bg-black/5" href="/zh/mimocode" role="menuitem">
-                MiMo Code
+              <a className="block whitespace-nowrap rounded-lg px-3.5 py-2 font-[var(--font-misans)] text-[15px] font-normal text-black no-underline transition-colors hover:bg-black/5" href="#works" role="menuitem">
+                Vibe Coding
               </a>
             </div>
           </div>
-          <a className={navLinkClass} href="/zh/#blog">
+          <a className={navLinkClass} href="#wechat">
             {copy.blog}
           </a>
-          <a className={navLinkClass} href="/zh/#joinUs">
+          <a className={navLinkClass} href={GITHUB_URL} target="_blank" rel="noreferrer">
             {copy.joinUs}
           </a>
         </nav>

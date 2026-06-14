@@ -9,28 +9,13 @@ type FeatureCardProps = {
 const layouts = [
   {
     card: "bg-[#efebe3]",
-    image: "left-0 top-0 h-[360px] w-[573px]",
+    image: "left-0 top-0 w-[573px]",
     text: "left-[648px] top-[136px]",
   },
   {
     card: "bg-[#f6f1ea]",
-    image: "left-[527px] top-0 h-[360px] w-[573px]",
+    image: "left-[527px] top-0 w-[573px]",
     text: "left-[129px] top-[130px]",
-  },
-  {
-    card: "bg-[#efe8e3]",
-    image: "left-0 top-0 h-[360px] w-[573px]",
-    text: "left-[645px] top-[114px]",
-  },
-  {
-    card: "bg-[#fbf2e9]",
-    image: "left-[527px] top-0 h-[360px] w-[573px]",
-    text: "left-[122px] top-[107px]",
-  },
-  {
-    card: "bg-[#f5ede7]",
-    image: "left-0 top-0 h-[360px] w-[660px]",
-    text: "left-[670px] top-28",
   },
 ] as const;
 
@@ -39,14 +24,15 @@ export function FeatureCard({ card, index, typed }: FeatureCardProps) {
 
   return (
     <article className={`relative h-[360px] w-full overflow-hidden rounded ${layout.card} max-[640px]:flex max-[640px]:h-auto max-[640px]:flex-col max-[640px]:p-[6px_6px_26px]`}>
-      <div className={`absolute overflow-hidden max-[640px]:relative max-[640px]:inset-auto max-[640px]:order-1 max-[640px]:h-[202px] max-[640px]:w-full ${layout.image}`}>
-        <img className="block h-full w-full object-cover pointer-events-none" src={`${ASSET_BASE}/${card.image}`} alt="" />
+      <div className={`absolute aspect-[573/360] overflow-hidden max-[640px]:relative max-[640px]:inset-auto max-[640px]:order-1 max-[640px]:aspect-[16/9] max-[640px]:w-full ${layout.image}`}>
+        <img className="block h-full w-full max-w-full object-contain pointer-events-none" src={`${ASSET_BASE}/${card.image}`} alt="" />
       </div>
       <div className={`absolute flex w-[331px] flex-col gap-2.5 tracking-normal max-[640px]:static max-[640px]:order-2 max-[640px]:mt-[26px] max-[640px]:w-auto max-[640px]:mx-5 ${layout.text}`}>
         <h3
-          className="m-0 font-[var(--font-mincho)] text-[22px] font-medium leading-[1.447] text-[var(--color-ink)] max-[640px]:text-lg"
+          className="m-0 text-[26px] font-medium leading-[1.447] text-[var(--color-ink)] max-[640px]:text-xl"
           data-home-card-id={card.id}
           aria-label={card.title}
+          style={{ fontFamily: "var(--font-mincho)" }}
         >
           {Array.from(card.title).map((char, charIndex) => (
             <span
@@ -62,6 +48,9 @@ export function FeatureCard({ card, index, typed }: FeatureCardProps) {
         <p className="m-0 font-[var(--font-misans)] text-base font-light leading-[1.447] text-[var(--color-ink-soft)] max-[640px]:text-sm">
           {card.body}
         </p>
+        <a className="mt-2 inline-flex w-fit rounded-full border border-[var(--color-border)] px-5 py-2 font-[var(--font-misans)] text-sm text-[var(--color-ink)] no-underline transition hover:border-[var(--color-ink)] hover:bg-[var(--color-ink)] hover:text-[#fafafa]" href={card.href}>
+          查看项目
+        </a>
       </div>
     </article>
   );
