@@ -5,6 +5,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bold,
+  Image as ImageIcon,
   Italic,
   Type,
   Underline,
@@ -18,6 +19,7 @@ import {
 import {
   COVER_FONT_FAMILIES,
   type CoverIconLayer,
+  type CoverImageLayer,
   type CoverLayer,
   type CoverTextLayer,
   findBrandIcon,
@@ -378,6 +380,38 @@ function IconLayerSettings({
   );
 }
 
+function ImageLayerSettings({
+  layer,
+  patchSelectedLayer,
+}: {
+  layer: CoverImageLayer;
+  patchSelectedLayer: PatchSelectedLayer;
+}) {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border border-[#979696]/35 bg-[#f3f0ef] p-4">
+        <ImageIcon size={20} aria-hidden="true" />
+        <p className="mt-2 break-all font-bold">{layer.alt}</p>
+        <p className="mt-1 text-sm font-medium text-[#504f49]">可拖拽定位和四角缩放。</p>
+      </div>
+      <label>
+        <span className="mb-2 block text-sm font-bold">图片宽度</span>
+        <input
+          aria-label="图片宽度"
+          type="range"
+          min={8}
+          max={96}
+          value={layer.width}
+          onChange={(event) =>
+            patchSelectedLayer<CoverImageLayer>({ width: Number(event.target.value) })
+          }
+          className="w-full accent-[#26251e]"
+        />
+      </label>
+    </div>
+  );
+}
+
 export function CoverSettingsPanel({
   selectedLayer,
   activeEffectCategoryId,
@@ -405,6 +439,9 @@ export function CoverSettingsPanel({
         )}
         {selectedLayer?.type === "icon" && (
           <IconLayerSettings layer={selectedLayer} patchSelectedLayer={patchSelectedLayer} />
+        )}
+        {selectedLayer?.type === "image" && (
+          <ImageLayerSettings layer={selectedLayer} patchSelectedLayer={patchSelectedLayer} />
         )}
       </section>
     </aside>

@@ -3,6 +3,7 @@
 import {
   type CSSProperties,
   type FocusEvent as ReactFocusEvent,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type WheelEvent as ReactWheelEvent,
   useCallback,
@@ -20,6 +21,7 @@ import {
   type CoverTextLayer,
   cloneTemplateLayers,
   createIconLayer,
+  createImageLayer,
   createTextLayer,
   getBackgroundImagesByChannel,
   getChannel,
@@ -50,6 +52,8 @@ import type {
   CoverToolId,
   CenterGuideState,
   DragState,
+  ResizeHandleCorner,
+  ResizeState,
 } from "./coverEditorTypes";
 import type { TextEffectCategoryId } from "./textEffectOptions";
 
@@ -58,6 +62,11 @@ const TEMPLATE_ACTION_MESSAGE_DURATION_MS = 2000;
 const MIN_CANVAS_SCALE = 0.2;
 const MAX_CANVAS_SCALE = 0.8;
 const PASTED_TEXT_LAYER_OFFSET_Y = 4;
+const MIN_IMAGE_LAYER_WIDTH = 8;
+const MAX_IMAGE_LAYER_WIDTH = 96;
+const MIN_TEXT_LAYER_FONT_SIZE = 18;
+const MAX_TEXT_LAYER_FONT_SIZE = 220;
+const TEXT_RESIZE_PIXELS_PER_POINT = 4;
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value));
@@ -96,6 +105,21 @@ function isEditableKeyboardTarget(target: EventTarget | null) {
   if (target.closest("[data-cover-text-editor='true']")) return true;
   if (target.isContentEditable) return true;
   return ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
+}
+
+function getPointerCoordinates(
+  event: ReactPointerEvent<HTMLElement> | ReactMouseEvent<HTMLElement>,
+) {
+  const nativeEvent = event.nativeEvent as PointerEvent & { pageX?: number; pageY?: number };
+  const x = [event.clientX, nativeEvent.clientX, nativeEvent.pageX].find(
+    (coordinate): coordinate is number =>
+      typeof coordinate === "number" && Number.isFinite(coordinate),
+  );
+  const y = [event.clientY, nativeEvent.clientY, nativeEvent.pageY].find(
+    (coordinate): coordinate is number =>
+      typeof coordinate === "number" && Number.isFinite(coordinate),
+  );
+  return x === undefined || y === undefined ? null : { x, y };
 }
 
 function copyTextWithFallback(text: string) {
@@ -176,6 +200,7 @@ export function CoverEditor() {
   const [activePreviewLayerId, setActivePreviewLayerId] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [dragState, setDragState] = useState<DragState | null>(null);
+  const [resizeState, setResizeState] = useState<ResizeState | null>(null);
   const [centerGuides, setCenterGuides] = useState<CenterGuideState>({
     vertical: false,
     horizontal: false,
@@ -354,6 +379,23 @@ export function CoverEditor() {
     setActivePreviewLayerId(layer.id);
   };
 
+  const addImageLayer = (src: string, alt: string) => {
+    const layer = createImageLayer(src, alt);
+    setLayers((currentLayers) => [...currentLayers, layer]);
+    setSelectedLayerId(layer.id);
+    setActivePreviewLayerId(layer.id);
+    setEditingLayerId(null);
+  };
+
+  const uploadImageLayer = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result !== "string") return;
+      addImageLayer(reader.result, file.name || "上传图片");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const deleteLayer = useCallback((layerId: string) => {
     setLayers((currentLayers) => {
       const nextLayers = currentLayers.filter((layer) => layer.id !== layerId);
@@ -466,6 +508,35 @@ export function CoverEditor() {
     });
   };
 
+  const beginResize = (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => {
+    if (layer.type === "icon") return;
+    const pointer = getPointerCoordinates(event);
+    if (!pointer) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const pointerId = "pointerId" in event ? event.pointerId : undefined;
+    if (pointerId !== undefined) event.currentTarget.setPointerCapture?.(pointerId);
+    setSelectedLayerId(layer.id);
+    setActivePreviewLayerId(layer.id);
+    setEditingLayerId(null);
+    setCenterGuides({ vertical: false, horizontal: false });
+    setDragState(null);
+    setResizeState({
+      layerId: layer.id,
+      layerType: layer.type,
+      corner,
+      startClientX: pointer.x,
+      startClientY: pointer.y,
+      startX: layer.x,
+      startWidth: layer.type === "text" ? layer.width : layer.width,
+      startFontSize: layer.type === "text" ? layer.fontSize : undefined,
+    });
+  };
+
   const moveDrag = useCallback(
     (event: ReactPointerEvent<HTMLElement>) => {
       if (!dragState || !canvasRef.current) return;
@@ -491,8 +562,74 @@ export function CoverEditor() {
     [dragState],
   );
 
+  const moveResize = useCallback(
+    (event: ReactPointerEvent<HTMLElement> | ReactMouseEvent<HTMLElement>) => {
+      if (!resizeState || !canvasRef.current) return;
+      const rect = canvasRef.current.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const pointer = getPointerCoordinates(event);
+      if (!pointer) return;
+
+      const deltaX = pointer.x - resizeState.startClientX;
+      const deltaY = pointer.y - resizeState.startClientY;
+      const growsRight = resizeState.corner.endsWith("right");
+      const growsDown = resizeState.corner.startsWith("bottom");
+      const horizontalGrowth = growsRight ? deltaX : -deltaX;
+      const verticalGrowth = growsDown ? deltaY : -deltaY;
+
+      if (resizeState.layerType === "text") {
+        const startFontSize = resizeState.startFontSize ?? MIN_TEXT_LAYER_FONT_SIZE;
+        const fontSize = Math.round(
+          clamp(
+            startFontSize +
+              Math.max(horizontalGrowth, verticalGrowth) / TEXT_RESIZE_PIXELS_PER_POINT,
+            MIN_TEXT_LAYER_FONT_SIZE,
+            MAX_TEXT_LAYER_FONT_SIZE,
+          ),
+        );
+        setLayers((currentLayers) =>
+          updateLayer<CoverTextLayer>(currentLayers, resizeState.layerId, { fontSize }),
+        );
+        return;
+      }
+
+      if (resizeState.layerType === "image") {
+        const growthPercent = (horizontalGrowth / rect.width) * 100;
+        const width = Number(
+          clamp(
+            resizeState.startWidth + growthPercent,
+            MIN_IMAGE_LAYER_WIDTH,
+            MAX_IMAGE_LAYER_WIDTH,
+          ).toFixed(2),
+        );
+        const x = growsRight
+          ? resizeState.startX
+          : Number((resizeState.startX + resizeState.startWidth - width).toFixed(2));
+        setLayers((currentLayers) =>
+          updateLayer(currentLayers, resizeState.layerId, {
+            x: clamp(x, 0, 100 - width),
+            width,
+          }),
+        );
+      }
+    },
+    [resizeState],
+  );
+
+  const handlePreviewPointerMove = useCallback(
+    (event: ReactPointerEvent<HTMLElement> | ReactMouseEvent<HTMLElement>) => {
+      if (resizeState) {
+        moveResize(event);
+        return;
+      }
+      if ("pointerId" in event) moveDrag(event);
+    },
+    [moveDrag, moveResize, resizeState],
+  );
+
   const endDrag = () => {
     setDragState(null);
+    setResizeState(null);
     setCenterGuides({ vertical: false, horizontal: false });
   };
 
@@ -601,6 +738,7 @@ export function CoverEditor() {
           onLogoSearchQueryChange={setLogoSearchQuery}
           filteredBrandIcons={filteredBrandIcons}
           onAddIconLayer={addIconLayer}
+          onUploadImage={uploadImageLayer}
           channelId={channel.id}
           backgroundTabId={backgroundTabId}
           onBackgroundTabChange={setBackgroundTabId}
@@ -627,13 +765,14 @@ export function CoverEditor() {
           editingLayerId={editingLayerId}
           centerGuides={centerGuides}
           onWheel={handlePreviewWheel}
-          onPointerMove={moveDrag}
+          onPointerMove={handlePreviewPointerMove}
           onPointerEnd={endDrag}
           onSelectLayer={(layerId) => {
             setSelectedLayerId(layerId);
             setActivePreviewLayerId(layerId);
           }}
           onBeginDrag={beginDrag}
+          onBeginResize={beginResize}
           onEditTextLayer={(layerId) => {
             setSelectedLayerId(layerId);
             setActivePreviewLayerId(layerId);

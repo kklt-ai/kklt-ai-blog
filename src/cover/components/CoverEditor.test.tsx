@@ -14,6 +14,16 @@ describe("CoverEditor", () => {
     localStorage.clear();
   });
 
+  const mockUploadedImageReader = (dataUrl = "data:image/png;base64,uploaded") => {
+    vi.spyOn(FileReader.prototype, "readAsDataURL").mockImplementation(function readAsDataURL() {
+      Object.defineProperty(this, "result", {
+        configurable: true,
+        value: dataUrl,
+      });
+      this.onload?.(new ProgressEvent("load"));
+    });
+  };
+
   it("renders the cover workspace and channel templates", () => {
     render(<CoverEditor />);
 
@@ -547,6 +557,30 @@ describe("CoverEditor", () => {
     expect(screen.getByLabelText("OpenAI 图标图层")).toBeInTheDocument();
   });
 
+  it("uploads a foreground image layer from the image panel and exports it", async () => {
+    mockUploadedImageReader();
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+    fireEvent.change(screen.getByLabelText("上传图片素材"), {
+      target: { files: [new File(["image"], "my-cover.png", { type: "image/png" })] },
+    });
+
+    const imageLayer = await screen.findByRole("button", { name: "my-cover.png 图片图层" });
+    expect(within(imageLayer).getByRole("img", { name: "my-cover.png" })).toHaveAttribute(
+      "src",
+      "data:image/png;base64,uploaded",
+    );
+    expect(imageLayer).toHaveClass("border-sky-300");
+
+    fireEvent.click(screen.getByRole("button", { name: "导出 PNG" }));
+
+    await waitFor(() => expect(downloadCoverNodeAsPng).toHaveBeenCalledTimes(1));
+    const exportedNode = vi.mocked(downloadCoverNodeAsPng).mock.calls[0][0];
+    const exportedImage = exportedNode.querySelector('img[alt="my-cover.png"]');
+    expect(exportedImage).toHaveAttribute("src", "data:image/png;base64,uploaded");
+  });
+
   it("shows bundled logo icons and links to LobeHub Icons from the image panel", () => {
     render(<CoverEditor />);
 
@@ -674,6 +708,84 @@ describe("CoverEditor", () => {
 
     fireEvent.wheel(previewPanel, { deltaY: 100 });
     expect(previewCanvas).toHaveStyle({ transform: "scale(0.36)" });
+  });
+
+  it("resizes uploaded images and text from selected layer corner handles", async () => {
+    mockUploadedImageReader();
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: "图片" }));
+    fireEvent.change(screen.getByLabelText("上传图片素材"), {
+      target: { files: [new File(["image"], "my-cover.png", { type: "image/png" })] },
+    });
+
+    const canvas = screen.getByLabelText("封面画布");
+    vi.spyOn(canvas, "getBoundingClientRect").mockReturnValue({
+      width: 1242,
+      height: 1660,
+      left: 0,
+      top: 0,
+      right: 1242,
+      bottom: 1660,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    } as DOMRect);
+
+    const imageLayer = await screen.findByRole("button", { name: "my-cover.png 图片图层" });
+    const initialImageWidth = parseFloat(imageLayer.parentElement?.style.width ?? "0");
+    const imageResizeHandle = screen.getByRole("button", {
+      name: "右下角调整 my-cover.png 图片图层大小",
+    });
+
+    fireEvent.mouseDown(imageResizeHandle, {
+      clientX: 100,
+      clientY: 100,
+      pageX: 100,
+      pageY: 100,
+    });
+    fireEvent.mouseMove(canvas, {
+      clientX: 260,
+      clientY: 260,
+      pageX: 260,
+      pageY: 260,
+    });
+    fireEvent.mouseUp(canvas);
+
+    await waitFor(() => {
+      const resizedImageLayer = screen.getByRole("button", { name: "my-cover.png 图片图层" });
+      expect(parseFloat(resizedImageLayer.parentElement?.style.width ?? "0")).toBeGreaterThan(
+        initialImageWidth,
+      );
+    });
+
+    const textLayer = screen.getByRole("button", { name: "这个网站的作者是谁？ 文字图层" });
+    fireEvent.click(textLayer);
+    const initialFontSize = parseFloat(textLayer.style.fontSize);
+    const textResizeHandle = screen.getByRole("button", {
+      name: "右下角调整 这个网站的作者是谁？ 文字图层大小",
+    });
+
+    fireEvent.mouseDown(textResizeHandle, {
+      clientX: 100,
+      clientY: 100,
+      pageX: 100,
+      pageY: 100,
+    });
+    fireEvent.mouseMove(canvas, {
+      clientX: 260,
+      clientY: 260,
+      pageX: 260,
+      pageY: 260,
+    });
+    fireEvent.mouseUp(canvas);
+
+    await waitFor(() => {
+      const resizedTextLayer = screen.getByRole("button", {
+        name: "这个网站的作者是谁？ 文字图层",
+      });
+      expect(parseFloat(resizedTextLayer.style.fontSize)).toBeGreaterThan(initialFontSize);
+    });
   });
 
   it("switches to WeChat templates", () => {

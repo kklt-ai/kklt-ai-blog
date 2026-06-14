@@ -10,6 +10,19 @@ export type DragState = {
   layerHeight: number;
 };
 
+export type ResizeHandleCorner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
+
+export type ResizeState = {
+  layerId: string;
+  layerType: CoverLayer["type"];
+  corner: ResizeHandleCorner;
+  startClientX: number;
+  startClientY: number;
+  startX: number;
+  startWidth: number;
+  startFontSize?: number;
+};
+
 export type CenterGuideState = {
   vertical: boolean;
   horizontal: boolean;

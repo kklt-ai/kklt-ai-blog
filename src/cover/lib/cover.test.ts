@@ -4,6 +4,7 @@ import {
   COVER_TEMPLATES,
   BRAND_ICONS,
   createIconLayer,
+  createImageLayer,
   createTextLayer,
   getBackgroundImagesByChannel,
   getTemplatesByChannel,
@@ -79,6 +80,19 @@ describe("cover editor model", () => {
       lineHeight: 1.08,
       letterSpacing: 0,
       highlightEffect: "none",
+    });
+    expect(layer.x).toBeGreaterThanOrEqual(0);
+    expect(layer.y).toBeGreaterThanOrEqual(0);
+  });
+
+  it("creates an uploaded image layer with a visible default size", () => {
+    const layer = createImageLayer("data:image/png;base64,abc", "my-cover.png");
+
+    expect(layer).toMatchObject({
+      type: "image",
+      src: "data:image/png;base64,abc",
+      alt: "my-cover.png",
+      width: 32,
     });
     expect(layer.x).toBeGreaterThanOrEqual(0);
     expect(layer.y).toBeGreaterThanOrEqual(0);

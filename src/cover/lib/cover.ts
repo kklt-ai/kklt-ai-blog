@@ -6,6 +6,7 @@ export type {
   CoverChannelId,
   CoverFontFamily,
   CoverIconLayer,
+  CoverImageLayer,
   CoverLayer,
   CoverTemplate,
   CoverTextEffect,
@@ -22,7 +23,7 @@ export {
 } from "./backgroundImages";
 export { COVER_CHANNELS } from "./channels";
 export { COVER_FONT_FAMILIES, fontFamilyCss } from "./fonts";
-export { createIconLayer, createTextLayer, updateLayer } from "./layers";
+export { createIconLayer, createImageLayer, createTextLayer, updateLayer } from "./layers";
 export {
   cloneTemplateLayers,
   findBrandIcon,

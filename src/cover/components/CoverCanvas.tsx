@@ -8,11 +8,13 @@ import {
 } from "react";
 import {
   type CoverIconLayer,
+  type CoverImageLayer,
   type CoverLayer,
   type CoverTextLayer,
   findBrandIcon,
   fontFamilyCss,
 } from "@/cover/lib/cover";
+import type { ResizeHandleCorner } from "./coverEditorTypes";
 import { findTextHighlight } from "./textHighlightOptions";
 import { findTextEffect } from "./textEffectOptions";
 
@@ -61,6 +63,59 @@ function LayerDeleteButton({
   );
 }
 
+const RESIZE_HANDLES: Array<{
+  corner: ResizeHandleCorner;
+  label: string;
+  className: string;
+}> = [
+  { corner: "top-left", label: "左上角", className: "-left-2 -top-2 cursor-nwse-resize" },
+  { corner: "top-right", label: "右上角", className: "-right-2 -top-2 cursor-nesw-resize" },
+  { corner: "bottom-left", label: "左下角", className: "-bottom-2 -left-2 cursor-nesw-resize" },
+  { corner: "bottom-right", label: "右下角", className: "-bottom-2 -right-2 cursor-nwse-resize" },
+];
+
+function layerResizeLabel(layer: CoverTextLayer | CoverImageLayer) {
+  return layer.type === "text"
+    ? `${layer.text.replace(/\s+/g, " ")} 文字图层`
+    : `${layer.alt} 图片图层`;
+}
+
+function LayerResizeHandles({
+  layer,
+  selected,
+  onResizeStart,
+}: {
+  layer: CoverTextLayer | CoverImageLayer;
+  selected: boolean;
+  onResizeStart?: (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => void;
+}) {
+  if (!selected) return null;
+  const label = layerResizeLabel(layer);
+
+  return (
+    <>
+      {RESIZE_HANDLES.map((handle) => (
+        <button
+          key={handle.corner}
+          type="button"
+          aria-label={`${handle.label}调整 ${label}大小`}
+          data-cover-layer="true"
+          onPointerDown={(event) => onResizeStart?.(event, layer, handle.corner)}
+          onMouseDown={(event) => onResizeStart?.(event, layer, handle.corner)}
+          className={[
+            "absolute z-10 h-4 w-4 rounded-full border-2 border-sky-400 bg-white shadow-[0_2px_8px_rgba(14,165,233,0.35)]",
+            handle.className,
+          ].join(" ")}
+        />
+      ))}
+    </>
+  );
+}
+
 function TextLayerView({
   layer,
   selected,
@@ -68,6 +123,7 @@ function TextLayerView({
   onSelect,
   onDragStart,
   onDragMove,
+  onResizeStart,
   onEditStart,
   onTextChange,
   onFinishEditing,
@@ -80,6 +136,11 @@ function TextLayerView({
   onSelect?: () => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
   onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onResizeStart?: (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => void;
   onEditStart?: () => void;
   onTextChange?: (text: string) => void;
   onFinishEditing?: () => void;
@@ -176,6 +237,80 @@ function TextLayerView({
         selected={selected}
         onDelete={onDelete}
       />
+      <LayerResizeHandles layer={layer} selected={selected} onResizeStart={onResizeStart} />
+    </div>
+  );
+}
+
+function ImageLayerView({
+  layer,
+  selected,
+  onSelect,
+  onDragStart,
+  onDragMove,
+  onResizeStart,
+  onDelete,
+  interactive = true,
+}: {
+  layer: CoverImageLayer;
+  selected: boolean;
+  onSelect?: () => void;
+  onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onResizeStart?: (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => void;
+  onDelete?: () => void;
+  interactive?: boolean;
+}) {
+  const className = [
+    "block h-full w-full touch-none rounded-xl border-2 bg-white/10 p-0 shadow-xl",
+    interactive ? "transition" : "",
+    selected && interactive
+      ? "border-sky-300 ring-4 ring-sky-300/35"
+      : interactive
+        ? "border-white/70 hover:ring-4 hover:ring-white/30"
+        : "border-transparent",
+  ].join(" ");
+  const style: CSSProperties = {
+    left: `${layer.x}%`,
+    top: `${layer.y}%`,
+    width: `${layer.width}%`,
+  };
+  const content = (
+    <img
+      src={layer.src}
+      alt={layer.alt}
+      className="block h-auto w-full rounded-[10px] object-contain"
+      draggable={false}
+    />
+  );
+
+  if (!interactive) {
+    return (
+      <div className={`absolute ${className}`} style={style}>
+        {content}
+      </div>
+    );
+  }
+
+  return (
+    <div className="group absolute" style={style}>
+      <button
+        type="button"
+        aria-label={`${layer.alt} 图片图层`}
+        data-cover-layer="true"
+        onClick={onSelect}
+        onPointerDown={(event) => onDragStart?.(event, layer)}
+        onPointerMove={onDragMove}
+        className={className}
+      >
+        {content}
+      </button>
+      <LayerDeleteButton label={`删除 ${layer.alt} 图层`} selected={selected} onDelete={onDelete} />
+      <LayerResizeHandles layer={layer} selected={selected} onResizeStart={onResizeStart} />
     </div>
   );
 }
@@ -264,6 +399,7 @@ export function CoverCanvasContent({
   onSelectLayer,
   onDragStart,
   onDragMove,
+  onResizeStart,
   onEditTextLayer,
   onTextLayerChange,
   onFinishEditing,
@@ -277,6 +413,11 @@ export function CoverCanvasContent({
   onSelectLayer?: (layerId: string) => void;
   onDragStart?: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
   onDragMove?: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onResizeStart?: (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => void;
   onEditTextLayer?: (layerId: string) => void;
   onTextLayerChange?: (layerId: string, text: string) => void;
   onFinishEditing?: () => void;
@@ -298,13 +439,14 @@ export function CoverCanvasContent({
             onSelect={() => onSelectLayer?.(layer.id)}
             onDragStart={onDragStart}
             onDragMove={onDragMove}
+            onResizeStart={onResizeStart}
             onEditStart={() => onEditTextLayer?.(layer.id)}
             onTextChange={(text) => onTextLayerChange?.(layer.id, text)}
             onFinishEditing={onFinishEditing}
             onDelete={() => onDeleteLayer?.(layer.id)}
             interactive={interactive}
           />
-        ) : (
+        ) : layer.type === "icon" ? (
           <IconLayerView
             key={layerKey(layer)}
             layer={layer}
@@ -312,6 +454,18 @@ export function CoverCanvasContent({
             onSelect={() => onSelectLayer?.(layer.id)}
             onDragStart={onDragStart}
             onDragMove={onDragMove}
+            onDelete={() => onDeleteLayer?.(layer.id)}
+            interactive={interactive}
+          />
+        ) : (
+          <ImageLayerView
+            key={layerKey(layer)}
+            layer={layer}
+            selected={layer.id === selectedLayerId}
+            onSelect={() => onSelectLayer?.(layer.id)}
+            onDragStart={onDragStart}
+            onDragMove={onDragMove}
+            onResizeStart={onResizeStart}
             onDelete={() => onDeleteLayer?.(layer.id)}
             interactive={interactive}
           />

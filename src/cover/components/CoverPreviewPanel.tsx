@@ -1,13 +1,18 @@
 import { Code2, Save } from "lucide-react";
 import {
   type CSSProperties,
+  type MouseEvent as ReactMouseEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   type RefObject,
   type WheelEvent as ReactWheelEvent,
 } from "react";
 import type { CoverLayer } from "@/cover/lib/cover";
-import type { CenterGuideState, CoverBackgroundSelection } from "./coverEditorTypes";
+import type {
+  CenterGuideState,
+  CoverBackgroundSelection,
+  ResizeHandleCorner,
+} from "./coverEditorTypes";
 import { CoverCanvasContent } from "./CoverCanvas";
 
 type CoverPreviewPanelProps = {
@@ -24,10 +29,15 @@ type CoverPreviewPanelProps = {
   editingLayerId: string | null;
   centerGuides: CenterGuideState;
   onWheel: (event: ReactWheelEvent<HTMLDivElement>) => void;
-  onPointerMove: (event: ReactPointerEvent<HTMLElement>) => void;
+  onPointerMove: (event: ReactPointerEvent<HTMLElement> | ReactMouseEvent<HTMLElement>) => void;
   onPointerEnd: () => void;
   onSelectLayer: (layerId: string) => void;
   onBeginDrag: (event: ReactPointerEvent<HTMLButtonElement>, layer: CoverLayer) => void;
+  onBeginResize: (
+    event: ReactPointerEvent<HTMLButtonElement> | ReactMouseEvent<HTMLButtonElement>,
+    layer: CoverLayer,
+    corner: ResizeHandleCorner,
+  ) => void;
   onEditTextLayer: (layerId: string) => void;
   onTextLayerChange: (layerId: string, text: string) => void;
   onFinishEditing: () => void;
@@ -56,6 +66,7 @@ export function CoverPreviewPanel({
   onPointerEnd,
   onSelectLayer,
   onBeginDrag,
+  onBeginResize,
   onEditTextLayer,
   onTextLayerChange,
   onFinishEditing,
@@ -120,6 +131,8 @@ export function CoverPreviewPanel({
             onPointerMove={onPointerMove}
             onPointerUp={onPointerEnd}
             onPointerCancel={onPointerEnd}
+            onMouseMove={onPointerMove}
+            onMouseUp={onPointerEnd}
             className={[
               "absolute left-0 top-0 overflow-hidden shadow-[0_18px_42px_rgba(38,37,30,0.16)] ring-1 ring-black/10",
               selectedBackgroundClassName,
@@ -146,6 +159,7 @@ export function CoverPreviewPanel({
               onSelectLayer={onSelectLayer}
               onDragStart={onBeginDrag}
               onDragMove={onPointerMove}
+              onResizeStart={onBeginResize}
               onEditTextLayer={onEditTextLayer}
               onTextLayerChange={onTextLayerChange}
               onFinishEditing={onFinishEditing}

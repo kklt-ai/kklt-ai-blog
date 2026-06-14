@@ -9,7 +9,7 @@ import {
   Type,
   Upload,
 } from "lucide-react";
-import type { RefObject } from "react";
+import type { ChangeEvent, RefObject } from "react";
 import {
   type BrandIcon,
   type BrandIconId,
@@ -61,6 +61,7 @@ type CoverToolPanelProps = {
   onLogoSearchQueryChange: (query: string) => void;
   filteredBrandIcons: BrandIcon[];
   onAddIconLayer: (iconId: BrandIconId) => void;
+  onUploadImage: (file: File) => void;
   channelId: CoverChannelId;
   backgroundTabId: CoverBackgroundTabId;
   onBackgroundTabChange: (tabId: CoverBackgroundTabId) => void;
@@ -285,6 +286,7 @@ function ImagePanel({
   onLogoSearchQueryChange,
   filteredBrandIcons,
   onAddIconLayer,
+  onUploadImage,
 }: Pick<
   CoverToolPanelProps,
   | "logoSearchInputRef"
@@ -292,7 +294,14 @@ function ImagePanel({
   | "onLogoSearchQueryChange"
   | "filteredBrandIcons"
   | "onAddIconLayer"
+  | "onUploadImage"
 >) {
+  const handleImageUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) onUploadImage(file);
+    event.target.value = "";
+  };
+
   return (
     <section className="flex h-full min-h-0 flex-col">
       <div className="mb-5 flex items-center justify-between gap-3">
@@ -308,6 +317,17 @@ function ImagePanel({
           <ExternalLink size={18} aria-hidden="true" />
         </a>
       </div>
+      <label className="mb-3 flex h-11 cursor-pointer items-center justify-center gap-2 rounded-md border border-[#979696]/45 bg-[#26251e] px-3 text-sm font-semibold text-white transition hover:bg-[#3a3933]">
+        <Upload size={17} aria-hidden="true" />
+        上传图片
+        <input
+          type="file"
+          accept="image/*"
+          aria-label="上传图片素材"
+          onChange={handleImageUpload}
+          className="sr-only"
+        />
+      </label>
       <input
         ref={logoSearchInputRef}
         type="search"

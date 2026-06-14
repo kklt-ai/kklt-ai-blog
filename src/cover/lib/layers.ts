@@ -1,4 +1,10 @@
-import type { BrandIconId, CoverIconLayer, CoverLayer, CoverTextLayer } from "./types";
+import type {
+  BrandIconId,
+  CoverIconLayer,
+  CoverImageLayer,
+  CoverLayer,
+  CoverTextLayer,
+} from "./types";
 
 let nextLayerId = 1;
 
@@ -37,6 +43,18 @@ export function createIconLayer(iconId: BrandIconId): CoverIconLayer {
     x: 72,
     y: 12,
     size: 13,
+  };
+}
+
+export function createImageLayer(src: string, alt: string): CoverImageLayer {
+  return {
+    id: layerId("image"),
+    type: "image",
+    src,
+    alt,
+    x: 34,
+    y: 18,
+    width: 32,
   };
 }
 

@@ -121,7 +121,17 @@ export type CoverIconLayer = {
   size: number;
 };
 
-export type CoverLayer = CoverTextLayer | CoverIconLayer;
+export type CoverImageLayer = {
+  id: string;
+  type: "image";
+  src: string;
+  alt: string;
+  x: number;
+  y: number;
+  width: number;
+};
+
+export type CoverLayer = CoverTextLayer | CoverIconLayer | CoverImageLayer;
 
 export type CoverTemplate = {
   id: string;
