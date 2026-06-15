@@ -2,10 +2,13 @@ import { render, screen } from "@testing-library/react";
 import Home from "./page";
 
 describe("Home", () => {
-  it("renders the Kakaluote AI works landing page as the project homepage", () => {
-    render(<Home />);
+  it("renders the kklt AI works landing page as the project homepage", () => {
+    const { container } = render(<Home />);
 
     expect(screen.getByRole("heading", { name: "卡卡罗特AI" })).toBeInTheDocument();
+    expect(container.querySelector("main")).toHaveStyle({
+      "--font-mincho": '"Huiwen Mincho", "Huiwen-mincho", "Noto Serif SC", "Songti SC", "STSong", Georgia, serif',
+    });
     expect(screen.queryByText("关注公众号：卡卡罗特AI｜持续分享有用的 AI 内容")).not.toBeInTheDocument();
     expect(
       screen.getByText((_, element) => element?.tagName === "P" && element.textContent === "持续分享有用的 AI 内容～"),

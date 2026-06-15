@@ -6,6 +6,7 @@ const css = readFileSync(resolve(process.cwd(), "src/app/globals.css"), "utf8");
 
 describe("global styles", () => {
   it("keeps Tailwind and shared application tokens in the global stylesheet", () => {
+    expect(css).toContain('@import url("https://fontsapi.zeoseven.com/256/main/result.css");');
     expect(css).toContain("@tailwind base;");
     expect(css).toContain("--app-bg: #fef15a;");
     expect(css).toContain("--ink: #111111;");

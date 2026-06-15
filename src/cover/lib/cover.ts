@@ -1,6 +1,7 @@
 export type {
   BrandIcon,
   BrandIconId,
+  CoverBackgroundFit,
   CoverBackgroundImage,
   CoverChannel,
   CoverChannelId,

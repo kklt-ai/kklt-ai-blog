@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, Layers, Plus, Trash2 } from "lucide-react";
+import { imageBackgroundStyle } from "./backgroundStyles";
 import type { CoverBoard } from "./coverBoards";
 
 type CoverBoardStripProps = {
@@ -18,11 +19,7 @@ function boardPreviewText(board: CoverBoard) {
 
 function boardPreviewStyle(board: CoverBoard) {
   if (board.selectedBackground.kind === "image") {
-    return {
-      backgroundImage: `url(${board.selectedBackground.src})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-    };
+    return imageBackgroundStyle(board.selectedBackground);
   }
   return {};
 }

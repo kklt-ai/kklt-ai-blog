@@ -39,10 +39,10 @@ export const homeCopy = {
     joinUs: "About",
     docs: "Projects",
     subtitle:
-      "Kakaluote AI is a WeChat creator sharing practical AI content. This page collects small tools built with vibe coding.",
-    featuresTitle: "Vibe Coding Works by Kakaluote AI",
+      "kklt AI is a WeChat creator sharing practical AI content. This page collects small tools built with vibe coding.",
+    featuresTitle: "Vibe Coding Works by kklt AI",
     qrTitle: "Follow on WeChat",
-    qrBody: "Kakaluote AI · useful AI content",
+    qrBody: "kklt AI · useful AI content",
     github: "GitHub",
     cards: [
       {

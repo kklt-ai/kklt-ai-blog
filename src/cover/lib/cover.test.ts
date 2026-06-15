@@ -44,6 +44,7 @@ describe("cover editor model", () => {
           id: "wechat-cat-and-dog",
           name: "公众号猫狗横版",
           src: "/cover/template/wechat/CatAndDog.png",
+          fit: "contain",
         }),
       ]),
     );

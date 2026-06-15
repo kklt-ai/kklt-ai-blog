@@ -30,5 +30,6 @@ export const WECHAT_COVER_BACKGROUND_IMAGES: CoverBackgroundImage[] = [
     name: "公众号猫狗横版",
     channel: "wechat",
     src: "/cover/template/wechat/CatAndDog.png",
+    fit: "contain",
   },
 ];

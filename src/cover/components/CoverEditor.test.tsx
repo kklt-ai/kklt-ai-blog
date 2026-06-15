@@ -151,6 +151,38 @@ describe("CoverEditor", () => {
     expect(screen.queryByRole("img", { name: "窗口卡片背景预览" })).not.toBeInTheDocument();
   });
 
+  it("keeps the full WeChat cat and dog background visible in preview and export", async () => {
+    render(<CoverEditor />);
+
+    fireEvent.click(screen.getByRole("button", { name: /公众号/ }));
+    fireEvent.click(screen.getByRole("button", { name: "背景" }));
+
+    expect(screen.getByRole("img", { name: "公众号猫狗横版背景预览" })).toHaveClass(
+      "object-contain",
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "使用 公众号猫狗横版 背景" }));
+
+    const previewCanvas = screen.getByLabelText("封面画布");
+    expect(previewCanvas.style.backgroundImage).toBe(
+      'url("/cover/template/wechat/CatAndDog.png")',
+    );
+    expect(previewCanvas.style.backgroundSize).toBe("contain");
+    expect(previewCanvas.style.backgroundPosition).toBe("center");
+    expect(previewCanvas.style.backgroundRepeat).toBe("no-repeat");
+
+    fireEvent.click(screen.getByRole("button", { name: "导出 PNG" }));
+
+    await waitFor(() => expect(downloadCoverNodeAsPng).toHaveBeenCalledTimes(1));
+    const exportedNode = vi.mocked(downloadCoverNodeAsPng).mock.calls[0][0];
+    expect(exportedNode.style.backgroundImage).toBe(
+      'url("/cover/template/wechat/CatAndDog.png")',
+    );
+    expect(exportedNode.style.backgroundSize).toBe("contain");
+    expect(exportedNode.style.backgroundPosition).toBe("center");
+    expect(exportedNode.style.backgroundRepeat).toBe("no-repeat");
+  });
+
   it("uploads, favorites, applies, and deletes custom image backgrounds", async () => {
     render(<CoverEditor />);
 

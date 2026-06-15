@@ -10,6 +10,8 @@ export type CoverChannel = {
   height: number;
 };
 
+export type CoverBackgroundFit = "cover" | "contain";
+
 export type BrandIconId =
   | "alibaba"
   | "codex"
@@ -148,6 +150,7 @@ export type CoverBackgroundImage = {
   name: string;
   channel: CoverChannelId;
   src: string;
+  fit?: CoverBackgroundFit;
 };
 
 export type BrandIcon = {

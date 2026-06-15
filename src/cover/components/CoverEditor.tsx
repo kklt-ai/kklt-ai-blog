@@ -38,6 +38,7 @@ import { CoverExportCanvas, CoverPreviewPanel } from "./CoverPreviewPanel";
 import { CoverBoardStrip } from "./CoverBoardStrip";
 import { SaveTemplateDialog } from "./SaveTemplateDialog";
 import { TemplateApplyDialog } from "./TemplateApplyDialog";
+import { imageBackgroundStyle } from "./backgroundStyles";
 import { useCoverBoards } from "./useCoverBoards";
 import { useCoverAssetLibrary } from "./useCoverAssetLibrary";
 import {
@@ -94,6 +95,7 @@ function backgroundSelectionForTemplate(
         kind: "image",
         id: image.id,
         src: image.src,
+        ...(image.fit ? { fit: image.fit } : {}),
       };
     }
   }
@@ -353,7 +355,12 @@ export function CoverEditor() {
       nextFavoriteTimes,
     )[0];
     if (nextBackground) {
-      setSelectedBackground({ kind: "image", id: nextBackground.id, src: nextBackground.src });
+      setSelectedBackground({
+        kind: "image",
+        id: nextBackground.id,
+        src: nextBackground.src,
+        ...(nextBackground.fit ? { fit: nextBackground.fit } : {}),
+      });
     }
   };
 
@@ -755,11 +762,7 @@ export function CoverEditor() {
     selectedBackground.kind === "color" ? selectedBackground.className : "";
   const selectedBackgroundStyle: CSSProperties =
     selectedBackground.kind === "image"
-      ? {
-          backgroundImage: `url(${selectedBackground.src})`,
-          backgroundPosition: "center",
-          backgroundSize: "cover",
-        }
+      ? imageBackgroundStyle(selectedBackground)
       : {};
   const pageStyle = {
     "--cover-accent": channel.brandColor,

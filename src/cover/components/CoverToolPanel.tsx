@@ -24,6 +24,7 @@ import type {
   CoverBackgroundTabId,
   CoverToolId,
 } from "./coverEditorTypes";
+import { imageBackgroundStyle, imagePreviewObjectFitClassName } from "./backgroundStyles";
 
 const COVER_TOOLS: Array<{
   id: CoverToolId;
@@ -84,13 +85,7 @@ function TemplateThumbnail({
 }) {
   const channel = getChannel(template.channel);
   const previewScale = templatePreviewScale(template.channel);
-  const backgroundStyle = imageBackground
-    ? {
-        backgroundImage: `url("${imageBackground.src}")`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }
-    : undefined;
+  const backgroundStyle = imageBackground ? imageBackgroundStyle(imageBackground) : undefined;
 
   return (
     <span
@@ -414,6 +409,7 @@ function BackgroundPanel({
               kind: "image",
               id: background.id,
               src: background.src,
+              ...(background.fit ? { fit: background.fit } : {}),
             })
           }
           className={[
@@ -426,7 +422,11 @@ function BackgroundPanel({
           <img
             src={background.src}
             alt={`${background.name}背景预览`}
-            className={["block w-full rounded-md object-cover", aspectClassName].join(" ")}
+            className={[
+              "block w-full rounded-md",
+              imagePreviewObjectFitClassName(background.fit),
+              aspectClassName,
+            ].join(" ")}
           />
           <span className="mt-2 block truncate text-sm font-semibold">{background.name}</span>
         </button>

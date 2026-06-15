@@ -15,7 +15,7 @@ const pageVars = {
   "--color-ink-soft": "#504f49",
   "--color-border": "#979696",
   "--color-chip-bg": "#f3f0ef",
-  "--font-mincho": '"Huiwen Mincho", "Noto Serif SC", "Songti SC", "STSong", Georgia, serif',
+  "--font-mincho": '"Huiwen Mincho", "Huiwen-mincho", "Noto Serif SC", "Songti SC", "STSong", Georgia, serif',
   "--font-display": '"Questrial", "Century Gothic", "Avenir Next", "MiSans", sans-serif',
   "--font-misans": '"MiSans", "PingFang SC", -apple-system, "Microsoft YaHei", sans-serif',
 } as CSSProperties;

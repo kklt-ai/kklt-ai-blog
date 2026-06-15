@@ -114,7 +114,7 @@ describe("downloadNodeAsPng", () => {
 });
 
 describe("export filenames", () => {
-  it("uses the Kakaluote AI public-account prefix with local date and page number", () => {
+  it("uses the kklt AI public-account prefix with local date and page number", () => {
     const date = new Date(2026, 4, 31);
 
     expect(exportPageFilename(0, date)).toBe("【卡卡罗特AI】-2026-05-31-第1页.png");
