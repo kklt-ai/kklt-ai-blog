@@ -1,5 +1,5 @@
 import { Dispatch, RefObject, SetStateAction } from "react";
-import { GITHUB_URL, HomeCopy, Language, QR_CODE_SRC } from "../content";
+import { GITHUB_URL, HomeCopy, Language, QR_CODE_SRC, WECHAT_URL } from "../content";
 import { ArrowIcon } from "../icons";
 import { HeaderNav } from "./HeaderNav";
 
@@ -87,7 +87,7 @@ export function HeroSection({
         <div className="flex items-center gap-5 max-[640px]:mt-5 max-[640px]:w-full max-[640px]:max-w-[300px] max-[640px]:gap-[13px]">
           <CtaButton href={GITHUB_URL}>{copy.github}</CtaButton>
           <CtaButton href="#works">{copy.docs}</CtaButton>
-          <CtaButton href="#wechat" primary>
+          <CtaButton href={WECHAT_URL} primary>
             公众号
           </CtaButton>
         </div>

@@ -38,9 +38,6 @@ export function HeaderNav({ copy, language, setLanguage }: HeaderNavProps) {
               </a>
             </div>
           </div>
-          <a className={navLinkClass} href="#wechat">
-            {copy.blog}
-          </a>
           <a className={navLinkClass} href={GITHUB_URL} target="_blank" rel="noreferrer">
             {copy.joinUs}
           </a>

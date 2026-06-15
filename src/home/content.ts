@@ -2,6 +2,7 @@ export type Language = "zh" | "en";
 
 export const ASSET_BASE = "/home/assets";
 export const GITHUB_URL = "https://github.com/kklt1024me";
+export const WECHAT_URL = "https://mp.weixin.qq.com/mp/appmsgalbum?__biz=MzYyMjkwMjg0Ng==&action=getalbum&album_id=4260253598405459979&subscene=159&subscene=189&scenenote=https%3A%2F%2Fmp.weixin.qq.com%2Fs%3F__biz%3DMzYyMjkwMjg0Ng%3D%3D%26mid%3D2247484911%26idx%3D1%26sn%3D9e7a9a8d209fca87fe9107d545167302%26chksm%3Dffcfaebec8b827a8d655c7c81aae1d9f4b66e341320e7d5742e5b6ea92be9f4a523f10decd35%26cur_album_id%3D4260253598405459979%26scene%3D189%23wechat_redirect&nolastread=1#wechat_redirect";
 export const QR_CODE_SRC = "/kklt-wechat-qrcode-short.jpg";
 
 export const homeCopy = {
