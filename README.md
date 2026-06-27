@@ -8,7 +8,7 @@
 
 | 主题 | 文章 | 关键词 |
 | --- | --- | --- |
-| Codex / ChatGPT 验证 | [Codex、ChatGPT短信验证码如何验证？](Codex、ChatGPT短信验证码如何验证？/Codex、ChatGPT短信验证码如何验证？.md) | Codex 短信验证码、ChatGPT 短信验证、OpenAI 手机号验证、Codex 接码教程 |
+| Codex / ChatGPT 验证 | [Codex、ChatGPT短信验证码如何验证？](_posts/2026-06-27-codex-chatgpt-sms-verification.md) | Codex 短信验证码、ChatGPT 短信验证、OpenAI 手机号验证、Codex 接码教程 |
 
 ## 内容方向
 
@@ -29,4 +29,8 @@
 
 ## 后续更新
 
-本仓库会持续增加 AI 实战文章，并逐步整理为更适合搜索引擎收录和阅读的博客站点。
+本仓库使用 GitHub Pages + Jekyll 发布。推送到 `main` 后，GitHub Actions 会自动构建并部署站点。
+
+部署入口：GitHub 仓库 `Settings > Pages`，Source 选择 `GitHub Actions`。
+
+站点地址：`https://kklt-ai.github.io/kklt-ai-blog/`

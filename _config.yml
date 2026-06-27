@@ -1,0 +1,31 @@
+title: "卡卡罗特AI"
+description: "AI工具教程、ChatGPT使用技巧、OpenAI Codex实战、Claude、AI编程与自动化工作流。"
+lang: zh-CN
+timezone: Asia/Shanghai
+url: "https://kklt-ai.github.io"
+baseurl: "/kklt-ai-blog"
+
+author:
+  name: "卡卡罗特AI"
+
+theme: minima
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+
+permalink: /:title/
+
+defaults:
+  - scope:
+      path: ""
+      type: posts
+    values:
+      layout: post
+  - scope:
+      path: ""
+    values:
+      layout: default
+
+exclude:
+  - README.md
