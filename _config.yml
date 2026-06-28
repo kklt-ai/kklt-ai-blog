@@ -19,10 +19,13 @@ plugins:
   - jekyll-feed
   - jekyll-seo-tag
   - jekyll-sitemap
+  - jekyll-paginate
 
 permalink: /:title/
 feed:
   path: atom.xml
+paginate: 10
+paginate_path: /page:num/
 category_archive_path: "/categories/#"
 tag_archive_path: "/tags/#"
 
@@ -36,6 +39,10 @@ defaults:
 
 exclude:
   - README.md
+  - Gemfile
+  - Gemfile.lock
+  - vendor
+  - .bundle
 
 footer_links:
   - title: Feed
