@@ -223,12 +223,26 @@ body.layout--home .home-entry__meta {
 }
 
 body.layout--home .home-entry__excerpt {
+  position: relative;
   margin: 0;
-  padding: 2px 0 2px 16px;
+  padding: 2px 0 2px 22px;
   color: #666;
-  border-left: 4px solid #d6d6d6;
   font-size: clamp(0.86rem, 0.92vw, 0.9rem);
   line-height: 1.72;
+}
+
+body.layout--home .home-entry__excerpt::before {
+  position: absolute;
+  top: 0.16em;
+  bottom: 0.16em;
+  left: 0;
+  width: 4px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #eeeeee 0%, #d1d1d1 45%, #e8e8e8 100%);
+  box-shadow:
+    2px 0 8px rgba(0, 0, 0, 0.16),
+    -1px 0 0 rgba(255, 255, 255, 0.9);
+  content: "";
 }
 
 body.layout--home .home-pagination {
