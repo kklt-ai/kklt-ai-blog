@@ -12,6 +12,8 @@ skin: "/assets/css/skins/light.css"
 
 author:
   name: "卡卡罗特AI"
+  avatar: "/assets/images/wechat-header.JPG"
+  bio: "每天持续分享对你有用的AI知识。"
 
 remote_theme: "mmistakes/so-simple-theme@3.2.0"
 plugins:
