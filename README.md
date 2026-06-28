@@ -24,7 +24,7 @@
 持续更新 AI 工具教程、ChatGPT/Codex 使用经验和实战案例。
 
 <p align="center">
-  <img src="Codex、ChatGPT短信验证码如何验证？/imgs/kklt-wechat.jpg" alt="卡卡罗特AI微信公众号二维码" width="320">
+  <img src="assets/images/kklt-wechat.jpg" alt="卡卡罗特AI微信公众号二维码" width="320">
 </p>
 
 ## 后续更新
