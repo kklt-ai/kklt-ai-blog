@@ -43,6 +43,8 @@ exclude:
   - Gemfile.lock
   - vendor
   - .bundle
+  - .idea
+  - .superpowers
 
 footer_links:
   - title: Feed
