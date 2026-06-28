@@ -29,7 +29,7 @@
 
 ## 后续更新
 
-本仓库使用 GitHub Pages + Jekyll 发布。推送到 `main` 后，GitHub Actions 会自动构建并部署站点。
+本仓库使用 GitHub Pages + Jekyll 发布，主题为 [So Simple](https://github.com/mmistakes/so-simple-theme)。推送到 `main` 后，GitHub Actions 会自动构建并部署站点。
 
 部署入口：GitHub 仓库 `Settings > Pages`，Source 选择 `GitHub Actions`。
 
