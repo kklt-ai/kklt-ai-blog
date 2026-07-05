@@ -20,6 +20,24 @@ describe("Home", () => {
 
     const mainNavigation = screen.getByRole("navigation", { name: "Main navigation" });
     expect(within(mainNavigation).queryByRole("link", { name: "公众号" })).not.toBeInTheDocument();
+    expect(within(mainNavigation).getByRole("menuitem", { name: "md生成卡片" })).toHaveAttribute(
+      "href",
+      "/md-card",
+    );
+    expect(within(mainNavigation).getByRole("menuitem", { name: "自媒体封面" })).toHaveAttribute(
+      "href",
+      "/cover",
+    );
+
+    const mobileNavigation = screen.getByRole("navigation", { name: "Mobile navigation" });
+    expect(within(mobileNavigation).getByRole("menuitem", { name: "md生成卡片" })).toHaveAttribute(
+      "href",
+      "/md-card",
+    );
+    expect(within(mobileNavigation).getByRole("menuitem", { name: "自媒体封面" })).toHaveAttribute(
+      "href",
+      "/cover",
+    );
 
     const wechatLinks = screen.getAllByRole("link", { name: "公众号" });
     expect(wechatLinks).toHaveLength(1);
