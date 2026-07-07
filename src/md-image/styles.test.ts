@@ -39,6 +39,11 @@ describe("Markdown image scoped styles", () => {
     );
   });
 
+  it("renders Markdown images without cropping by default and supports crop-to-fit", () => {
+    expect(getRule(".xhs-page figure > img")).toContain("object-fit: contain");
+    expect(css).toContain(".xhs-page.image-crop-to-fit figure > img {\n  object-fit: cover;\n}");
+  });
+
   it("keeps Markdown image styles from overriding the author watermark avatar", () => {
     expect(getRule(".xhs-page img")).toBe("");
     expect(getRule(".xhs-page figure > img")).toContain("width: 100%");

@@ -19,6 +19,7 @@ type SettingsPanelProps = {
   dimensions: Dimensions;
   fixedSizeEnabled: boolean;
   autoPaginate: boolean;
+  imageCropToFit: boolean;
   fontId: string;
   fontSizePreset: FontSizePreset;
   customFontSize: number;
@@ -27,6 +28,7 @@ type SettingsPanelProps = {
   onDimensionsChange: (dimensions: Dimensions) => void;
   onFixedSizeEnabledChange: (enabled: boolean) => void;
   onAutoPaginateChange: (enabled: boolean) => void;
+  onImageCropToFitChange: (enabled: boolean) => void;
   onFontChange: (fontId: string) => void;
   onFontSizePresetChange: (preset: FontSizePreset) => void;
   onCustomFontSizeChange: (size: number) => void;
@@ -66,6 +68,7 @@ export function SettingsPanel({
   dimensions,
   fixedSizeEnabled,
   autoPaginate,
+  imageCropToFit,
   fontId,
   fontSizePreset,
   customFontSize,
@@ -74,6 +77,7 @@ export function SettingsPanel({
   onDimensionsChange,
   onFixedSizeEnabledChange,
   onAutoPaginateChange,
+  onImageCropToFitChange,
   onFontChange,
   onFontSizePresetChange,
   onCustomFontSizeChange,
@@ -232,6 +236,20 @@ export function SettingsPanel({
                 </label>
               </div>
             ) : null}
+          </section>
+
+          <section className={settingGroupClassName}>
+            <h3 className="m-0 text-[15px]">图片显示</h3>
+            <label className={switchRowClassName}>
+              <input
+                aria-label="按当前尺寸裁剪显示"
+                type="checkbox"
+                checked={imageCropToFit}
+                onChange={(event) => onImageCropToFitChange(event.target.checked)}
+                className={checkboxClassName}
+              />
+              <span>按当前尺寸裁剪显示</span>
+            </label>
           </section>
 
           <section className={settingGroupClassName}>

@@ -28,6 +28,7 @@ type RenderedPageProps = {
   typography?: ResolvedTypography;
   localImageSources?: LocalImageSources;
   watermark?: WatermarkSettings;
+  imageCropToFit?: boolean;
   scale?: number;
 };
 
@@ -169,6 +170,7 @@ export function RenderedPage({
   typography,
   localImageSources = {},
   watermark,
+  imageCropToFit = false,
   scale = 1,
 }: RenderedPageProps) {
   const syntax = resolveThemeSyntax(theme);
@@ -217,7 +219,12 @@ export function RenderedPage({
     Boolean(watermark?.enabled) && Boolean(trimmedAuthorName || watermark?.avatarSrc);
 
   return (
-    <article className={`xhs-page theme-${theme.id} motif-${theme.motif}`} style={style}>
+    <article
+      className={`xhs-page theme-${theme.id} motif-${theme.motif} ${
+        imageCropToFit ? "image-crop-to-fit" : ""
+      }`}
+      style={style}
+    >
       {isIPhoneNotes ? <IPhoneNotesChrome /> : null}
       {shouldRenderWatermark ? (
         <div className="xhs-watermark" aria-label="作者水印">

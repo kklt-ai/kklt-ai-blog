@@ -46,6 +46,7 @@ type StoredState = {
   dimensions?: Dimensions;
   fixedSizeEnabled?: boolean;
   autoPaginate?: boolean;
+  imageCropToFit?: boolean;
   fontId?: string;
   fontSizePreset?: FontSizePreset;
   customFontSize?: number;
@@ -58,6 +59,7 @@ export function MarkdownImageApp() {
   const [dimensions, setDimensions] = useState(DEFAULT_DIMENSIONS);
   const [fixedSizeEnabled, setFixedSizeEnabled] = useState(false);
   const [autoPaginate, setAutoPaginate] = useState(true);
+  const [imageCropToFit, setImageCropToFit] = useState(false);
   const [fontId, setFontId] = useState(defaultTypography.fontId);
   const [fontSizePreset, setFontSizePreset] = useState<FontSizePreset>(
     defaultTypography.fontSizePreset,
@@ -89,6 +91,9 @@ export function MarkdownImageApp() {
         setFixedSizeEnabled(parsed.fixedSizeEnabled);
       }
       if (typeof parsed.autoPaginate === "boolean") setAutoPaginate(parsed.autoPaginate);
+      if (typeof parsed.imageCropToFit === "boolean") {
+        setImageCropToFit(parsed.imageCropToFit);
+      }
       if (typeof parsed.fontId === "string" && isFontId(parsed.fontId)) {
         setFontId(parsed.fontId);
       }
@@ -120,6 +125,7 @@ export function MarkdownImageApp() {
         dimensions,
         fixedSizeEnabled,
         autoPaginate,
+        imageCropToFit,
         fontId,
         fontSizePreset,
         customFontSize,
@@ -133,6 +139,7 @@ export function MarkdownImageApp() {
     fixedSizeEnabled,
     fontId,
     fontSizePreset,
+    imageCropToFit,
     markdown,
     themeId,
     watermark,
@@ -285,6 +292,7 @@ export function MarkdownImageApp() {
             dimensions,
             fixedSizeEnabled,
             autoPaginate,
+            imageCropToFit,
             fontId,
             fontSizePreset,
             customFontSize,
@@ -310,6 +318,7 @@ export function MarkdownImageApp() {
     fixedSizeEnabled,
     fontId,
     fontSizePreset,
+    imageCropToFit,
     markdown,
     themeId,
     watermark,
@@ -347,6 +356,7 @@ export function MarkdownImageApp() {
         pageDimensions={pageDimensions}
         localImageSources={localImageSources}
         watermark={watermark}
+        imageCropToFit={imageCropToFit}
         autoHeightEnabled={!fixedSizeEnabled}
         isExporting={isExporting}
         onPageChange={setSelectedPageIndex}
@@ -360,6 +370,7 @@ export function MarkdownImageApp() {
         dimensions={dimensions}
         fixedSizeEnabled={fixedSizeEnabled}
         autoPaginate={autoPaginate}
+        imageCropToFit={imageCropToFit}
         fontId={fontId}
         fontSizePreset={fontSizePreset}
         customFontSize={customFontSize}
@@ -368,6 +379,7 @@ export function MarkdownImageApp() {
         onDimensionsChange={(next) => setDimensions(clampDimensions(next))}
         onFixedSizeEnabledChange={setFixedSizeEnabled}
         onAutoPaginateChange={setAutoPaginate}
+        onImageCropToFitChange={setImageCropToFit}
         onFontChange={setFontId}
         onFontSizePresetChange={setFontSizePreset}
         onCustomFontSizeChange={(size) => setCustomFontSize(clampFontSize(size))}

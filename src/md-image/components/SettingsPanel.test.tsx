@@ -9,6 +9,7 @@ describe("SettingsPanel", () => {
     dimensions: { width: 1080, height: 1440 },
     fixedSizeEnabled: false,
     autoPaginate: true,
+    imageCropToFit: false,
     fontId: "apple-system",
     fontSizePreset: "medium" as const,
     customFontSize: 44,
@@ -21,6 +22,7 @@ describe("SettingsPanel", () => {
     onDimensionsChange: vi.fn(),
     onFixedSizeEnabledChange: vi.fn(),
     onAutoPaginateChange: vi.fn(),
+    onImageCropToFitChange: vi.fn(),
     onFontChange: vi.fn(),
     onFontSizePresetChange: vi.fn(),
     onCustomFontSizeChange: vi.fn(),
@@ -131,6 +133,21 @@ describe("SettingsPanel", () => {
     expect(screen.queryByLabelText("图片圆角")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "导出当前页" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "导出全部 PNG" })).not.toBeInTheDocument();
+  });
+
+  it("toggles image crop-to-fit display", () => {
+    const onImageCropToFitChange = vi.fn();
+
+    render(
+      <SettingsPanel
+        {...baseProps}
+        onImageCropToFitChange={onImageCropToFitChange}
+      />,
+    );
+
+    fireEvent.click(screen.getByLabelText("按当前尺寸裁剪显示"));
+
+    expect(onImageCropToFitChange).toHaveBeenCalledWith(true);
   });
 
   it("changes typography font and preset size from dropdowns", () => {

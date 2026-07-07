@@ -221,8 +221,12 @@
   display: block;
   width: 100%;
   max-height: 460px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: max(0px, calc(var(--syntax-image-radius) - 10px));
+}
+
+.xhs-page.image-crop-to-fit figure > img {
+  object-fit: cover;
 }
 
 .xhs-page figcaption {

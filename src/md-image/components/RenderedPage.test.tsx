@@ -127,6 +127,30 @@ describe("RenderedPage", () => {
     expect(screen.queryByText("Markdown 图片")).toBeNull();
   });
 
+  it("adds crop-to-fit class when image cropping is enabled", () => {
+    const { container } = render(
+      <RenderedPage
+        page={{
+          id: "page-1",
+          manualGroupIndex: 0,
+          estimatedHeight: 0,
+          blocks: [
+            {
+              type: "image",
+              alt: "示例图",
+              url: "https://example.com/sample.jpg",
+            },
+          ],
+        }}
+        theme={getThemeById("punk")}
+        dimensions={{ width: 1080, height: 1440 }}
+        imageCropToFit
+      />,
+    );
+
+    expect(container.querySelector(".image-crop-to-fit")).not.toBeNull();
+  });
+
   it("renders Markdown tables with theme table styles", () => {
     render(
       <RenderedPage

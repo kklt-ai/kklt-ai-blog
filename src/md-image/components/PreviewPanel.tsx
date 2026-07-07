@@ -27,6 +27,7 @@ type PreviewPanelProps = {
   pageDimensions: Dimensions[];
   localImageSources?: LocalImageSources;
   watermark: WatermarkSettings;
+  imageCropToFit: boolean;
   autoHeightEnabled: boolean;
   isExporting: boolean;
   onPageChange: (index: number) => void;
@@ -97,6 +98,7 @@ export function PreviewPanel({
   pageDimensions,
   localImageSources = {},
   watermark,
+  imageCropToFit,
   autoHeightEnabled,
   isExporting,
   onPageChange,
@@ -259,6 +261,7 @@ export function PreviewPanel({
                 dimensions={pageSize}
                 localImageSources={localImageSources}
                 watermark={watermark}
+                imageCropToFit={imageCropToFit}
                 scale={scale}
               />
             </div>
@@ -286,6 +289,7 @@ export function PreviewPanel({
                 dimensions={pageSize}
                 localImageSources={localImageSources}
                 watermark={watermark}
+                imageCropToFit={imageCropToFit}
               />
             </div>
           );
