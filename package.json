@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "build:site": "opennextjs-cloudflare build && node scripts/stage-sites-build.mjs",
+    "build:site": "opennextjs-cloudflare build && node scripts/stage-sites-build.mjs && wrangler deploy dist/worker.js --dry-run --assets dist/assets --outfile dist/server/index.js",
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
