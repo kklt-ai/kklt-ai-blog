@@ -7,6 +7,7 @@ _site/
 .worktrees/
 node_modules/
 .next/
+.open-next/
 out/
 dist/
 tsconfig.tsbuildinfo
