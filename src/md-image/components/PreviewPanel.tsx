@@ -251,7 +251,7 @@ export function PreviewPanel({
                   className="absolute -top-8 left-3 z-[2] inline-flex min-h-6 items-center border-2 border-[rgba(17,17,17,0.55)] bg-[var(--panel)] px-2 py-[3px] text-[11px] font-black leading-none text-[var(--ink)] shadow-[3px_3px_0_rgba(17,17,17,0.14)]"
                   aria-hidden="true"
                 >
-                  当前页
+                  第 {index + 1} 页
                 </span>
               ) : null}
               <div

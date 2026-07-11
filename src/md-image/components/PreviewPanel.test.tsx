@@ -378,6 +378,6 @@ describe("PreviewPanel", () => {
       />,
     );
 
-    expect(screen.getByText("当前页")).toBeInTheDocument();
+    expect(screen.getByText("第 2 页")).toBeInTheDocument();
   });
 });
