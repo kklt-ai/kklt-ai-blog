@@ -33,6 +33,7 @@ type PreviewPanelProps = {
   onPageChange: (index: number) => void;
   registerPageRef: (index: number, node: HTMLDivElement | null) => void;
   onExportCurrent: () => void;
+  onExportPage: (index: number) => void;
   onExportAll: () => void;
 };
 
@@ -104,6 +105,7 @@ export function PreviewPanel({
   onPageChange,
   registerPageRef,
   onExportCurrent,
+  onExportPage,
   onExportAll,
 }: PreviewPanelProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -217,7 +219,7 @@ export function PreviewPanel({
 
       <div
         ref={scrollRef}
-        className="flex flex-1 flex-col items-center gap-9 overflow-y-auto overflow-x-hidden px-0 pb-[30px] pt-[38px]"
+        className="flex flex-1 flex-col items-center gap-12 overflow-y-auto overflow-x-hidden px-0 pb-[30px] pt-[52px]"
       >
         {pages.map((page, index) => {
           const pageSize = resolvedPageDimensions[index] ?? dimensions;
@@ -226,26 +228,24 @@ export function PreviewPanel({
           return (
             <div
               key={page.id}
-              className={[
-                "preview-item relative flex-none cursor-pointer overflow-visible shadow-[0_16px_36px_rgba(17,17,17,0.16)] transition-[box-shadow,outline-color,transform] duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[10px] focus-visible:outline-[var(--hot-pink)]",
-                isSelected
-                  ? "outline outline-2 outline-offset-8 outline-dashed outline-[rgba(17,17,17,0.42)] shadow-[0_18px_42px_rgba(17,17,17,0.2)]"
-                  : "",
-              ].join(" ")}
+              className="preview-item relative flex-none"
               style={{
                 width: pageSize.width * scale,
                 height: pageSize.height * scale,
               }}
-              onClick={() => onPageChange(index)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  onPageChange(index);
-                }
-              }}
             >
+              {isSelected ? (
+                <button
+                  className="absolute -top-9 right-0 z-[3] inline-flex min-h-7 items-center gap-1 border-2 border-[var(--ink)] bg-[var(--electric-blue)] px-2 py-1 text-[11px] font-black leading-none shadow-[2px_2px_0_var(--ink)] hover:-translate-y-0.5 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[var(--hot-pink)] disabled:pointer-events-none disabled:opacity-60"
+                  type="button"
+                  disabled={isExporting}
+                  aria-label={`下载第 ${index + 1} 页`}
+                  onClick={() => onExportPage(index)}
+                >
+                  <Download aria-hidden="true" size={13} />
+                  下载
+                </button>
+              ) : null}
               {isSelected ? (
                 <span
                   className="absolute -top-8 left-3 z-[2] inline-flex min-h-6 items-center border-2 border-[rgba(17,17,17,0.55)] bg-[var(--panel)] px-2 py-[3px] text-[11px] font-black leading-none text-[var(--ink)] shadow-[3px_3px_0_rgba(17,17,17,0.14)]"
@@ -254,16 +254,35 @@ export function PreviewPanel({
                   当前页
                 </span>
               ) : null}
-              <RenderedPage
-                page={page}
-                theme={theme}
-                typography={typography}
-                dimensions={pageSize}
-                localImageSources={localImageSources}
-                watermark={watermark}
-                imageCropToFit={imageCropToFit}
-                scale={scale}
-              />
+              <div
+                className={[
+                  "h-full w-full cursor-pointer overflow-visible shadow-[0_16px_36px_rgba(17,17,17,0.16)] transition-[box-shadow,outline-color,transform] duration-150 focus-visible:outline focus-visible:outline-[3px] focus-visible:outline-offset-[10px] focus-visible:outline-[var(--hot-pink)]",
+                  isSelected
+                    ? "outline outline-2 outline-offset-8 outline-dashed outline-[rgba(17,17,17,0.42)] shadow-[0_18px_42px_rgba(17,17,17,0.2)]"
+                    : "",
+                ].join(" ")}
+                onClick={() => onPageChange(index)}
+                role="button"
+                aria-label={`选择第 ${index + 1} 页`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    onPageChange(index);
+                  }
+                }}
+              >
+                <RenderedPage
+                  page={page}
+                  theme={theme}
+                  typography={typography}
+                  dimensions={pageSize}
+                  localImageSources={localImageSources}
+                  watermark={watermark}
+                  imageCropToFit={imageCropToFit}
+                  scale={scale}
+                />
+              </div>
             </div>
           );
         })}

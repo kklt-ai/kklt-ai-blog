@@ -211,21 +211,21 @@
 }
 
 .xhs-page figure {
-  border: max(2px, var(--page-border-width)) solid var(--syntax-image-border);
-  background: var(--page-panel);
-  padding: 14px;
-  border-radius: var(--syntax-image-radius);
+  width: fit-content;
+  max-width: 100%;
+  align-self: flex-start;
 }
 
 .xhs-page figure > img {
   display: block;
-  width: 100%;
-  max-height: 460px;
-  object-fit: contain;
-  border-radius: max(0px, calc(var(--syntax-image-radius) - 10px));
+  width: auto;
+  max-width: 100%;
+  height: auto;
 }
 
 .xhs-page.image-crop-to-fit figure > img {
+  width: 100%;
+  max-height: 460px;
   object-fit: cover;
 }
 
@@ -492,16 +492,4 @@
 
 .theme-notebook-grid blockquote {
   border-left-color: var(--page-accent);
-}
-
-.theme-notebook-grid figure {
-  border: 8px solid var(--syntax-image-border);
-  background: #82d4ed;
-  padding: 28px;
-  border-radius: 28px;
-  box-shadow: 0 18px 36px rgba(17, 17, 17, 0.12);
-}
-
-.theme-notebook-grid figure > img {
-  border-radius: 10px;
 }

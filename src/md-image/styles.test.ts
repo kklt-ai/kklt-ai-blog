@@ -39,14 +39,31 @@ describe("Markdown image scoped styles", () => {
     );
   });
 
-  it("renders Markdown images without cropping by default and supports crop-to-fit", () => {
-    expect(getRule(".xhs-page figure > img")).toContain("object-fit: contain");
-    expect(css).toContain(".xhs-page.image-crop-to-fit figure > img {\n  object-fit: cover;\n}");
+  it("renders Markdown images at their intrinsic size without a fixed frame", () => {
+    const imageRule = getRule(".xhs-page figure > img");
+
+    expect(css).toContain(
+      ".xhs-page figure {\n  width: fit-content;\n  max-width: 100%;\n  align-self: flex-start;\n}",
+    );
+    expect(imageRule).toContain("width: auto");
+    expect(imageRule).toContain("max-width: 100%");
+    expect(imageRule).toContain("height: auto");
+    expect(imageRule).not.toContain("max-height:");
+    expect(imageRule).not.toContain("object-fit:");
+    expect(getRule(".theme-notebook-grid figure")).toBe("");
+  });
+
+  it("supports the optional crop-to-fit mode", () => {
+    const cropRule = getRule(".xhs-page.image-crop-to-fit figure > img");
+
+    expect(cropRule).toContain("width: 100%");
+    expect(cropRule).toContain("max-height: 460px");
+    expect(cropRule).toContain("object-fit: cover");
   });
 
   it("keeps Markdown image styles from overriding the author watermark avatar", () => {
     expect(getRule(".xhs-page img")).toBe("");
-    expect(getRule(".xhs-page figure > img")).toContain("width: 100%");
+    expect(getRule(".xhs-page figure > img")).toContain("width: auto");
     expect(getRule(".xhs-page .xhs-watermark-avatar")).toContain("border-radius: 999px");
   });
 

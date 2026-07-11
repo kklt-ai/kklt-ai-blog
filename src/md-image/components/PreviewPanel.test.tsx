@@ -144,6 +144,7 @@ describe("PreviewPanel", () => {
         onPageChange={vi.fn()}
         registerPageRef={vi.fn()}
         onExportCurrent={vi.fn()}
+        onExportPage={vi.fn()}
         onExportAll={vi.fn()}
       />,
     );
@@ -181,6 +182,7 @@ describe("PreviewPanel", () => {
         onPageChange={vi.fn()}
         registerPageRef={vi.fn()}
         onExportCurrent={vi.fn()}
+        onExportPage={vi.fn()}
         onExportAll={vi.fn()}
       />,
     );
@@ -222,6 +224,7 @@ describe("PreviewPanel", () => {
         onPageChange={vi.fn()}
         registerPageRef={vi.fn()}
         onExportCurrent={vi.fn()}
+        onExportPage={vi.fn()}
         onExportAll={vi.fn()}
       />,
     );
@@ -265,6 +268,7 @@ describe("PreviewPanel", () => {
         onPageChange={vi.fn()}
         registerPageRef={vi.fn()}
         onExportCurrent={onExportCurrent}
+        onExportPage={vi.fn()}
         onExportAll={onExportAll}
       />,
     );
@@ -285,6 +289,57 @@ describe("PreviewPanel", () => {
 
     expect(onExportCurrent).not.toHaveBeenCalled();
     expect(onExportAll).not.toHaveBeenCalled();
+  });
+
+  it("shows a compact download action only on the selected page", () => {
+    const onPageChange = vi.fn();
+    const onExportPage = vi.fn();
+
+    render(
+      <PreviewPanel
+        pages={[
+          {
+            id: "page-1",
+            manualGroupIndex: 0,
+            estimatedHeight: 700,
+            blocks: [],
+          },
+          {
+            id: "page-2",
+            manualGroupIndex: 1,
+            estimatedHeight: 700,
+            blocks: [],
+          },
+        ]}
+        selectedPageIndex={0}
+        theme={getThemeById("punk")}
+        typography={typography}
+        dimensions={{ width: 1080, height: 1440 }}
+        pageDimensions={[
+          { width: 1080, height: 1440 },
+          { width: 1080, height: 1440 },
+        ]}
+        watermark={watermark}
+        imageCropToFit={false}
+        autoHeightEnabled={false}
+        isExporting={false}
+        onPageChange={onPageChange}
+        registerPageRef={vi.fn()}
+        onExportCurrent={vi.fn()}
+        onExportPage={onExportPage}
+        onExportAll={vi.fn()}
+      />,
+    );
+
+    const downloadFirstPage = screen.getByRole("button", { name: "下载第 1 页" });
+
+    expect(downloadFirstPage).toHaveClass("min-h-7", "text-[11px]", "-top-9", "right-0");
+    expect(screen.queryByRole("button", { name: "下载第 2 页" })).not.toBeInTheDocument();
+
+    fireEvent.click(downloadFirstPage);
+
+    expect(onExportPage).toHaveBeenCalledWith(0);
+    expect(onPageChange).not.toHaveBeenCalled();
   });
 
   it("labels the selected preview page as editor chrome", () => {
@@ -318,6 +373,7 @@ describe("PreviewPanel", () => {
         onPageChange={vi.fn()}
         registerPageRef={vi.fn()}
         onExportCurrent={vi.fn()}
+        onExportPage={vi.fn()}
         onExportAll={vi.fn()}
       />,
     );

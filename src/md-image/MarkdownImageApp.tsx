@@ -254,6 +254,22 @@ export function MarkdownImageApp() {
     }
   }, [exportPage, selectedPageIndex]);
 
+  const exportSinglePage = useCallback(
+    async (index: number) => {
+      setIsExporting(true);
+      setMessage(`正在导出第 ${index + 1} 页...`);
+      try {
+        await exportPage(index);
+        setMessage(`第 ${index + 1} 页已导出`);
+      } catch (error) {
+        setMessage(error instanceof Error ? error.message : "导出失败，请重试");
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [exportPage],
+  );
+
   const exportAll = useCallback(async () => {
     setIsExporting(true);
     setMessage(`正在打包 ${pages.length} 张图片...`);
@@ -362,6 +378,7 @@ export function MarkdownImageApp() {
         onPageChange={setSelectedPageIndex}
         registerPageRef={registerPageRef}
         onExportCurrent={exportCurrent}
+        onExportPage={exportSinglePage}
         onExportAll={exportAll}
       />
 
