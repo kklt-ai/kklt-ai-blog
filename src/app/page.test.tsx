@@ -17,6 +17,7 @@ describe("Home", () => {
     expect(screen.getByRole("heading", { name: "卡卡罗特AI 的 Vibe Coding 作品" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "md生成卡片" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "自媒体封面" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "自动切图" })).toBeInTheDocument();
 
     const mainNavigation = screen.getByRole("navigation", { name: "Main navigation" });
     expect(within(mainNavigation).queryByRole("link", { name: "公众号" })).not.toBeInTheDocument();
@@ -28,6 +29,10 @@ describe("Home", () => {
       "href",
       "/cover",
     );
+    expect(within(mainNavigation).getByRole("menuitem", { name: "自动切图" })).toHaveAttribute(
+      "href",
+      "/image-splitter",
+    );
 
     const mobileNavigation = screen.getByRole("navigation", { name: "Mobile navigation" });
     expect(within(mobileNavigation).getByRole("menuitem", { name: "md生成卡片" })).toHaveAttribute(
@@ -37,6 +42,10 @@ describe("Home", () => {
     expect(within(mobileNavigation).getByRole("menuitem", { name: "自媒体封面" })).toHaveAttribute(
       "href",
       "/cover",
+    );
+    expect(within(mobileNavigation).getByRole("menuitem", { name: "自动切图" })).toHaveAttribute(
+      "href",
+      "/image-splitter",
     );
 
     const wechatLinks = screen.getAllByRole("link", { name: "公众号" });

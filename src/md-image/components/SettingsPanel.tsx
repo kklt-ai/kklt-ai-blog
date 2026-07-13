@@ -36,7 +36,14 @@ type SettingsPanelProps = {
   onWatermarkUploadError: (message: string) => void;
 };
 
-const priorityThemeIds = ["memphis", "iphone-notes", "japanese-minimal", "punk"];
+const priorityThemeIds = [
+  "memphis",
+  "iphone-notes",
+  "japanese-minimal",
+  "punk",
+  "notebook-grid",
+  "elegant-vintage",
+];
 const priorityThemeIdSet = new Set(priorityThemeIds);
 const priorityThemes = priorityThemeIds
   .map((themeId) => themes.find((theme) => theme.id === themeId))
@@ -44,6 +51,8 @@ const priorityThemes = priorityThemeIds
 const remainingThemes = themes.filter((theme) => !priorityThemeIdSet.has(theme.id));
 const settingsPanelClassName =
   "flex min-h-0 min-w-0 flex-col gap-4 self-start overflow-hidden border-4 border-[var(--ink)] bg-[var(--panel)] p-[18px] shadow-[8px_8px_0_var(--ink)] sticky top-[18px] max-[1080px]:static max-sm:border-[3px] max-sm:p-3 max-sm:shadow-[5px_5px_0_var(--ink)]";
+const themeSettingsPanelClassName =
+  "max-h-[calc(100vh-36px)] max-[1080px]:max-h-none max-[1080px]:overflow-visible";
 const settingGroupClassName = "grid gap-2.5";
 const settingTabPanelClassName = "grid gap-4";
 const formBoxClassName =
@@ -143,7 +152,12 @@ export function SettingsPanel({
   );
 
   return (
-    <aside className={settingsPanelClassName} aria-label="设置面板">
+    <aside
+      className={`${settingsPanelClassName} ${
+        activeTab === "themes" ? themeSettingsPanelClassName : ""
+      }`}
+      aria-label="设置面板"
+    >
       <div className="flex items-center justify-between gap-3 max-sm:flex-col max-sm:items-start">
         <PanelTopOpen aria-hidden="true" size={22} />
       </div>
@@ -388,7 +402,7 @@ export function SettingsPanel({
       ) : (
         <section
           id="settings-panel-themes"
-          className={`${settingGroupClassName} ${settingTabPanelClassName}`}
+          className={`${settingGroupClassName} ${settingTabPanelClassName} min-h-0 overflow-y-auto overscroll-contain pr-2 [scrollbar-gutter:stable] max-[1080px]:overflow-visible max-[1080px]:pr-0`}
           role="tabpanel"
           aria-labelledby="settings-tab-themes"
         >

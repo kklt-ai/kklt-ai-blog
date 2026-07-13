@@ -17,6 +17,11 @@ const layouts = [
     image: "left-[527px] top-0 w-[573px]",
     text: "left-[129px] top-[130px]",
   },
+  {
+    card: "bg-[#efebe3]",
+    image: "left-0 top-0 w-[573px]",
+    text: "left-[648px] top-[136px]",
+  },
 ] as const;
 
 export function FeatureCard({ card, index, typed }: FeatureCardProps) {

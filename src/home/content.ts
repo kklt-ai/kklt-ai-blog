@@ -32,6 +32,13 @@ export const homeCopy = {
         image: "project-cover.png",
         href: "/cover",
       },
+      {
+        id: "image-splitter",
+        title: "自动切图",
+        body: "框选图片中的有效区域，按三宫格、六宫格、九宫格或自定义行列快速切分，并打包下载。",
+        image: "project-image-splitter.svg",
+        href: "/image-splitter",
+      },
     ],
   },
   en: {
@@ -59,6 +66,13 @@ export const homeCopy = {
         body: "Design cover images for Xiaohongshu, WeChat, and other creator platforms with templates, backgrounds, layers, guides, and PNG export.",
         image: "project-cover.png",
         href: "/cover",
+      },
+      {
+        id: "image-splitter",
+        title: "Image Splitter",
+        body: "Select an image region, split it into a preset or custom grid, choose the output format, and download every tile as a ZIP.",
+        image: "project-image-splitter.svg",
+        href: "/image-splitter",
       },
     ],
   },

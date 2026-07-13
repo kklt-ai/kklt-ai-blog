@@ -74,7 +74,7 @@ describe("SettingsPanel", () => {
     fireEvent.click(screen.getByRole("tab", { name: "主题" }));
 
     const themeButtons = screen.getAllByRole("button", {
-      name: /孟菲斯|iPhone 备忘录|日式极简|朋克风格/,
+      name: /孟菲斯|iPhone 备忘录|日式极简|朋克风格|方格笔记本|优雅复古/,
     });
 
     expect(themeButtons.map((button) => button.textContent)).toEqual([
@@ -82,8 +82,18 @@ describe("SettingsPanel", () => {
       expect.stringContaining("iPhone 备忘录"),
       expect.stringContaining("日式极简"),
       expect.stringContaining("朋克风格"),
+      expect.stringContaining("方格笔记本"),
+      expect.stringContaining("优雅复古"),
     ]);
     expect(screen.queryByRole("button", { name: /波普艺术/ })).not.toBeInTheDocument();
+
+    expect(screen.getByRole("tabpanel")).toHaveClass(
+      "overflow-y-auto",
+      "overscroll-contain",
+    );
+    expect(screen.getByLabelText("设置面板")).toHaveClass(
+      "max-h-[calc(100vh-36px)]",
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "展开更多主题" }));
 
