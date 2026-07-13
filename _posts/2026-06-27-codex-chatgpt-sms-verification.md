@@ -1,0 +1,267 @@
+---
+title: "Codex、ChatGPT短信验证码如何验证？"
+description: "Codex 登录遇到 OpenAI 手机号验证时，如何选择国外手机号、接码平台并完成 ChatGPT/Codex 短信验证码验证。"
+date: 2026-06-27 00:00:00 +0800
+categories:
+  - AI工具教程
+  - Codex
+  - ChatGPT
+tags:
+  - Codex短信验证码
+  - ChatGPT短信验证
+  - OpenAI手机号验证
+  - Codex接码教程
+image:
+  path: "/assets/images/2026-06-27-codex-chatgpt-sms-verification/01.jpeg"
+  thumbnail: "/assets/images/2026-06-27-codex-chatgpt-sms-verification/01.jpeg"
+share: true
+---
+
+{% include toc %}
+
+**大家好，我是卡卡罗特AI。**
+
+最近一个礼拜，OpenAI持续更新，Codex的功能越来越强了，但是风控持续在升级。
+
+导致使用Codex也越来越麻烦了。
+
+白嫖OpenAI首月免费的成本越来越高了，难受~
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/01.jpeg' | relative_url }})
+
+之前我写了一篇文章，通过JSON格式文件的方式绕过Codex的登录验证手机号。
+
+但是现在已经没用了。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/02.jpeg' | relative_url }})
+
+
+
+但是Cookpit Tool这个软件依然很有用，比如说可以帮你管理多个ChatGPT账号。当然还可以管理其他的，比如说Google的反重力、Claude....。
+
+这里不再展开了
+
+
+
+**那现在Codex登入要验证手机号怎么办呢？**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/03.jpeg' | relative_url }})
+
+那我们就给它绑定一个手机号。
+
+填国内的手机号肯定是不行的，那你就要用一个**国外的手机号**。
+
+
+
+拥有一个国外的手机号，比较麻烦。
+
+但是有些平台可以给你一个**临时号码接收短信**，这种平台叫**接码平台**。
+
+比如HeroSMS这个平台。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/04.png' | relative_url }})
+
+这个平台支持微信、支付宝支付，还是很方便的。
+
+
+
+下面开始教程。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/05.png' | relative_url }})
+
+
+
+## 1、注册
+上面说的HeroSMS这个接码平台，✅地址是这个：[<u>https://hero-sms.com/</u>](https://hero-sms.com/)
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/06.png' | relative_url }})
+
+点击右上角的登录，然后注册一个新的账号。我这里直接用163邮箱注册即可。
+
+
+
+## 2、选择OpenAI
+> **顺便一提：**ChatGPT的母公司叫OpenAI。
+>
+
+在页面左边选择服务，搜索输入OpenAI。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/07.png' | relative_url }})
+
+
+
+OpenAI支持其他很多国家的短信。
+
+HeroSMS也支持多个国家，但是有些国家接码可能会失败（**接码失败平台会自动退款**）。
+
+那我们就点击这个**热门国家**，这里可以看到各个**国家的成功率排行榜**。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/08.png' | relative_url }})
+
+
+
+
+
+在下面这张图可以看到各个国家成功率排行，可以看出泰国的成功率是最高的。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/09.png' | relative_url }})
+
+
+
+## 3、选择接码国家
+那我们这里直接选择泰国的手机号接收短信。（**<u>选择美国也可以</u>**）
+
+我们发现需要1.7刀，换算成人民币差不多11块，**好贵！**😅
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/10.jpeg' | relative_url }})
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/11.png' | relative_url }})
+
+
+
+## 4、充值
+你点击购买的时候，发现买不了，因为你的账户没钱😅
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/12.png' | relative_url }})
+
+点击右上角的充值按钮进行充值。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/13.png' | relative_url }})
+
+
+
+充值这里直接选下面这个支付宝，**这个佣金最少。**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/14.png' | relative_url }})
+
+
+
+支付宝充值最少要充2美元（**<u>这里货币单位是USD，可以理解成美元</u>**）。
+
+**<u>那就先充个最低的2美元吧，大概14块人民币。</u>**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/15.png' | relative_url }})
+
+
+
+然后跳转到下面这个页面，**<font style="color:#DF2A3F;background-color:#FBDE28;">先不要支付宝扫码，点击下面的查看链接。</font>**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/16.png' | relative_url }})
+
+
+跳转到下面这个页面，再用支付宝扫码支付。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/17.png' | relative_url }})
+
+
+
+## 5、购买手机号
+回到第三步进行购买手机号**（这里价格突然变成了1.08美元，我也不知道为什么****🤔****）**
+
+**点一下就直接购买了（竟然没有确认按钮****😅****），然后右边就有一个手机号。**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/18.png' | relative_url }})
+
+
+
+## 6、Codex登入
+让我们回到Codex，然后继续登录。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/19.png' | relative_url }})
+
+
+
+到输入电话号码这里，我们选择**【泰国】**。
+
+> **<font style="background-color:#F9EFCD;">如果你接码平台选择美国，那这里就选美国。</font>**
+>
+
+**✅****注意：****<font style="background-color:#F9EFCD;">这里是按拼音排序的，泰国在中间靠后的位置</font>**🤔
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/20.png' | relative_url }})
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/21.png' | relative_url }})
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/22.png' | relative_url }})
+
+**✅****注意：****<font style="background-color:#FBDE28;">泰国的手机号是66开头的前缀，我们输入手机号的时候，就不要把66输进去了！</font>**
+
+
+
+## 7、等待短信
+点击发送短信后，我们就在HeroSMS等待验证码的到来。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/23.png' | relative_url }})
+
+
+
+这里要等挺久的，我等了好几分钟，差不多十分钟，emmm。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/24.jpeg' | relative_url }})
+
+**页面是可以刷新的，刷新后还能看到这个号码。**
+
+接码成功是这样：
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/25.png' | relative_url }})
+
+**接到验证码之后，把这个验证码填过去就行了。**
+
+****
+
+#### 7-1、失败情况
+如果接不到，**平台会自动给你退款**，重新买一个就行了。
+
+我第一次接码就失败了。下面画圈这里可以看到。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/26.png' | relative_url }})
+
+
+
+#### 7-2、历史记录
+点击右上角的头像【激活历史记录】，可以查看你以前接码的短信号码。
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/27.png' | relative_url }})
+
+
+
+
+
+**至此，这就是Codex短信接码的整个流程了。**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/28.jpeg' | relative_url }})
+
+**你一定会给我点个赞的吧～**
+
+
+
+但是现在这些平台比较难接码了🤣，如果没有接到码的话。
+
+可以在下面这个链接买一个美区实体卡，**有效期二十多天内可以无限接码，稳得一批**。
+
+✅https://pay.ldxp.cn/shop/6688
+
+![image-20260627174458075]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/image-20260627174458075.png' | relative_url }})
+
+
+
+## 8、Codex二次登入
+这次你接码成功了，那下次你再登录Codex的时候怎么办呢？🤔
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/29.png' | relative_url }})
+
+因为你已经绑过手机号，不会再弹出验证手机号了，所以直接通过`邮箱`+`验证码`登入就行了。
+
+(目前2026-05-26日，OpenAI的政策是这样的，不代表以后也这样🤔)
+
+
+
+**以后你就可以爽快地用Codex了。**
+
+![]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/30.png' | relative_url }})
+
+
+
+**我是卡卡罗特AI，每天持续分享对你有用的AI知识～**
+
+![kklt-wechat]({{ '/assets/images/2026-06-27-codex-chatgpt-sms-verification/kklt-wechat.jpg' | relative_url }})

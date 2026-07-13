@@ -1,0 +1,10 @@
+# Site navigation links
+
+- title: 首页
+  url: /
+- title: 文章
+  url: /posts/
+- title: 分类
+  url: /categories/
+- title: 标签
+  url: /tags/

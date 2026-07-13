@@ -1,0 +1,49 @@
+---
+layout: default
+---
+
+{% assign home_posts = paginator.posts | default: site.posts %}
+
+<div class="home-shell">
+  <section class="home-profile" aria-labelledby="home-title">
+    {% if page.profile_image %}
+      <img class="home-profile__avatar" src="{{ page.profile_image | relative_url }}" alt="{{ site.title }}">
+    {% endif %}
+    <h1 id="home-title" class="home-profile__title">{{ site.title }}</h1>
+    <p class="home-profile__tagline">{{ page.tagline | default: site.description }}</p>
+  </section>
+
+  <section class="home-entries" aria-label="最新文章">
+    {% for post in home_posts %}
+      <article class="home-entry">
+        <h2 class="home-entry__title">
+          <a href="{{ post.url | relative_url }}">{{ post.title }}</a>
+        </h2>
+        <div class="home-entry__meta">
+          {% if site.read_time %}
+            <span>{{ post.content | strip_html | number_of_words | divided_by: site.words_per_minute | plus: 1 }} 分钟阅读</span>
+            <span aria-hidden="true">•</span>
+          {% endif %}
+          <time datetime="{{ post.date | date_to_xmlschema }}">{{ post.date | date: site.date_format }}</time>
+        </div>
+        {% if page.show_excerpts %}
+          <p class="home-entry__excerpt">
+            {{ post.description | default: post.excerpt | strip_html | normalize_whitespace | truncate: 160 }}
+          </p>
+        {% endif %}
+      </article>
+    {% endfor %}
+  </section>
+
+  {% if paginator.total_pages > 1 %}
+    <nav class="home-pagination" aria-label="分页">
+      {% if paginator.previous_page %}
+        <a href="{{ paginator.previous_page_path | relative_url }}">上一页</a>
+      {% endif %}
+      <span>{{ paginator.page }} / {{ paginator.total_pages }}</span>
+      {% if paginator.next_page %}
+        <a href="{{ paginator.next_page_path | relative_url }}">下一页</a>
+      {% endif %}
+    </nav>
+  {% endif %}
+</div>

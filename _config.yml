@@ -1,0 +1,55 @@
+title: "卡卡罗特AI"
+description: "AI工具教程、ChatGPT使用技巧、OpenAI Codex实战、Claude、AI编程与自动化工作流。"
+locale: zh-CN
+lang: zh-CN
+timezone: Asia/Shanghai
+url: "https://kklt-ai.github.io"
+baseurl: "/kklt-ai-blog"
+date_format: "%Y-%m-%d"
+read_time: true
+words_per_minute: 300
+skin: "/assets/css/skins/light.css"
+
+author:
+  name: "卡卡罗特AI"
+  avatar: "/assets/images/wechat-header.JPG"
+  bio: "每天持续分享对你有用的AI知识。"
+
+remote_theme: "mmistakes/so-simple-theme@3.2.0"
+plugins:
+  - jekyll-remote-theme
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-sitemap
+  - jekyll-paginate
+
+permalink: /:title/
+feed:
+  path: atom.xml
+paginate: 10
+paginate_path: /page:num/
+category_archive_path: "/categories/#"
+tag_archive_path: "/tags/#"
+
+defaults:
+  - scope:
+      path: "_posts"
+      type: posts
+    values:
+      layout: post
+      share: true
+
+exclude:
+  - README.md
+  - Gemfile
+  - Gemfile.lock
+  - start.sh
+  - vendor
+  - .bundle
+  - .idea
+  - .superpowers
+
+footer_links:
+  - title: Feed
+    url: atom.xml
+    icon: fas fa-rss-square
